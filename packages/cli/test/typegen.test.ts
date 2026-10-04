@@ -1,6 +1,7 @@
+import { spawnSync } from 'node:child_process'
 import { mkdirSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
-import ts from 'typescript'
+import { createRequire } from 'node:module'
+import { dirname, join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
   generateTypes,
@@ -467,32 +468,45 @@ export const bad4 = client.getBooleanValue('search.results-per-page', 10)
 export const bad5 = client.getNumberValue('search.results-per-page', 11)
 `
 
+  // TypeScript 7 no longer ships the JavaScript compiler API, so the generated
+  // code is type-checked by running the tsc binary on a temporary project.
+  const tscBin = join(
+    dirname(createRequire(import.meta.url).resolve('typescript/package.json')),
+    'bin/tsc',
+  )
+
   function compile(files: Record<string, string>): string[] {
     const dir = makeTempDir('halyard-typegen-')
     mkdirSync(dir, { recursive: true })
-    const paths = Object.entries(files).map(([name, content]) => {
-      const path = join(dir, name)
-      writeFileSync(path, content)
-      return path
+    for (const [name, content] of Object.entries(files)) {
+      writeFileSync(join(dir, name), content)
+    }
+    writeFileSync(
+      join(dir, 'tsconfig.json'),
+      JSON.stringify({
+        compilerOptions: {
+          strict: true,
+          noUncheckedIndexedAccess: true,
+          isolatedModules: true,
+          noEmit: true,
+          target: 'ES2022',
+          lib: ['ES2022'],
+          module: 'ESNext',
+          moduleResolution: 'bundler',
+          types: [],
+          skipLibCheck: true,
+        },
+        include: Object.keys(files),
+      }),
+    )
+    const result = spawnSync(process.execPath, [tscBin, '-p', dir, '--pretty', 'false'], {
+      encoding: 'utf8',
     })
-    const program = ts.createProgram(paths, {
-      strict: true,
-      noUncheckedIndexedAccess: true,
-      isolatedModules: true,
-      noEmit: true,
-      target: ts.ScriptTarget.ES2022,
-      lib: ['lib.es2022.d.ts'],
-      module: ts.ModuleKind.ESNext,
-      moduleResolution: ts.ModuleResolutionKind.Bundler,
-      types: [],
-      skipLibCheck: true,
-    })
-    return ts
-      .getPreEmitDiagnostics(program)
-      .map(
-        (d) =>
-          `${d.file ? `${d.file.fileName}: ` : ''}${ts.flattenDiagnosticMessageText(d.messageText, '\n')}`,
-      )
+    if (result.error) throw result.error
+    return `${result.stdout}${result.stderr}`
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
   }
 
   it('type-checks with strict TypeScript and rejects wrong usage', () => {
