@@ -1,5 +1,5 @@
-import { murmurhash3_32 } from './hash'
-import type { RolloutVariation } from './types'
+import { murmurhash3_32 } from './hash.js'
+import type { RolloutVariation } from './types.js'
 
 /** Number of buckets. 100 000 buckets give three decimal places of percent precision. */
 export const BUCKET_COUNT = 100_000

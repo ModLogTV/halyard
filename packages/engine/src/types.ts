@@ -6,7 +6,13 @@
  */
 
 /** Any JSON value. Flag variants hold values of this type. */
-export type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue }
+export type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | JsonValue[]
+  | { [key: string]: JsonValue }
 
 export type FlagType = 'boolean' | 'string' | 'number' | 'json'
 

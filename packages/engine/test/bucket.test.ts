@@ -7,7 +7,7 @@ const split = (...weights: number[]): RolloutVariation[] =>
   weights.map((weight, i) => ({ variant: `v${i}`, weight }))
 
 describe('bucketFor', () => {
-  it('is murmurhash3_32(`${salt}.${bucketValue}`) % 100000', () => {
+  it('is murmurhash3_32(salt + "." + bucketValue) % 100000', () => {
     expect(BUCKET_COUNT).toBe(100_000)
     for (const key of ['a', 'user-1', 'ü-ñ', '']) {
       expect(bucketFor('flag', key)).toBe(murmurhash3_32(`flag.${key}`) % 100_000)
