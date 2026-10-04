@@ -97,7 +97,7 @@ async function loadRuleset(environmentId: string): Promise<CachedRuleset | null>
       .from(flags)
       .where(and(eq(flags.projectId, environment.projectId), isNull(flags.archivedAt))),
     db.select().from(flagEnvironments).where(eq(flagEnvironments.environmentId, environmentId)),
-    db.select().from(segments).where(eq(segments.projectId, environment.projectId)),
+    db.select().from(segments).where(eq(segments.projectId, environment.projectId)).orderBy(segments.key),
     db
       .select()
       .from(experiments)
