@@ -45,9 +45,9 @@
       "next": "Weiter"
     },
     "firstAdmin": {
-      "title": "Den ersten Admin anlegen",
-      "description": "Konten werden mit der Rolle „Benutzer“ erstellt. Ein bestehender Admin kann andere in der Tabelle oben befördern; der allererste Admin wird direkt in der Datenbank gesetzt.",
-      "step1": "Registriere dich und führe dann Folgendes in der Halyard-Datenbank aus:",
+      "title": "Instanz-Admins",
+      "description": "Das erste Konto, das auf dieser Instanz erstellt wird, ist der Admin. Admins befördern oder degradieren andere Benutzer in der Tabelle oben.",
+      "step1": "Falls kein Admin mehr übrig ist, befördere einen Benutzer direkt in der Halyard-Datenbank:",
       "step2": "Melde dich ab und wieder an, damit die neue Rolle greift. Seed-Datenbanken für die Entwicklung enthalten bereits <0>admin@example.com</0> als Admin."
     },
     "table": {

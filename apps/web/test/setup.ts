@@ -17,6 +17,8 @@ process.env.BETTER_AUTH_URL ??= 'http://localhost:3000'
 process.env.NODE_ENV = 'test'
 process.env.RUN_MIGRATIONS_ON_STARTUP = 'false'
 process.env.ENABLE_WORKERS = 'false'
+// Tests create many accounts directly; the invite-only policy is covered by its own test.
+process.env.AUTH_SIGNUP_MODE = 'open'
 
 const admin = new Client({ connectionString: adminUrl.toString() })
 await admin.connect()

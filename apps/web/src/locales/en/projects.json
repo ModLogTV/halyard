@@ -45,9 +45,9 @@
       "next": "Next"
     },
     "firstAdmin": {
-      "title": "Creating the first admin",
-      "description": "Accounts are created with the user role. An existing admin can promote others from the table above; the very first admin is set directly in the database.",
-      "step1": "Sign up, then run this against the Halyard database:",
+      "title": "Instance admins",
+      "description": "The first account created on this instance is the admin. Admins promote or demote other users in the table above.",
+      "step1": "If no admin is left, promote a user directly in the Halyard database:",
       "step2": "Sign out and back in to pick up the new role. Seeded development databases already include <0>admin@example.com</0> as an admin."
     },
     "table": {

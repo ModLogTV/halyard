@@ -15,3 +15,7 @@ updates:
     groups:
       minor-and-patch:
         update-types: [minor, patch]
+    ignore:
+      # Keep the Node type definitions on the runtime major used in CI and the image.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]

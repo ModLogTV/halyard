@@ -13,6 +13,10 @@ const schema = z.object({
   RUN_MIGRATIONS_ON_STARTUP: boolFromString,
   ENABLE_WORKERS: boolFromString,
   METRICS_TOKEN: z.string().optional(),
+  /** Who may create accounts: `invite` (first user, then invited emails only) or `open`. */
+  AUTH_SIGNUP_MODE: z.enum(['open', 'invite']).default('invite'),
+  /** How long startup waits for Postgres to accept connections. */
+  DATABASE_CONNECT_TIMEOUT_MS: z.coerce.number().int().positive().default(60_000),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
 })
 

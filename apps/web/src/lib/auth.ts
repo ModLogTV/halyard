@@ -1,12 +1,14 @@
 import { apiKey } from '@better-auth/api-key'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
+import { APIError } from 'better-auth/api'
 import { admin, organization } from 'better-auth/plugins'
 import { tanstackStartCookies } from 'better-auth/tanstack-start'
 import { db } from '@/db'
 import * as schema from '@/db/schema'
 import { env } from '@/lib/env'
 import { ac, roles } from '@/lib/permissions'
+import { evaluateSignup } from '@/server/auth/signup-policy'
 
 /** Prefix for environment-scoped SDK keys used by OFREP and the tracking endpoint. */
 export const SDK_KEY_PREFIX = 'hal_sdk_'
@@ -24,6 +26,44 @@ export const auth = betterAuth({
   },
   session: {
     cookieCache: { enabled: true, maxAge: 5 * 60 },
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        // Sign-up policy (see AUTH_SIGNUP_MODE): the first account becomes the instance
+        // admin; afterwards invite mode only admits emails with a pending invitation.
+        // Accounts created by admins (/admin/create-user) bypass the policy.
+        before: async (user, ctx) => {
+          if (ctx?.path !== '/sign-up/email') return
+          const decision = await evaluateSignup(user.email, env().AUTH_SIGNUP_MODE)
+          if (!decision.allowed) {
+            throw new APIError('FORBIDDEN', {
+              code: 'SIGNUP_INVITE_ONLY',
+              message: 'Sign-up is by invitation only. Ask a project owner to invite you.',
+            })
+          }
+          if (decision.firstUser) return { data: { ...user, role: 'admin' } }
+        },
+      },
+    },
+  },
+  rateLimit: {
+    // Counts are stored in Postgres so limits hold across replicas. Enabled in production
+    // only (better-auth default), keyed by client IP taken from the proxy headers.
+    storage: 'database',
+    modelName: 'rateLimit',
+    window: 60,
+    max: 100,
+    customRules: {
+      '/sign-in/email': { window: 60, max: 10 },
+      '/sign-up/email': { window: 3600, max: 20 },
+      '/request-password-reset': { window: 3600, max: 5 },
+    },
+  },
+  advanced: {
+    ipAddress: {
+      ipAddressHeaders: ['x-forwarded-for', 'x-real-ip', 'cf-connecting-ip'],
+    },
   },
   plugins: [
     organization({

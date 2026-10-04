@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { AuthShell } from '@/components/auth/auth-shell'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
@@ -10,12 +11,14 @@ import { Spinner } from '@/components/ui/spinner'
 import { authClient } from '@/lib/auth-client'
 import { translate } from '@/lib/i18n'
 import { getSession } from '@/server/functions/session'
+import { getSignupPolicy } from '@/server/functions/signup'
 
 export const Route = createFileRoute('/signup')({
   beforeLoad: async () => {
     const session = await getSession()
     if (session) throw redirect({ to: '/app' })
   },
+  loader: () => getSignupPolicy(),
   head: ({ match }) => ({
     meta: [{ title: translate(match.context.locale)('auth:signUp.pageTitle') }],
   }),
@@ -25,6 +28,7 @@ export const Route = createFileRoute('/signup')({
 function SignupPage() {
   const { t } = useTranslation(['auth', 'common'])
   const navigate = useNavigate()
+  const policy = Route.useLoaderData()
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -58,6 +62,17 @@ function SignupPage() {
         <h2 className="text-2xl font-semibold tracking-tight">{t('signUp.title')}</h2>
         <p className="mt-1 text-sm text-muted-foreground">{t('signUp.description')}</p>
       </div>
+      {policy.bootstrap ? (
+        <Alert className="mb-6">
+          <AlertTitle>{t('signUp.bootstrap.title')}</AlertTitle>
+          <AlertDescription>{t('signUp.bootstrap.description')}</AlertDescription>
+        </Alert>
+      ) : policy.mode === 'invite' ? (
+        <Alert className="mb-6">
+          <AlertTitle>{t('signUp.inviteOnly.title')}</AlertTitle>
+          <AlertDescription>{t('signUp.inviteOnly.description')}</AlertDescription>
+        </Alert>
+      ) : null}
       <form onSubmit={onSubmit} noValidate>
         <FieldGroup>
           <Field>

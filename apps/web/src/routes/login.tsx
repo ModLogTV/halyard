@@ -11,6 +11,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { authClient } from '@/lib/auth-client'
 import { translate } from '@/lib/i18n'
 import { getSession } from '@/server/functions/session'
+import { getSignupPolicy } from '@/server/functions/signup'
 
 /** Only same-origin relative paths are accepted as post-login destinations. */
 const safePath = z
@@ -27,6 +28,7 @@ export const Route = createFileRoute('/login')({
     const session = await getSession()
     if (session) throw redirect({ to: search.redirect ?? '/app' })
   },
+  loader: () => getSignupPolicy(),
   head: ({ match }) => ({
     meta: [{ title: translate(match.context.locale)('auth:signIn.pageTitle') }],
   }),
@@ -37,6 +39,8 @@ function LoginPage() {
   const { t } = useTranslation(['auth', 'common'])
   const navigate = useNavigate()
   const { redirect: redirectTo } = Route.useSearch()
+  const policy = Route.useLoaderData()
+  const canSignUp = policy.mode === 'open' || policy.bootstrap
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -86,15 +90,19 @@ function LoginPage() {
               {pending ? <Spinner /> : null}
               {t('common:actions.signIn')}
             </Button>
-            <FieldDescription className="text-center">
-              <Trans
-                t={t}
-                i18nKey="signIn.newHere"
-                components={[
-                  <Link key="signup" to="/signup" className="underline underline-offset-4" />,
-                ]}
-              />
-            </FieldDescription>
+            {canSignUp ? (
+              <FieldDescription className="text-center">
+                <Trans
+                  t={t}
+                  i18nKey={policy.bootstrap ? 'signIn.bootstrap' : 'signIn.newHere'}
+                  components={[
+                    <Link key="signup" to="/signup" className="underline underline-offset-4" />,
+                  ]}
+                />
+              </FieldDescription>
+            ) : (
+              <FieldDescription className="text-center">{t('signIn.inviteOnly')}</FieldDescription>
+            )}
           </Field>
         </FieldGroup>
       </form>

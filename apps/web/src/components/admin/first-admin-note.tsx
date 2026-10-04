@@ -2,7 +2,7 @@ import { ShieldCheckIcon } from 'lucide-react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
-/** Explains how the first instance admin is created, since sign-up never grants admin. */
+/** Explains who the instance admins are and how to recover when none is left. */
 export function FirstAdminNote() {
   const { t } = useTranslation('projects')
   return (
