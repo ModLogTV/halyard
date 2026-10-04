@@ -1,0 +1,23 @@
+{
+  "name": "@halyard/cli",
+  "version": "0.1.0",
+  "description": "Command line interface for Halyard: generate TypeScript types from your flags, import and export projects.",
+  "license": "MIT",
+  "type": "module",
+  "bin": { "halyard": "./dist/cli.js" },
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "dev": "bun run src/cli.ts"
+  },
+  "dependencies": {
+    "@halyard/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.3"
+  }
+}

@@ -1,0 +1,16 @@
+node_modules
+dist
+.output
+.vite
+*.log
+.env
+.env.local
+.env.*.local
+.DS_Store
+coverage
+.turbo
+apps/web/src/routeTree.gen.ts
+apps/web/.tanstack
+apps/web/.nitro
+packages/cli/dist
+packages/engine/dist
