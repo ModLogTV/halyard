@@ -10,7 +10,8 @@
       "!**/routeTree.gen.ts",
       "!**/drizzle/meta",
       "!**/src/components/ui",
-      "!**/src/styles.css"
+      "!**/src/styles.css",
+      "!**/test/fixtures/*.json"
     ]
   },
   "formatter": {
