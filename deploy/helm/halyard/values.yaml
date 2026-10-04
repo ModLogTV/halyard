@@ -77,6 +77,10 @@ config:
   # Who may create accounts (AUTH_SIGNUP_MODE). "invite": the first account becomes the
   # instance admin, afterwards only invited email addresses can sign up. "open": anybody.
   signupMode: invite
+  # Reverse proxies / ingress controllers (IPs or CIDRs, comma separated) whose
+  # X-Forwarded-For header carries the client IP used for rate limiting (TRUSTED_PROXIES).
+  # Typically the pod CIDR of the ingress controller, e.g. "10.0.0.0/8".
+  trustedProxies: ""
 
 # Additional environment variables, rendered as-is into the container `env`.
 extraEnv: []

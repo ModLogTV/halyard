@@ -8,6 +8,7 @@ import { db } from '@/db'
 import * as schema from '@/db/schema'
 import { env } from '@/lib/env'
 import { ac, roles } from '@/lib/permissions'
+import { ipAddressOptions, parseTrustedProxies } from '@/lib/trusted-proxies'
 import { evaluateSignup } from '@/server/auth/signup-policy'
 
 /** Prefix for environment-scoped SDK keys used by OFREP and the tracking endpoint. */
@@ -49,7 +50,7 @@ export const auth = betterAuth({
   },
   rateLimit: {
     // Counts are stored in Postgres so limits hold across replicas. Enabled in production
-    // only (better-auth default), keyed by client IP taken from the proxy headers.
+    // only (better-auth default), keyed by the client IP (see advanced.ipAddress).
     storage: 'database',
     modelName: 'rateLimit',
     window: 60,
@@ -61,9 +62,8 @@ export const auth = betterAuth({
     },
   },
   advanced: {
-    ipAddress: {
-      ipAddressHeaders: ['x-forwarded-for', 'x-real-ip', 'cf-connecting-ip'],
-    },
+    // Forwarding headers are only honoured from the proxies listed in TRUSTED_PROXIES.
+    ipAddress: ipAddressOptions(parseTrustedProxies(env().TRUSTED_PROXIES)),
   },
   plugins: [
     organization({

@@ -31,12 +31,15 @@ services:
       postgres:
         condition: service_healthy
     ports:
-      - "${HALYARD_PORT:-3000}:3000"
+      # Published on localhost only; the TLS proxy on the host connects to 127.0.0.1:3000.
+      # Set HALYARD_BIND=0.0.0.0 to expose the port directly.
+      - "${HALYARD_BIND:-127.0.0.1}:${HALYARD_PORT:-3000}:3000"
     environment:
       DATABASE_URL: postgresql://halyard:${POSTGRES_PASSWORD}@postgres:5432/halyard
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET in .env}
       BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
       AUTH_SIGNUP_MODE: ${AUTH_SIGNUP_MODE:-invite}
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-}
       WEBHOOK_BLOCK_PRIVATE_NETWORKS: ${WEBHOOK_BLOCK_PRIVATE_NETWORKS:-false}
       METRICS_TOKEN: ${METRICS_TOKEN:-}
     read_only: true

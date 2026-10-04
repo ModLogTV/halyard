@@ -63,6 +63,10 @@ spec:
               value: {{ .Values.config.webhookBlockPrivateNetworks | quote }}
             - name: AUTH_SIGNUP_MODE
               value: {{ .Values.config.signupMode | quote }}
+            {{- with .Values.config.trustedProxies }}
+            - name: TRUSTED_PROXIES
+              value: {{ . | quote }}
+            {{- end }}
             {{- with include "halyard.authUrl" . }}
             - name: BETTER_AUTH_URL
               value: {{ . | quote }}

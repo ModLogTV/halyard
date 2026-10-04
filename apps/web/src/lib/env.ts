@@ -15,6 +15,8 @@ const schema = z.object({
   METRICS_TOKEN: z.string().optional(),
   /** Who may create accounts: `invite` (first user, then invited emails only) or `open`. */
   AUTH_SIGNUP_MODE: z.enum(['open', 'invite']).default('invite'),
+  /** Comma separated IPs/CIDRs of reverse proxies whose forwarding headers carry the client IP. */
+  TRUSTED_PROXIES: z.string().optional(),
   /** How long startup waits for Postgres to accept connections. */
   DATABASE_CONNECT_TIMEOUT_MS: z.coerce.number().int().positive().default(60_000),
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),

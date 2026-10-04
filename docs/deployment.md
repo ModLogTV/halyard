@@ -21,6 +21,7 @@ docker build -t halyard:dev .
 | `BETTER_AUTH_URL` | recommended | `http://localhost:3000` | Public URL of the app. Used for cookies and redirects; set it to the URL users open in the browser. |
 | `PORT` | no | `3000` | Port the server listens on. |
 | `AUTH_SIGNUP_MODE` | no | `invite` | Who may create accounts, see [Accounts and sign-up](#accounts-and-sign-up). |
+| `TRUSTED_PROXIES` | recommended | unset | Reverse proxies (IPs/CIDRs, comma separated) whose `X-Forwarded-For` / `X-Real-IP` carry the client address, see [Reverse proxy and TLS](#reverse-proxy-and-tls). |
 | `RUN_MIGRATIONS_ON_STARTUP` | no | `true` | Run database migrations before serving traffic. |
 | `DATABASE_CONNECT_TIMEOUT_MS` | no | `60000` | How long startup waits for Postgres to accept connections before failing. |
 | `ENABLE_WORKERS` | no | `true` | Run background workers (scheduled changes, webhook delivery, stats flushers). |
@@ -73,17 +74,17 @@ Halyard has no email delivery and needs none. Accounts work like this:
 - **Instance admins** can create, promote, ban and delete users on the Admin page regardless of the sign-up mode. If no admin is left, promote one in the database: `update "user" set role = 'admin' where email = '...'`.
 - **Passwords** are reset by an admin on the Admin page. There is no self-service reset email.
 
-Login, sign-up and password endpoints are rate limited per client IP (10 sign-in attempts per minute, 20 sign-ups per hour). Counts are stored in Postgres, so the limits hold across replicas. The client IP is read from `X-Forwarded-For`, `X-Real-IP` or `CF-Connecting-IP`, so the reverse proxy must set one of them.
+Login, sign-up and password endpoints are rate limited per client IP (10 sign-in attempts per minute, 20 sign-ups per hour). Counts are stored in Postgres, so the limits hold across replicas. Set `TRUSTED_PROXIES` so the client IP is taken from the proxy's forwarding headers; without it, all requests arriving through a proxy share one address and the limits apply to the proxy as a whole.
 
 ## Reverse proxy and TLS
 
 Halyard speaks plain HTTP on port `3000` and expects a reverse proxy to terminate TLS. Set `BETTER_AUTH_URL` to the public `https://` URL; the app derives cookie attributes (`Secure`, domain) and redirect origins from it, and sends `Strict-Transport-Security` only when that URL is `https`.
 
-The proxy must forward the client address and protocol (`X-Forwarded-For`, `X-Forwarded-Proto`); the login rate limiter keys on the client address. Example with Caddy, which also obtains the certificate:
+The proxy must forward the client address (`X-Forwarded-For` or `X-Real-IP`), and `TRUSTED_PROXIES` must list the proxy's address or subnet. Forwarding headers from other sources are ignored, otherwise a client could choose its own address and evade the login rate limit. The Compose file publishes the app on `127.0.0.1` only, so a proxy on the same host reaches it at `127.0.0.1:3000` and nobody can bypass the proxy from outside. Example with Caddy, which also obtains the certificate:
 
 ```caddyfile
 flags.example.com {
-    reverse_proxy halyard:3000
+    reverse_proxy 127.0.0.1:3000
 }
 ```
 

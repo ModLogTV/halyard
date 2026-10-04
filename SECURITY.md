@@ -22,6 +22,8 @@ a current version; upgrades are described in [docs/deployment.md](docs/deploymen
 ## Hardening a self-hosted instance
 
 - Terminate TLS in front of Halyard and set `BETTER_AUTH_URL` to the public `https://` URL.
+- Set `TRUSTED_PROXIES` to the proxy's address so rate limits apply per client, and make sure the
+  plain HTTP port is not reachable except through the proxy.
 - Keep `AUTH_SIGNUP_MODE=invite` (the default) when the instance is reachable from the internet.
 - Use a strong, random `BETTER_AUTH_SECRET` and keep it out of version control.
 - Set `METRICS_TOKEN` if `/metrics` is reachable from outside your monitoring network.
