@@ -1,18 +1,14 @@
 import { CalendarIcon } from 'lucide-react'
 import { useId, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { TimeSelect } from '@/components/date/time-select'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
-import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { useCalendarLocale } from '@/lib/calendar-locale'
+import { combineDayAndTime, parseTimeValue, toTimeValue } from '@/lib/datetime'
 import { cn } from '@/lib/utils'
 import { roundedFromNow } from './utils'
-
-const pad = (n: number) => String(n).padStart(2, '0')
-
-function timeValue(date: Date | null): string {
-  return date ? `${pad(date.getHours())}:${pad(date.getMinutes())}` : ''
-}
 
 function withDay(base: Date | null, day: Date): Date {
   const next = new Date(day)
@@ -33,7 +29,7 @@ export interface DateTimePickerProps {
   'aria-label'?: string
 }
 
-/** Calendar popover plus a time input. Works in the viewer's local time zone. */
+/** Calendar popover plus a time select. Works in the viewer's local time zone. */
 export function DateTimePicker({
   value,
   onChange,
@@ -45,6 +41,7 @@ export function DateTimePicker({
   'aria-label': ariaLabel,
 }: DateTimePickerProps) {
   const { t, i18n } = useTranslation(['schedules', 'common'])
+  const locale = useCalendarLocale()
   const [open, setOpen] = useState(false)
   const generated = useId()
   const baseId = id ?? generated
@@ -79,6 +76,7 @@ export function DateTimePicker({
         <PopoverContent className="w-auto p-0" align="start">
           <Calendar
             mode="single"
+            locale={locale}
             selected={value ?? undefined}
             defaultMonth={value ?? undefined}
             onSelect={(day) => {
@@ -91,21 +89,20 @@ export function DateTimePicker({
           />
         </PopoverContent>
       </Popover>
-      <Input
-        type="time"
-        value={timeValue(value)}
+      <TimeSelect
+        value={toTimeValue(value)}
+        step={5}
         disabled={disabled}
-        aria-invalid={invalid || undefined}
+        invalid={invalid}
+        placeholder={t('picker.pickTime')}
         aria-label={
           ariaLabel ? t('picker.timeAriaLabel', { label: ariaLabel }) : t('common:labels.time')
         }
-        className="w-32 tabular-nums"
-        onChange={(event) => {
-          const [hours, minutes] = event.target.value.split(':').map(Number)
-          if (hours === undefined || minutes === undefined || Number.isNaN(hours)) return
-          const next = new Date(value ?? roundedFromNow(0))
-          next.setHours(hours, minutes, 0, 0)
-          onChange(next)
+        className="w-36"
+        onChange={(next) => {
+          const time = parseTimeValue(next)
+          if (!time) return
+          onChange(combineDayAndTime(value ?? roundedFromNow(0), time))
         }}
       />
     </div>

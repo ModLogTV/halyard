@@ -258,5 +258,13 @@
   "nav": {
     "skipToContent": "Skip to content",
     "breadcrumb": "Breadcrumb"
+  },
+  "dateRange": {
+    "anyTime": "Any time",
+    "start": "Start",
+    "end": "End",
+    "startTime": "Start time",
+    "endTime": "End time",
+    "clear": "Clear range"
   }
 }

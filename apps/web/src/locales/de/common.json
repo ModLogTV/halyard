@@ -258,5 +258,13 @@
   "nav": {
     "skipToContent": "Zum Inhalt springen",
     "breadcrumb": "Brotkrumennavigation"
+  },
+  "dateRange": {
+    "anyTime": "Beliebig",
+    "start": "Beginn",
+    "end": "Ende",
+    "startTime": "Beginn (Uhrzeit)",
+    "endTime": "Ende (Uhrzeit)",
+    "clear": "Zeitraum löschen"
   }
 }

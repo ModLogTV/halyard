@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { AuditTimeline } from '@/components/audit'
+import { DateTimeRangePicker } from '@/components/date/date-time-range-picker'
 import { EnvDot } from '@/components/env/env-badge'
 import { PageHeader } from '@/components/layout/page-header'
 import { Button } from '@/components/ui/button'
@@ -244,26 +245,14 @@ function AuditPage() {
             />
             <FieldDescription>{t('filters.actionHint')}</FieldDescription>
           </Field>
-          <Field data-invalid={rangeInvalid || undefined}>
-            <FieldLabel htmlFor="audit-from">{t('filters.from')}</FieldLabel>
-            <Input
-              id="audit-from"
-              type="datetime-local"
-              value={search.from ?? ''}
-              max={search.to || undefined}
-              onChange={(event) => setSearch({ from: event.target.value || undefined })}
-              aria-invalid={rangeInvalid || undefined}
-            />
-          </Field>
-          <Field data-invalid={rangeInvalid || undefined}>
-            <FieldLabel htmlFor="audit-to">{t('filters.to')}</FieldLabel>
-            <Input
-              id="audit-to"
-              type="datetime-local"
-              value={search.to ?? ''}
-              min={search.from || undefined}
-              onChange={(event) => setSearch({ to: event.target.value || undefined })}
-              aria-invalid={rangeInvalid || undefined}
+          <Field data-invalid={rangeInvalid || undefined} className="sm:col-span-2">
+            <FieldLabel htmlFor="audit-range">{t('filters.range')}</FieldLabel>
+            <DateTimeRangePicker
+              id="audit-range"
+              from={search.from}
+              to={search.to}
+              invalid={rangeInvalid}
+              onChange={(range) => setSearch({ from: range.from, to: range.to })}
             />
           </Field>
         </FieldGroup>

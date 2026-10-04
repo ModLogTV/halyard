@@ -55,7 +55,8 @@
   "picker": {
     "pickDate": "Datum wählen",
     "dateAriaLabel": "{{label}}, Datum",
-    "timeAriaLabel": "{{label}}, Uhrzeit"
+    "timeAriaLabel": "{{label}}, Uhrzeit",
+    "pickTime": "Uhrzeit wählen"
   },
   "steps": {
     "listAriaLabel": "Rollout-Schritte",

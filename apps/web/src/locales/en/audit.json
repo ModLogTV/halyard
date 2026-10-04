@@ -12,9 +12,8 @@
     "allEntities": "All entities",
     "action": "Action",
     "actionHint": "e.g. flag.*",
-    "from": "From",
-    "to": "To",
-    "rangeInvalid": "The start of the range is after its end."
+    "rangeInvalid": "The start of the range is after its end.",
+    "range": "Time range"
   },
   "feed": {
     "noMatches": {

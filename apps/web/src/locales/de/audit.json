@@ -12,9 +12,8 @@
     "allEntities": "Alle Objekte",
     "action": "Aktion",
     "actionHint": "z. B. flag.*",
-    "from": "Von",
-    "to": "Bis",
-    "rangeInvalid": "Der Beginn des Zeitraums liegt nach seinem Ende."
+    "rangeInvalid": "Der Beginn des Zeitraums liegt nach seinem Ende.",
+    "range": "Zeitraum"
   },
   "feed": {
     "noMatches": {
