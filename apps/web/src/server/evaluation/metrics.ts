@@ -9,7 +9,7 @@ import { rulesetCacheStats } from '@/server/cache/ruleset-cache'
  * flag key, variant key, reason). Targeting keys and context attributes are never
  * used as labels: they are personal data and would explode cardinality.
  */
-export type OfrepEndpoint = 'single' | 'bulk' | 'configuration' | 'ruleset'
+export type OfrepEndpoint = 'single' | 'bulk' | 'configuration' | 'ruleset' | 'track'
 
 interface Metrics {
   registry: Registry
