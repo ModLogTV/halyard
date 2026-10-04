@@ -61,6 +61,10 @@ export const auth = betterAuth({
     },
   },
   advanced: {
+    // Another better-auth app on the same parent domain that shares its cookies across
+    // subdomains sends a same-named session cookie along, and browsers put the older one
+    // first. Our own prefix keeps that cookie from shadowing Halyard's session.
+    cookiePrefix: 'halyard',
     // Forwarding headers are only honoured from the proxies listed in TRUSTED_PROXIES.
     ipAddress: ipAddressOptions(parseTrustedProxies(env().TRUSTED_PROXIES)),
   },
