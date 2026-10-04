@@ -12,50 +12,50 @@ import {
 import * as flags from '@/server/services/flags'
 
 export const listFlags = createServerFn({ method: 'GET' })
-  .inputValidator(listFlagsSchema)
+  .validator(listFlagsSchema)
   .handler(async ({ data }) =>
     flags.listFlags(await projectActor(data.projectId, { flag: ['read'] }), data),
   )
 
 export const getFlag = createServerFn({ method: 'GET' })
-  .inputValidator(flagRefSchema)
+  .validator(flagRefSchema)
   .handler(async ({ data }) =>
     flags.getFlag(await projectActor(data.projectId, { flag: ['read'] }), data),
   )
 
 export const createFlag = createServerFn({ method: 'POST' })
-  .inputValidator(createFlagSchema)
+  .validator(createFlagSchema)
   .handler(async ({ data }) =>
     flags.createFlag(await projectActor(data.projectId, { flag: ['create'] }), data),
   )
 
 export const updateFlag = createServerFn({ method: 'POST' })
-  .inputValidator(updateFlagSchema)
+  .validator(updateFlagSchema)
   .handler(async ({ data }) =>
     flags.updateFlag(await projectActor(data.projectId, { flag: ['update'] }), data),
   )
 
 export const archiveFlag = createServerFn({ method: 'POST' })
-  .inputValidator(flagRefSchema)
+  .validator(flagRefSchema)
   .handler(async ({ data }) =>
     flags.archiveFlag(await projectActor(data.projectId, { flag: ['update'] }), data),
   )
 
 export const unarchiveFlag = createServerFn({ method: 'POST' })
-  .inputValidator(flagRefSchema)
+  .validator(flagRefSchema)
   .handler(async ({ data }) =>
     flags.unarchiveFlag(await projectActor(data.projectId, { flag: ['update'] }), data),
   )
 
 export const deleteFlag = createServerFn({ method: 'POST' })
-  .inputValidator(flagRefSchema)
+  .validator(flagRefSchema)
   .handler(async ({ data }) =>
     flags.deleteFlag(await projectActor(data.projectId, { flag: ['delete'] }), data),
   )
 
 /** `enabled`-only patches need `flag:toggle`; anything else needs `flag:update`. */
 export const updateFlagEnvironment = createServerFn({ method: 'POST' })
-  .inputValidator(updateFlagEnvironmentSchema)
+  .validator(updateFlagEnvironmentSchema)
   .handler(async ({ data }) =>
     flags.updateFlagEnvironment(
       await projectActor(data.projectId, flags.permissionsForEnvironmentPatch(data.patch)),
@@ -64,13 +64,13 @@ export const updateFlagEnvironment = createServerFn({ method: 'POST' })
   )
 
 export const toggleFlag = createServerFn({ method: 'POST' })
-  .inputValidator(toggleFlagSchema)
+  .validator(toggleFlagSchema)
   .handler(async ({ data }) =>
     flags.toggleFlag(await projectActor(data.projectId, { flag: ['toggle'] }), data),
   )
 
 export const copyFlagEnvironment = createServerFn({ method: 'POST' })
-  .inputValidator(copyFlagEnvironmentSchema)
+  .validator(copyFlagEnvironmentSchema)
   .handler(async ({ data }) =>
     flags.copyFlagEnvironment(await projectActor(data.projectId, { flag: ['promote'] }), data),
   )

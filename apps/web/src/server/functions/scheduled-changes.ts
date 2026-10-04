@@ -12,7 +12,7 @@ import { permissionsForEnvironmentPatch } from '@/server/services/flags'
 import * as schedules from '@/server/services/scheduled-changes'
 
 export const listScheduledChanges = createServerFn({ method: 'GET' })
-  .inputValidator(listScheduledChangesSchema)
+  .validator(listScheduledChangesSchema)
   .handler(async ({ data }) =>
     schedules.listScheduledChanges(
       await projectActor(data.projectId, { schedule: ['read'] }),
@@ -22,7 +22,7 @@ export const listScheduledChanges = createServerFn({ method: 'GET' })
 
 /** Needs `schedule:create` plus what applying the change needs (`flag:toggle` or `flag:update`). */
 export const createScheduledChange = createServerFn({ method: 'POST' })
-  .inputValidator(createScheduledChangeSchema)
+  .validator(createScheduledChangeSchema)
   .handler(async ({ data }) =>
     schedules.createScheduledChange(
       await projectActor(data.projectId, {
@@ -34,7 +34,7 @@ export const createScheduledChange = createServerFn({ method: 'POST' })
   )
 
 export const createStagedRollout = createServerFn({ method: 'POST' })
-  .inputValidator(createStagedRolloutSchema)
+  .validator(createStagedRolloutSchema)
   .handler(async ({ data }) =>
     schedules.createStagedRollout(
       await projectActor(data.projectId, { schedule: ['create'], flag: ['update'] }),
@@ -43,7 +43,7 @@ export const createStagedRollout = createServerFn({ method: 'POST' })
   )
 
 export const updateScheduledChange = createServerFn({ method: 'POST' })
-  .inputValidator(updateScheduledChangeSchema)
+  .validator(updateScheduledChangeSchema)
   .handler(async ({ data }) =>
     schedules.updateScheduledChange(
       await projectActor(data.projectId, {
@@ -55,7 +55,7 @@ export const updateScheduledChange = createServerFn({ method: 'POST' })
   )
 
 export const cancelScheduledChange = createServerFn({ method: 'POST' })
-  .inputValidator(scheduledChangeRefSchema)
+  .validator(scheduledChangeRefSchema)
   .handler(async ({ data }) =>
     schedules.cancelScheduledChange(
       await projectActor(data.projectId, { schedule: ['delete'] }),
@@ -64,7 +64,7 @@ export const cancelScheduledChange = createServerFn({ method: 'POST' })
   )
 
 export const cancelPlan = createServerFn({ method: 'POST' })
-  .inputValidator(scheduledPlanRefSchema)
+  .validator(scheduledPlanRefSchema)
   .handler(async ({ data }) =>
     schedules.cancelPlan(await projectActor(data.projectId, { schedule: ['delete'] }), data),
   )

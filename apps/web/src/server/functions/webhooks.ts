@@ -11,13 +11,13 @@ import {
 import * as webhooks from '@/server/services/webhooks'
 
 export const listWebhooks = createServerFn({ method: 'GET' })
-  .inputValidator(listWebhooksSchema)
+  .validator(listWebhooksSchema)
   .handler(async ({ data }) =>
     webhooks.listWebhooks(await projectActor(data.projectId, { webhook: ['read'] }), data),
   )
 
 export const getWebhook = createServerFn({ method: 'GET' })
-  .inputValidator(webhookRefSchema)
+  .validator(webhookRefSchema)
   .handler(async ({ data }) =>
     webhooks.getWebhook(await projectActor(data.projectId, { webhook: ['read'] }), data),
   )
@@ -29,43 +29,43 @@ export const listWebhookEventTypes = createServerFn({ method: 'GET' }).handler(
 
 /** Returns the full secret; it is not shown again. */
 export const createWebhook = createServerFn({ method: 'POST' })
-  .inputValidator(createWebhookSchema)
+  .validator(createWebhookSchema)
   .handler(async ({ data }) =>
     webhooks.createWebhook(await projectActor(data.projectId, { webhook: ['create'] }), data),
   )
 
 export const updateWebhook = createServerFn({ method: 'POST' })
-  .inputValidator(updateWebhookSchema)
+  .validator(updateWebhookSchema)
   .handler(async ({ data }) =>
     webhooks.updateWebhook(await projectActor(data.projectId, { webhook: ['update'] }), data),
   )
 
 export const rotateWebhookSecret = createServerFn({ method: 'POST' })
-  .inputValidator(webhookRefSchema)
+  .validator(webhookRefSchema)
   .handler(async ({ data }) =>
     webhooks.rotateSecret(await projectActor(data.projectId, { webhook: ['update'] }), data),
   )
 
 export const deleteWebhook = createServerFn({ method: 'POST' })
-  .inputValidator(webhookRefSchema)
+  .validator(webhookRefSchema)
   .handler(async ({ data }) =>
     webhooks.deleteWebhook(await projectActor(data.projectId, { webhook: ['delete'] }), data),
   )
 
 export const listWebhookDeliveries = createServerFn({ method: 'GET' })
-  .inputValidator(listWebhookDeliveriesSchema)
+  .validator(listWebhookDeliveriesSchema)
   .handler(async ({ data }) =>
     webhooks.listDeliveries(await projectActor(data.projectId, { webhook: ['read'] }), data),
   )
 
 export const redeliverWebhook = createServerFn({ method: 'POST' })
-  .inputValidator(redeliverWebhookSchema)
+  .validator(redeliverWebhookSchema)
   .handler(async ({ data }) =>
     webhooks.redeliver(await projectActor(data.projectId, { webhook: ['update'] }), data),
   )
 
 export const sendTestWebhook = createServerFn({ method: 'POST' })
-  .inputValidator(webhookRefSchema)
+  .validator(webhookRefSchema)
   .handler(async ({ data }) =>
     webhooks.sendTestWebhook(await projectActor(data.projectId, { webhook: ['update'] }), data),
   )

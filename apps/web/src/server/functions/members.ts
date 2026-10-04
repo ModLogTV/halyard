@@ -12,19 +12,19 @@ import {
 import * as members from '@/server/services/members'
 
 export const listMembers = createServerFn({ method: 'GET' })
-  .inputValidator(listMembersSchema)
+  .validator(listMembersSchema)
   .handler(async ({ data }) =>
     members.listMembers(await projectActor(data.projectId, { project: ['read'] }), data),
   )
 
 export const inviteMember = createServerFn({ method: 'POST' })
-  .inputValidator(inviteMemberSchema)
+  .validator(inviteMemberSchema)
   .handler(async ({ data }) =>
     members.inviteMember(await projectActor(data.projectId, { invitation: ['create'] }), data),
   )
 
 export const cancelInvitation = createServerFn({ method: 'POST' })
-  .inputValidator(cancelInvitationSchema)
+  .validator(cancelInvitationSchema)
   .handler(async ({ data }) =>
     members.cancelInvitation(await projectActor(data.projectId, { invitation: ['cancel'] }), data),
   )
@@ -35,25 +35,25 @@ export const listMyInvitations = createServerFn({ method: 'GET' }).handler(async
 )
 
 export const acceptInvitation = createServerFn({ method: 'POST' })
-  .inputValidator(invitationRefSchema)
+  .validator(invitationRefSchema)
   .handler(async ({ data }) => members.acceptInvitation(await userActor(), data))
 
 export const rejectInvitation = createServerFn({ method: 'POST' })
-  .inputValidator(invitationRefSchema)
+  .validator(invitationRefSchema)
   .handler(async ({ data }) => members.rejectInvitation(await userActor(), data))
 
 export const updateMemberRole = createServerFn({ method: 'POST' })
-  .inputValidator(updateMemberRoleSchema)
+  .validator(updateMemberRoleSchema)
   .handler(async ({ data }) =>
     members.updateMemberRole(await projectActor(data.projectId, { member: ['update'] }), data),
   )
 
 export const removeMember = createServerFn({ method: 'POST' })
-  .inputValidator(removeMemberSchema)
+  .validator(removeMemberSchema)
   .handler(async ({ data }) =>
     members.removeMember(await projectActor(data.projectId, { member: ['delete'] }), data),
   )
 
 export const leaveProject = createServerFn({ method: 'POST' })
-  .inputValidator(leaveProjectSchema)
+  .validator(leaveProjectSchema)
   .handler(async ({ data }) => members.leaveProject(await projectActor(data.projectId), data))

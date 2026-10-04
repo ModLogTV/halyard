@@ -15,7 +15,7 @@ async function requireAdmin() {
 const userIdSchema = z.object({ userId: z.string().min(1) })
 
 export const listUsers = createServerFn({ method: 'GET' })
-  .inputValidator(
+  .validator(
     z.object({
       search: z.string().trim().max(200).optional(),
       limit: z.number().int().min(1).max(200).optional(),
@@ -53,7 +53,7 @@ export const listUsers = createServerFn({ method: 'GET' })
 export type AdminUser = Awaited<ReturnType<typeof listUsers>>['users'][number]
 
 export const setUserRole = createServerFn({ method: 'POST' })
-  .inputValidator(userIdSchema.extend({ role: z.enum(['admin', 'user']) }))
+  .validator(userIdSchema.extend({ role: z.enum(['admin', 'user']) }))
   .handler(async ({ data }) => {
     const actor = await requireAdmin()
     if (data.userId === actor.userId && data.role !== 'admin') {
@@ -67,7 +67,7 @@ export const setUserRole = createServerFn({ method: 'POST' })
   })
 
 export const banUser = createServerFn({ method: 'POST' })
-  .inputValidator(userIdSchema.extend({ reason: z.string().trim().max(500).optional() }))
+  .validator(userIdSchema.extend({ reason: z.string().trim().max(500).optional() }))
   .handler(async ({ data }) => {
     const actor = await requireAdmin()
     if (data.userId === actor.userId) throw badRequest('You cannot ban yourself')
@@ -79,7 +79,7 @@ export const banUser = createServerFn({ method: 'POST' })
   })
 
 export const unbanUser = createServerFn({ method: 'POST' })
-  .inputValidator(userIdSchema)
+  .validator(userIdSchema)
   .handler(async ({ data }) => {
     await requireAdmin()
     await auth.api.unbanUser({ headers: getRequestHeaders(), body: { userId: data.userId } })
@@ -87,7 +87,7 @@ export const unbanUser = createServerFn({ method: 'POST' })
   })
 
 export const removeUser = createServerFn({ method: 'POST' })
-  .inputValidator(userIdSchema)
+  .validator(userIdSchema)
   .handler(async ({ data }) => {
     const actor = await requireAdmin()
     if (data.userId === actor.userId) throw badRequest('You cannot delete your own account')

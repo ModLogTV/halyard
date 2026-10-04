@@ -67,7 +67,7 @@ export interface PlaygroundResult {
  * metrics, evaluation stats or experiment exposures.
  */
 export const evaluatePlayground = createServerFn({ method: 'POST' })
-  .inputValidator(evaluatePlaygroundSchema)
+  .validator(evaluatePlaygroundSchema)
   .handler(async ({ data }): Promise<PlaygroundResult> => {
     const actor = await projectActor(data.projectId, { playground: ['use'] })
     const environments = await listEnvironments(actor, { projectId: data.projectId })

@@ -10,7 +10,7 @@ import {
 import * as environments from '@/server/services/environments'
 
 export const listEnvironments = createServerFn({ method: 'GET' })
-  .inputValidator(listEnvironmentsSchema)
+  .validator(listEnvironmentsSchema)
   .handler(async ({ data }) =>
     environments.listEnvironments(
       await projectActor(data.projectId, { environment: ['read'] }),
@@ -19,7 +19,7 @@ export const listEnvironments = createServerFn({ method: 'GET' })
   )
 
 export const createEnvironment = createServerFn({ method: 'POST' })
-  .inputValidator(createEnvironmentSchema)
+  .validator(createEnvironmentSchema)
   .handler(async ({ data }) =>
     environments.createEnvironment(
       await projectActor(data.projectId, { environment: ['create'] }),
@@ -28,7 +28,7 @@ export const createEnvironment = createServerFn({ method: 'POST' })
   )
 
 export const updateEnvironment = createServerFn({ method: 'POST' })
-  .inputValidator(updateEnvironmentSchema)
+  .validator(updateEnvironmentSchema)
   .handler(async ({ data }) =>
     environments.updateEnvironment(
       await projectActor(data.projectId, { environment: ['update'] }),
@@ -37,7 +37,7 @@ export const updateEnvironment = createServerFn({ method: 'POST' })
   )
 
 export const deleteEnvironment = createServerFn({ method: 'POST' })
-  .inputValidator(deleteEnvironmentSchema)
+  .validator(deleteEnvironmentSchema)
   .handler(async ({ data }) =>
     environments.deleteEnvironment(
       await projectActor(data.projectId, { environment: ['delete'] }),
@@ -46,7 +46,7 @@ export const deleteEnvironment = createServerFn({ method: 'POST' })
   )
 
 export const reorderEnvironments = createServerFn({ method: 'POST' })
-  .inputValidator(reorderEnvironmentsSchema)
+  .validator(reorderEnvironmentsSchema)
   .handler(async ({ data }) =>
     environments.reorderEnvironments(
       await projectActor(data.projectId, { environment: ['update'] }),

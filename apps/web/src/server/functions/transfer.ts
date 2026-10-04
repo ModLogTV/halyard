@@ -8,25 +8,25 @@ import {
 import * as transfer from '@/server/services/transfer'
 
 export const exportProject = createServerFn({ method: 'POST' })
-  .inputValidator(exportProjectSchema)
+  .validator(exportProjectSchema)
   .handler(async ({ data }) =>
     transfer.exportProject(await projectActor(data.projectId, { transfer: ['export'] }), data),
   )
 
 export const exportFlagd = createServerFn({ method: 'POST' })
-  .inputValidator(exportFlagdSchema)
+  .validator(exportFlagdSchema)
   .handler(async ({ data }) =>
     transfer.exportFlagd(await projectActor(data.projectId, { transfer: ['export'] }), data),
   )
 
 export const previewImport = createServerFn({ method: 'POST' })
-  .inputValidator(importDocumentSchema)
+  .validator(importDocumentSchema)
   .handler(async ({ data }) =>
     transfer.previewImport(await projectActor(data.projectId, { transfer: ['import'] }), data),
   )
 
 export const applyImport = createServerFn({ method: 'POST' })
-  .inputValidator(importDocumentSchema)
+  .validator(importDocumentSchema)
   .handler(async ({ data }) =>
     transfer.applyImport(await projectActor(data.projectId, { transfer: ['import'] }), data),
   )

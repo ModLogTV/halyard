@@ -15,25 +15,25 @@ export const listProjects = createServerFn({ method: 'GET' }).handler(async () =
 })
 
 export const createProject = createServerFn({ method: 'POST' })
-  .inputValidator(createProjectSchema)
+  .validator(createProjectSchema)
   .handler(async ({ data }) => projects.createProject(await userActor(), data))
 
 /** A project with its environments and the caller's role in it. */
 export const getProject = createServerFn({ method: 'GET' })
-  .inputValidator(getProjectSchema)
+  .validator(getProjectSchema)
   .handler(async ({ data }) => {
     const { actor, project } = await projects.requireProjectBySlug(data.slug, { project: ['read'] })
     return { ...project, role: actor.role }
   })
 
 export const updateProject = createServerFn({ method: 'POST' })
-  .inputValidator(updateProjectSchema)
+  .validator(updateProjectSchema)
   .handler(async ({ data }) =>
     projects.updateProject(await projectActor(data.projectId, { project: ['update'] }), data),
   )
 
 export const deleteProject = createServerFn({ method: 'POST' })
-  .inputValidator(deleteProjectSchema)
+  .validator(deleteProjectSchema)
   .handler(async ({ data }) =>
     projects.deleteProject(await projectActor(data.projectId, { project: ['delete'] }), data),
   )

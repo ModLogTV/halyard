@@ -9,27 +9,27 @@ import {
 import * as apiKeys from '@/server/services/api-keys'
 
 export const listApiKeys = createServerFn({ method: 'GET' })
-  .inputValidator(listApiKeysSchema)
+  .validator(listApiKeysSchema)
   .handler(async ({ data }) =>
     apiKeys.listApiKeys(await projectActor(data.projectId, { apiKey: ['read'] }), data),
   )
 
 /** Returns `{ id, key, start }`; the plaintext key is shown once. */
 export const createSdkKey = createServerFn({ method: 'POST' })
-  .inputValidator(createSdkKeySchema)
+  .validator(createSdkKeySchema)
   .handler(async ({ data }) =>
     apiKeys.createSdkKey(await projectActor(data.projectId, { apiKey: ['create'] }), data),
   )
 
 /** Returns `{ id, key, start }`; the plaintext key is shown once. */
 export const createManagementKey = createServerFn({ method: 'POST' })
-  .inputValidator(createManagementKeySchema)
+  .validator(createManagementKeySchema)
   .handler(async ({ data }) =>
     apiKeys.createManagementKey(await projectActor(data.projectId, { apiKey: ['create'] }), data),
   )
 
 export const revokeApiKey = createServerFn({ method: 'POST' })
-  .inputValidator(revokeApiKeySchema)
+  .validator(revokeApiKeySchema)
   .handler(async ({ data }) =>
     apiKeys.revokeApiKey(await projectActor(data.projectId, { apiKey: ['delete'] }), data),
   )
