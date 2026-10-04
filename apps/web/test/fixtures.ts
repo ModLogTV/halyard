@@ -5,7 +5,7 @@ import type {
   Rule,
   Serve,
   Variant,
-} from '@halyard/engine'
+} from '@modlogtv/halyard-engine'
 import { sql } from 'drizzle-orm'
 import { db } from '@/db'
 import {

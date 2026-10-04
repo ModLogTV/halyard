@@ -7,7 +7,7 @@ import type {
   Rule,
   Serve,
   Variant,
-} from '@halyard/engine'
+} from '@modlogtv/halyard-engine'
 import { relations, sql } from 'drizzle-orm'
 import {
   bigint,

@@ -1,7 +1,7 @@
 # Flag editing components
 
 Controlled, server-agnostic components for editing flags. Import from `@/components/flags`.
-Data types come from `@halyard/engine`. Nothing here calls the server; the parent owns state
+Data types come from `@modlogtv/halyard-engine`. Nothing here calls the server; the parent owns state
 and persistence. Components that use tooltips bring their own `TooltipProvider`.
 
 Shared shapes: `SegmentOption = { key: string; name: string }`, and `EnvironmentLike` from

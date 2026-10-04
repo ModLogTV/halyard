@@ -1,9 +1,9 @@
-import { OPERATORS, type Operator } from '@halyard/engine'
+import { OPERATORS, type Operator } from '@modlogtv/halyard-engine'
 import { z } from 'zod'
 
 export const PROJECT_SLUG_PATTERN = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/
 export const ENVIRONMENT_KEY_PATTERN = /^[a-z0-9][a-z0-9-_]*$/
-/** Flag, segment, variant and experiment keys. Mirrors `KEY_PATTERN` in `@halyard/engine`. */
+/** Flag, segment, variant and experiment keys. Mirrors `KEY_PATTERN` in `@modlogtv/halyard-engine`. */
 export const ENTITY_KEY_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9._-]*$/
 export const HEX_COLOR_PATTERN = /^#[0-9a-fA-F]{6}$/
 

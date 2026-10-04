@@ -20,7 +20,7 @@ so every OpenFeature SDK can talk to it without a vendor SDK.
   time, or step a percentage up on a schedule. Runs exactly once with several replicas.
 - **Stale flag detection, audit log, webhooks, Prometheus metrics.**
 - **OFREP, local evaluation, CLI.** Single and bulk evaluation with ETags, a downloadable ruleset
-  that the published `@halyard/engine` evaluates locally, and a CLI that generates TypeScript
+  that the published `@modlogtv/halyard-engine` evaluates locally, and a CLI that generates TypeScript
   types from your flags and imports/exports projects (JSON and flagd).
 
 ## Quick start
@@ -73,8 +73,8 @@ The repository is a Bun workspace orchestrated with [Turborepo](https://turborep
 | Path | Purpose |
 | --- | --- |
 | `apps/web` | TanStack Start application: UI, server functions, OFREP and REST endpoints, background workers |
-| `packages/engine` | `@halyard/engine`: pure, dependency-free evaluation engine ([README](packages/engine/README.md)) |
-| `packages/cli` | `@halyard/cli`: type generation, import and export ([docs](docs/cli.md)) |
+| `packages/engine` | `@modlogtv/halyard-engine`: pure, dependency-free evaluation engine ([README](packages/engine/README.md)) |
+| `packages/cli` | `@modlogtv/halyard-cli`: type generation, import and export ([docs](docs/cli.md)) |
 | `deploy/helm/halyard` | Helm chart ([deployment guide](docs/deployment.md)) |
 | `docs` | Architecture, deployment, experiments, webhooks, scheduled changes, import/export, REST API |
 
@@ -88,7 +88,7 @@ bun run lint         # Biome
 
 ## How it works
 
-- **Evaluation** happens in `@halyard/engine`, a pure function from (flag definition, environment
+- **Evaluation** happens in `@modlogtv/halyard-engine`, a pure function from (flag definition, environment
   configuration, segments, context) to a value with a reason. The server keeps one ruleset per
   environment in memory, invalidated through Postgres `LISTEN`/`NOTIFY` on every write, so
   evaluation does not touch the database per request. Evaluation stats and experiment exposures

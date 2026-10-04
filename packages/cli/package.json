@@ -1,16 +1,30 @@
 {
-  "name": "@halyard/cli",
-  "version": "0.1.0",
+  "name": "@modlogtv/halyard-cli",
+  "version": "0.0.0",
   "description": "Command line interface for Halyard: generate TypeScript types from your flags, import and export projects.",
   "license": "MIT",
+  "author": "modlog",
+  "homepage": "https://github.com/RedEagle-dh/halyard/tree/main/packages/cli#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RedEagle-dh/halyard.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/RedEagle-dh/halyard/issues"
+  },
   "type": "module",
   "bin": {
-    "halyard": "./dist/cli.js"
+    "halyard": "dist/cli.js"
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json && node -e \"require('fs').chmodSync('dist/cli.js', 0o755)\"",
     "typecheck": "tsc -p tsconfig.json --noEmit",
@@ -19,15 +33,12 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@halyard/engine": "workspace:*"
+    "@modlogtv/halyard-engine": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
     "typescript": "^5.9.3",
     "vitest": "^5.0.3"
-  },
-  "engines": {
-    "node": ">=20"
   },
   "keywords": [
     "feature-flags",
@@ -35,5 +46,9 @@
     "halyard",
     "cli",
     "typescript"
-  ]
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
 }

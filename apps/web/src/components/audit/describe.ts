@@ -1,4 +1,4 @@
-import type { JsonValue } from '@halyard/engine'
+import type { JsonValue } from '@modlogtv/halyard-engine'
 
 export interface AuditEntryLike {
   id: string

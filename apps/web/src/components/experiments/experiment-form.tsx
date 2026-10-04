@@ -1,4 +1,4 @@
-import { isValidKey, type RolloutVariation } from '@halyard/engine'
+import { isValidKey, type RolloutVariation } from '@modlogtv/halyard-engine'
 import { TriangleAlertIcon } from 'lucide-react'
 import { type FormEvent, type ReactNode, useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'

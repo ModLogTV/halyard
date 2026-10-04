@@ -1,4 +1,4 @@
-import type { FlagType, JsonValue, Variant } from '@halyard/engine'
+import type { FlagType, JsonValue, Variant } from '@modlogtv/halyard-engine'
 import { useTranslation } from 'react-i18next'
 import {
   Select,

@@ -1,4 +1,4 @@
-import type { AttributeCondition } from '@halyard/engine'
+import type { AttributeCondition } from '@modlogtv/halyard-engine'
 import { PlusIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { ConditionRow } from '@/components/flags/condition-row'

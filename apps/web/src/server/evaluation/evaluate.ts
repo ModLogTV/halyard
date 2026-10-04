@@ -4,7 +4,7 @@ import {
   type EvaluationDetails,
   type Evaluator,
   type Ruleset,
-} from '@halyard/engine'
+} from '@modlogtv/halyard-engine'
 import { type CachedRuleset, getRuleset } from '@/server/cache/ruleset-cache'
 import { observeEvaluation } from './metrics'
 import { recordEvaluation, recordExposure } from './tracking'

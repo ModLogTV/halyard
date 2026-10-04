@@ -1,5 +1,5 @@
-import type { FlagType, Variant } from '@halyard/engine'
-import { validateFlagDefinition } from '@halyard/engine'
+import type { FlagType, Variant } from '@modlogtv/halyard-engine'
+import { validateFlagDefinition } from '@modlogtv/halyard-engine'
 import { createFileRoute, getRouteApi, Link, useNavigate, useRouter } from '@tanstack/react-router'
 import { ArrowLeftIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'

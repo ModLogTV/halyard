@@ -1,4 +1,4 @@
-import type { JsonValue } from '@halyard/engine'
+import type { JsonValue } from '@modlogtv/halyard-engine'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 

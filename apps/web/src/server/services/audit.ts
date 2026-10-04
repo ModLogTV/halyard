@@ -1,4 +1,4 @@
-import type { JsonValue } from '@halyard/engine'
+import type { JsonValue } from '@modlogtv/halyard-engine'
 import type { DbOrTx } from '@/db'
 import { auditLog } from '@/db/schema'
 import { enqueueWebhookDeliveries } from './webhook-queue'

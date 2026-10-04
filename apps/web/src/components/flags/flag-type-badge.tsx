@@ -1,4 +1,4 @@
-import type { FlagType } from '@halyard/engine'
+import type { FlagType } from '@modlogtv/halyard-engine'
 import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'

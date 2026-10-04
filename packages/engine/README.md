@@ -1,4 +1,4 @@
-# @halyard/engine
+# @modlogtv/halyard-engine
 
 The feature flag evaluation engine of [Halyard](../../README.md), the self-hosted feature flag platform.
 
@@ -15,14 +15,14 @@ UI playground and in any client that downloads a ruleset and evaluates flags loc
 ## Install
 
 ```sh
-bun add @halyard/engine
-# or: npm install @halyard/engine
+bun add @modlogtv/halyard-engine
+# or: npm install @modlogtv/halyard-engine
 ```
 
 ## Usage
 
 ```ts
-import { createEvaluator, evaluateFlag, type Ruleset } from '@halyard/engine'
+import { createEvaluator, evaluateFlag, type Ruleset } from '@modlogtv/halyard-engine'
 
 // 1. Evaluate a single flag.
 const details = evaluateFlag({
@@ -72,7 +72,7 @@ Validation helpers reject bad configurations before they are saved. Each returns
 readable problems; an empty list means valid:
 
 ```ts
-import { validateEnvironmentConfig, validateFlagDefinition, validateSegment } from '@halyard/engine'
+import { validateEnvironmentConfig, validateFlagDefinition, validateSegment } from '@modlogtv/halyard-engine'
 
 validateFlagDefinition(flag) // ['Variant "on": value must be a boolean (true or false) for a boolean flag']
 validateEnvironmentConfig(flag, config, ['beta-testers']) // segment keys that exist

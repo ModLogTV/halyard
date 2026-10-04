@@ -1,4 +1,4 @@
-import { type FlagType, type Serve, type Variant, WEIGHT_TOLERANCE } from '@halyard/engine'
+import { type FlagType, type Serve, type Variant, WEIGHT_TOLERANCE } from '@modlogtv/halyard-engine'
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { TriangleAlertIcon } from 'lucide-react'
 import { type FormEvent, useEffect, useMemo, useState } from 'react'

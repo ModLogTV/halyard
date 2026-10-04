@@ -1,4 +1,4 @@
-import { isValidKey, type RolloutVariation, validateRolloutWeights } from '@halyard/engine'
+import { isValidKey, type RolloutVariation, validateRolloutWeights } from '@modlogtv/halyard-engine'
 import { and, desc, eq, type SQL, sql } from 'drizzle-orm'
 import { type DbOrTx, db } from '@/db'
 import {

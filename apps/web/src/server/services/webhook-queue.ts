@@ -1,4 +1,4 @@
-import type { JsonValue } from '@halyard/engine'
+import type { JsonValue } from '@modlogtv/halyard-engine'
 import { and, eq } from 'drizzle-orm'
 import type { DbOrTx } from '@/db'
 import { environments, organization, webhookDeliveries, webhooks } from '@/db/schema'

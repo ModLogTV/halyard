@@ -1,4 +1,4 @@
-import type { FlagType } from '@halyard/engine'
+import type { FlagType } from '@modlogtv/halyard-engine'
 import { CheckIcon, ChevronsUpDownIcon, ListIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'

@@ -1,4 +1,4 @@
-import { type Serve, validateEnvironmentConfig } from '@halyard/engine'
+import { type Serve, validateEnvironmentConfig } from '@modlogtv/halyard-engine'
 import { and, asc, eq, inArray, notInArray, type SQL } from 'drizzle-orm'
 import { type DbOrTx, db, type Transaction } from '@/db'
 import {

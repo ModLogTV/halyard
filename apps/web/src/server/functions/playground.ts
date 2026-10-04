@@ -6,7 +6,7 @@ import type {
   RolloutVariation,
   Serve,
   Variant,
-} from '@halyard/engine'
+} from '@modlogtv/halyard-engine'
 import { createServerFn } from '@tanstack/react-start'
 import { and, eq, inArray } from 'drizzle-orm'
 import { z } from 'zod'

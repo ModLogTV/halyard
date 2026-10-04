@@ -5,7 +5,7 @@ import type {
   Rule,
   Serve,
   Variant,
-} from '@halyard/engine'
+} from '@modlogtv/halyard-engine'
 import type { TFunction } from 'i18next'
 import type { EnvironmentLike } from '@/components/env/env-badge'
 import { formatPercent } from '@/lib/format'

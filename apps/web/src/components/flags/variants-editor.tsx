@@ -1,5 +1,5 @@
-import type { FlagType, JsonValue, Variant } from '@halyard/engine'
-import { isValidKey, validateFlagDefinition } from '@halyard/engine'
+import type { FlagType, JsonValue, Variant } from '@modlogtv/halyard-engine'
+import { isValidKey, validateFlagDefinition } from '@modlogtv/halyard-engine'
 import { CircleAlertIcon, PlusIcon, Trash2Icon } from 'lucide-react'
 import { AnimatePresence, MotionConfig, motion } from 'motion/react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'

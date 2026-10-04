@@ -1,4 +1,4 @@
-import { validateSegment } from '@halyard/engine'
+import { validateSegment } from '@modlogtv/halyard-engine'
 import {
   createFileRoute,
   getRouteApi,

@@ -1,4 +1,10 @@
-import type { FlagEnvironmentConfig, FlagType, Rule, Serve, Variant } from '@halyard/engine'
+import type {
+  FlagEnvironmentConfig,
+  FlagType,
+  Rule,
+  Serve,
+  Variant,
+} from '@modlogtv/halyard-engine'
 import { badRequest } from '@/server/errors'
 
 /** The stored, evaluation-relevant part of a flag in one environment. */

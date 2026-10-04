@@ -1,4 +1,4 @@
-import type { AttributeCondition, JsonValue } from '@halyard/engine'
+import type { AttributeCondition, JsonValue } from '@modlogtv/halyard-engine'
 import { OPERATOR_KEYS, type OperatorKey } from '@/components/flags/operators'
 
 const MAX_LIST_ITEMS = 4

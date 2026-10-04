@@ -1,4 +1,4 @@
-import type { JsonValue } from '@halyard/engine'
+import type { JsonValue } from '@modlogtv/halyard-engine'
 import { createFileRoute, getRouteApi, Link, useNavigate } from '@tanstack/react-router'
 import { PlayIcon } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'

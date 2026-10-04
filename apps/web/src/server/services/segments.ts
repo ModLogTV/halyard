@@ -1,4 +1,4 @@
-import { type Segment, validateSegment } from '@halyard/engine'
+import { type Segment, validateSegment } from '@modlogtv/halyard-engine'
 import { and, asc, eq, sql } from 'drizzle-orm'
 import { type DbOrTx, db } from '@/db'
 import { segments } from '@/db/schema'

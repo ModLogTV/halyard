@@ -5,7 +5,7 @@ import {
   type JsonValue,
   type OfrepReason,
   reasonToOfrep,
-} from '@halyard/engine'
+} from '@modlogtv/halyard-engine'
 import { authenticateSdkKey } from '@/server/auth/api-key'
 import { getRuleset } from '@/server/cache/ruleset-cache'
 import { errorResponse, HttpError, unauthorized } from '@/server/errors'
@@ -289,7 +289,7 @@ export function handleConfiguration(request: Request): Promise<Response> {
 
 /**
  * `GET /api/v1/ruleset`: the environment's full ruleset for local evaluation with
- * `@halyard/engine`. The ETag is the ruleset content tag, marked weak because the
+ * `@modlogtv/halyard-engine`. The ETag is the ruleset content tag, marked weak because the
  * body's `generatedAt` differs between cache loads.
  *
  * Deliberately sent without CORS headers: the ruleset exposes every rule and segment

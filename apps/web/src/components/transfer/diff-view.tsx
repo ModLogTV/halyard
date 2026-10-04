@@ -1,4 +1,4 @@
-import type { JsonValue } from '@halyard/engine'
+import type { JsonValue } from '@modlogtv/halyard-engine'
 import type { TFunction } from 'i18next'
 import { ChevronsUpDownIcon } from 'lucide-react'
 import type { ReactNode } from 'react'

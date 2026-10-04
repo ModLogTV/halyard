@@ -1,4 +1,4 @@
-import type { Variant } from '@halyard/engine'
+import type { Variant } from '@modlogtv/halyard-engine'
 import { PlusIcon, Trash2Icon } from 'lucide-react'
 import { AnimatePresence, MotionConfig, motion } from 'motion/react'
 import { useTranslation } from 'react-i18next'

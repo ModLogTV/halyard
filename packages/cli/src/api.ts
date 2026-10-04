@@ -1,4 +1,4 @@
-import type { FlagEnvironmentConfig, FlagType, JsonValue, Variant } from '@halyard/engine'
+import type { FlagEnvironmentConfig, FlagType, JsonValue, Variant } from '@modlogtv/halyard-engine'
 import { CliError, ExitCode } from './errors.js'
 
 // ---------------------------------------------------------------------------

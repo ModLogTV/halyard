@@ -1,5 +1,10 @@
 import { createHash } from 'node:crypto'
-import type { FlagDefinition, FlagEnvironmentConfig, Ruleset, Segment } from '@halyard/engine'
+import type {
+  FlagDefinition,
+  FlagEnvironmentConfig,
+  Ruleset,
+  Segment,
+} from '@modlogtv/halyard-engine'
 import { and, eq, isNull } from 'drizzle-orm'
 import { db } from '@/db'
 import {

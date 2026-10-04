@@ -4,7 +4,7 @@ import {
   validateEnvironmentConfig,
   validateFlagDefinition,
   validateSegment,
-} from '@halyard/engine'
+} from '@modlogtv/halyard-engine'
 import {
   defaultEnvironmentConfig,
   findVariantReferences,

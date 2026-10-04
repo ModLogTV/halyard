@@ -1,4 +1,4 @@
-import type { EvaluationContext, JsonValue } from '@halyard/engine'
+import type { EvaluationContext, JsonValue } from '@modlogtv/halyard-engine'
 
 export type AttributeType = 'string' | 'number' | 'boolean' | 'json'
 

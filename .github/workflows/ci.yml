@@ -51,3 +51,5 @@ jobs:
         run: bun run typecheck
       - name: Test
         run: bun run test
+      - name: Test release tooling
+        run: bun run test:tooling

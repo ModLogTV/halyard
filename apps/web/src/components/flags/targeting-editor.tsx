@@ -1,5 +1,5 @@
-import type { FlagDefinition, FlagEnvironmentConfig, Rule } from '@halyard/engine'
-import { validateEnvironmentConfig } from '@halyard/engine'
+import type { FlagDefinition, FlagEnvironmentConfig, Rule } from '@modlogtv/halyard-engine'
+import { validateEnvironmentConfig } from '@modlogtv/halyard-engine'
 import { CircleAlertIcon, PlusIcon } from 'lucide-react'
 import { AnimatePresence, MotionConfig, motion } from 'motion/react'
 import { type ReactNode, useId, useMemo } from 'react'

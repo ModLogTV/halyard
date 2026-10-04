@@ -1,4 +1,4 @@
-import type { JsonValue, Operator } from '@halyard/engine'
+import type { JsonValue, Operator } from '@modlogtv/halyard-engine'
 
 /** Translation key segment (under `flags:conditions.operators`) for every engine operator. */
 export const OPERATOR_KEYS = {

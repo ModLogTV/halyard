@@ -1,8 +1,18 @@
 {
-  "name": "@halyard/engine",
-  "version": "0.1.0",
+  "name": "@modlogtv/halyard-engine",
+  "version": "0.0.0",
   "description": "Pure, dependency-free feature flag evaluation engine used by Halyard. Evaluate a flag configuration against an evaluation context and get a value with a reason.",
   "license": "MIT",
+  "author": "modlog",
+  "homepage": "https://github.com/RedEagle-dh/halyard/tree/main/packages/engine#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RedEagle-dh/halyard.git",
+    "directory": "packages/engine"
+  },
+  "bugs": {
+    "url": "https://github.com/RedEagle-dh/halyard/issues"
+  },
   "type": "module",
   "main": "./src/index.ts",
   "module": "./src/index.ts",
@@ -15,7 +25,8 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "sideEffects": false,
   "scripts": {
@@ -35,6 +46,8 @@
     "evaluation"
   ],
   "publishConfig": {
+    "access": "public",
+    "provenance": true,
     "main": "./dist/index.js",
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",

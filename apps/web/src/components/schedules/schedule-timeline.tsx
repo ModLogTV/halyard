@@ -1,4 +1,4 @@
-import type { FlagType, Variant } from '@halyard/engine'
+import type { FlagType, Variant } from '@modlogtv/halyard-engine'
 import { Link, useRouter } from '@tanstack/react-router'
 import {
   BanIcon,

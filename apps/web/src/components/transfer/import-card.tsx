@@ -1,4 +1,4 @@
-import type { JsonValue } from '@halyard/engine'
+import type { JsonValue } from '@modlogtv/halyard-engine'
 import { useRouter } from '@tanstack/react-router'
 import { CircleAlertIcon, EyeIcon, TriangleAlertIcon, UploadIcon } from 'lucide-react'
 import { useId, useState } from 'react'

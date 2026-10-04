@@ -1,4 +1,4 @@
-import type { Serve } from '@halyard/engine'
+import type { Serve } from '@modlogtv/halyard-engine'
 import { Link } from '@tanstack/react-router'
 import { createColumnHelper, tableFeatures, useTable } from '@tanstack/react-table'
 import { ArchiveIcon, BrushCleaningIcon } from 'lucide-react'

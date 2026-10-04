@@ -1,4 +1,4 @@
-import type { FlagType, RolloutVariation, Variant } from '@halyard/engine'
+import type { FlagType, RolloutVariation, Variant } from '@modlogtv/halyard-engine'
 import { useTranslation } from 'react-i18next'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { formatPercent, formatVariantValue } from '@/lib/format'

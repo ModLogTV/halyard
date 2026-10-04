@@ -1,4 +1,4 @@
-import type { FlagDefinition, FlagEnvironmentConfig, Variant } from '@halyard/engine'
+import type { FlagDefinition, FlagEnvironmentConfig, Variant } from '@modlogtv/halyard-engine'
 import {
   createFileRoute,
   getRouteApi,

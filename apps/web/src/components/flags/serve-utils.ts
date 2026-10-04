@@ -1,4 +1,4 @@
-import type { RolloutVariation, Serve, Variant } from '@halyard/engine'
+import type { RolloutVariation, Serve, Variant } from '@modlogtv/halyard-engine'
 
 type RolloutServe = Extract<Serve, { type: 'rollout' }>
 

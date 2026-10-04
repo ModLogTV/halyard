@@ -1,4 +1,4 @@
-import type { FlagType, JsonValue } from '@halyard/engine'
+import type { FlagType, JsonValue } from '@modlogtv/halyard-engine'
 
 const ELLIPSIS = '…'
 

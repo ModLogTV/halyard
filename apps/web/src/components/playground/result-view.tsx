@@ -1,4 +1,4 @@
-import type { ResolutionReason } from '@halyard/engine'
+import type { ResolutionReason } from '@modlogtv/halyard-engine'
 import type { TFunction } from 'i18next'
 import { ArrowLeftIcon, FlaskConicalIcon, TriangleAlertIcon } from 'lucide-react'
 import { MotionConfig, motion } from 'motion/react'

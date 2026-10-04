@@ -4,8 +4,8 @@ import type {
   JsonValue,
   Operator,
   SegmentCondition,
-} from '@halyard/engine'
-import { validateCondition } from '@halyard/engine'
+} from '@modlogtv/halyard-engine'
+import { validateCondition } from '@modlogtv/halyard-engine'
 import { MoreHorizontalIcon, Trash2Icon, UsersIcon, VariableIcon } from 'lucide-react'
 import { useId } from 'react'
 import { useTranslation } from 'react-i18next'

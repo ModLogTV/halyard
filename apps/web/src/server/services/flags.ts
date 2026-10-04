@@ -4,7 +4,7 @@ import {
   type Variant,
   validateEnvironmentConfig,
   validateFlagDefinition,
-} from '@halyard/engine'
+} from '@modlogtv/halyard-engine'
 import { and, arrayOverlaps, asc, eq, ilike, inArray, isNull, or, type SQL, sql } from 'drizzle-orm'
 import { db, type Transaction } from '@/db'
 import {

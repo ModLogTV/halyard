@@ -1,4 +1,4 @@
-import type { Serve, Variant } from '@halyard/engine'
+import type { Serve, Variant } from '@modlogtv/halyard-engine'
 import { ArrowRightIcon, RotateCwIcon } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'

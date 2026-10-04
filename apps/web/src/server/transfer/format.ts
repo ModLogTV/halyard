@@ -1,4 +1,4 @@
-import type { AttributeCondition, FlagType, Rule, Serve, Variant } from '@halyard/engine'
+import type { AttributeCondition, FlagType, Rule, Serve, Variant } from '@modlogtv/halyard-engine'
 import { asc, eq } from 'drizzle-orm'
 import { z } from 'zod'
 import { type DbOrTx, db } from '@/db'

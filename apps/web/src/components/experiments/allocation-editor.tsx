@@ -1,4 +1,4 @@
-import type { RolloutVariation } from '@halyard/engine'
+import type { RolloutVariation } from '@modlogtv/halyard-engine'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { evenSplit, RolloutBar, VariantValue } from '@/components/flags'

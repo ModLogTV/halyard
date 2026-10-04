@@ -1,4 +1,4 @@
-import type { FlagType, Variant } from '@halyard/engine'
+import type { FlagType, Variant } from '@modlogtv/halyard-engine'
 import { useTranslation } from 'react-i18next'
 import { RolloutBar } from '@/components/flags'
 import { cn } from '@/lib/utils'

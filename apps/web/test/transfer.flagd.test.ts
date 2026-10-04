@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import type { Condition, Rule, Serve } from '@halyard/engine'
+import type { Condition, Rule, Serve } from '@modlogtv/halyard-engine'
 import Ajv from 'ajv'
 import { describe, expect, it } from 'vitest'
 import { exportFlagd } from '@/server/transfer/flagd'

@@ -1,5 +1,5 @@
-import type { FlagType, RolloutVariation, Variant } from '@halyard/engine'
-import { WEIGHT_TOLERANCE } from '@halyard/engine'
+import type { FlagType, RolloutVariation, Variant } from '@modlogtv/halyard-engine'
+import { WEIGHT_TOLERANCE } from '@modlogtv/halyard-engine'
 import { sumWeights } from '@/components/flags'
 
 export type ExperimentStatus = 'draft' | 'running' | 'stopped'

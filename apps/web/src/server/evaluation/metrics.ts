@@ -1,4 +1,4 @@
-import type { EvaluationDetails } from '@halyard/engine'
+import type { EvaluationDetails } from '@modlogtv/halyard-engine'
 import { Counter, collectDefaultMetrics, Histogram, Registry } from 'prom-client'
 import { rulesetCacheStats } from '@/server/cache/ruleset-cache'
 

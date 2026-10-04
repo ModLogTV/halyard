@@ -20,11 +20,17 @@
     "db:generate": "turbo run db:generate",
     "db:migrate": "turbo run db:migrate",
     "db:seed": "turbo run db:seed",
-    "setup": "bun install && turbo run db:migrate db:seed --filter=@halyard/web"
+    "setup": "bun install && turbo run db:migrate db:seed --filter=@halyard/web",
+    "test:tooling": "bun test scripts",
+    "changeset": "changeset",
+    "version": "changeset version && bun install --lockfile-only",
+    "release": "turbo run build --filter=@modlogtv/halyard-engine --filter=@modlogtv/halyard-cli && bun run scripts/publish.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",
-    "typescript": "^5.9.3",
-    "turbo": "^2.8.0"
+    "@changesets/cli": "^3.0.3",
+    "@types/bun": "^1.4.2",
+    "turbo": "^2.8.0",
+    "typescript": "^5.9.3"
   }
 }

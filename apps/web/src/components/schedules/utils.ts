@@ -1,4 +1,4 @@
-import type { RolloutVariation, Serve, Variant } from '@halyard/engine'
+import type { RolloutVariation, Serve, Variant } from '@modlogtv/halyard-engine'
 import type { TFunction } from 'i18next'
 import { formatPercent, formatRelativeTime } from '@/lib/format'
 import type { ScheduledChangeItem } from '@/server/services/scheduled-changes'

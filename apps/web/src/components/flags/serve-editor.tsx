@@ -1,5 +1,5 @@
-import type { FlagDefinition, RolloutVariation, Serve } from '@halyard/engine'
-import { WEIGHT_TOLERANCE } from '@halyard/engine'
+import type { FlagDefinition, RolloutVariation, Serve } from '@modlogtv/halyard-engine'
+import { WEIGHT_TOLERANCE } from '@modlogtv/halyard-engine'
 import { CheckIcon, ChevronRightIcon, CircleAlertIcon } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'

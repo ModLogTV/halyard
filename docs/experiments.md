@@ -31,7 +31,7 @@ A running experiment applies to contexts that **match no targeting rule** of an 
 
 Every evaluation that is allocated by the experiment (OFREP single and bulk evaluation) and carries a `targetingKey` records an exposure. Exposures are stored once per subject (the first allocation wins) as the hex SHA-256 of the targeting key; the raw key is never stored. They are buffered in memory and written to Postgres every 5 seconds.
 
-Local evaluation with a downloaded ruleset (`/api/v1/ruleset` + `@halyard/engine`) does not record exposures.
+Local evaluation with a downloaded ruleset (`/api/v1/ruleset` + `@modlogtv/halyard-engine`) does not record exposures.
 
 ## Tracking conversions
 

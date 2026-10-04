@@ -1,4 +1,4 @@
-import { validateSegment } from '@halyard/engine'
+import { validateSegment } from '@modlogtv/halyard-engine'
 import { createFileRoute, getRouteApi, Link, useNavigate, useRouter } from '@tanstack/react-router'
 import { ArrowLeftIcon } from 'lucide-react'
 import { useState } from 'react'

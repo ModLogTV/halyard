@@ -4,7 +4,7 @@ import type {
   FlagDefinition,
   Rule,
   SegmentCondition,
-} from '@halyard/engine'
+} from '@modlogtv/halyard-engine'
 import {
   ArrowDownIcon,
   ArrowUpIcon,

@@ -5,8 +5,8 @@ Halyard is a Bun workspace with three packages, orchestrated with Turborepo (`tu
 | Package | Purpose |
 | --- | --- |
 | `apps/web` | TanStack Start application: the UI, server functions, OFREP and REST endpoints, background workers |
-| `packages/engine` | `@halyard/engine`, a pure evaluation engine with no dependencies |
-| `packages/cli` | `@halyard/cli`, type generation and import/export |
+| `packages/engine` | `@modlogtv/halyard-engine`, a pure evaluation engine with no dependencies |
+| `packages/cli` | `@modlogtv/halyard-cli`, type generation and import/export |
 
 ## Data model
 
@@ -21,7 +21,7 @@ The JSON shapes stored in `rules`, `fallthrough`, `variants` and `conditions` ar
 ```
 SDK key ──▶ authenticateSdkKey (60 s in-memory cache, invalidated on key changes)
         ──▶ getRuleset(environmentId) (in-memory cache, invalidated via events)
-        ──▶ @halyard/engine evaluate
+        ──▶ @modlogtv/halyard-engine evaluate
         ──▶ response; evaluation stats and exposures go to an in-memory buffer
             that is flushed to Postgres in batches
 ```
