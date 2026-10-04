@@ -576,7 +576,7 @@ function EnvironmentEditor({
             className="sticky bottom-4 z-10 mt-6"
           >
             <div
-              className={`flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-card p-3 shadow-lg env-rail ${environment.isProduction ? 'hazard-stripes' : ''}`}
+              className={`flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-card p-3 shadow-lg ${environment.isProduction ? 'hazard-stripes' : ''}`}
               style={envStyle(environment)}
             >
               <div className="flex items-center gap-2 text-sm">

@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useMatchRoute } from '@tanstack/react-router'
 import {
   CalendarClockIcon,
   ColumnsIcon,
@@ -59,6 +59,9 @@ export function AppSidebar({
   user: { name: string; email: string; isAdmin: boolean }
 } & ComponentProps<typeof Sidebar>) {
   const palette = useCommandPalette()
+  const matchRoute = useMatchRoute()
+  const isActive = (to: string) =>
+    matchRoute({ to, params: { projectSlug: current.slug }, fuzzy: true }) !== false
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -84,13 +87,8 @@ export function AppSidebar({
           <SidebarMenu>
             {projectNav.map((item) => (
               <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton asChild tooltip={item.title}>
-                  <Link
-                    to={item.to}
-                    params={{ projectSlug: current.slug }}
-                    activeProps={{ 'data-active': true }}
-                    className="data-active:bg-sidebar-accent data-active:font-medium data-active:text-sidebar-accent-foreground"
-                  >
+                <SidebarMenuButton asChild tooltip={item.title} isActive={isActive(item.to)}>
+                  <Link to={item.to} params={{ projectSlug: current.slug }}>
                     <item.icon />
                     <span>{item.title}</span>
                   </Link>
@@ -102,13 +100,12 @@ export function AppSidebar({
         <SidebarGroup className="mt-auto">
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="Settings">
-                <Link
-                  to="/app/$projectSlug/settings"
-                  params={{ projectSlug: current.slug }}
-                  activeProps={{ 'data-active': true }}
-                  className="data-active:bg-sidebar-accent data-active:font-medium"
-                >
+              <SidebarMenuButton
+                asChild
+                tooltip="Settings"
+                isActive={isActive('/app/$projectSlug/settings')}
+              >
+                <Link to="/app/$projectSlug/settings" params={{ projectSlug: current.slug }}>
                   <SettingsIcon />
                   <span>Settings</span>
                 </Link>

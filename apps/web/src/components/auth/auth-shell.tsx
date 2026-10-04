@@ -65,7 +65,7 @@ function FlagPreview() {
         {rows.map((r) => (
           <li
             key={r.env}
-            className={`flex items-center justify-between py-2.5 pl-3 env-rail ${r.production ? 'hazard-stripes' : ''}`}
+            className={`flex items-center justify-between py-2.5 pl-3 ${r.production ? 'hazard-stripes' : ''}`}
             style={{ ['--env-color' as string]: r.color }}
           >
             <span className="text-sm">{r.env}</span>

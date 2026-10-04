@@ -16,7 +16,6 @@ export function getRouter() {
     defaultPendingComponent: DefaultPending,
     defaultErrorComponent: DefaultErrorComponent,
     defaultNotFoundComponent: DefaultNotFound,
-    defaultViewTransition: true,
   })
 
   setupRouterSsrQueryIntegration({ router, queryClient: context.queryClient })

@@ -10,12 +10,14 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Field,
+  FieldContent,
   FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
   FieldLegend,
   FieldSet,
+  FieldTitle,
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
@@ -248,23 +250,19 @@ function NewFlagPage() {
                   className="grid gap-2 sm:grid-cols-2"
                 >
                   {TYPE_OPTIONS.map((option) => (
-                    <Field
-                      key={option.value}
-                      orientation="horizontal"
-                      className="items-start rounded-lg border p-3 has-data-[state=checked]:border-primary"
-                    >
-                      <RadioGroupItem
-                        value={option.value}
-                        id={`type-${option.value}`}
-                        className="mt-0.5"
-                      />
-                      <div className="grid gap-0.5">
-                        <FieldLabel htmlFor={`type-${option.value}`} className="font-medium">
-                          {option.label}
-                        </FieldLabel>
-                        <FieldDescription>{option.description}</FieldDescription>
-                      </div>
-                    </Field>
+                    <FieldLabel key={option.value} htmlFor={`type-${option.value}`}>
+                      <Field orientation="horizontal" className="items-start">
+                        <RadioGroupItem
+                          value={option.value}
+                          id={`type-${option.value}`}
+                          className="mt-0.5"
+                        />
+                        <FieldContent>
+                          <FieldTitle>{option.label}</FieldTitle>
+                          <FieldDescription>{option.description}</FieldDescription>
+                        </FieldContent>
+                      </Field>
+                    </FieldLabel>
                   ))}
                 </RadioGroup>
               </FieldSet>

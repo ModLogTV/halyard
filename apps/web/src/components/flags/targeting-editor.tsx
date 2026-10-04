@@ -175,7 +175,6 @@ export function TargetingEditor({
           title="Status"
           headerClassName={cn(environment.isProduction && 'hazard-stripes')}
           action={<EnvBadge env={environment} className="bg-card" />}
-          className="env-rail"
         >
           <div className="flex items-center gap-3">
             <Switch

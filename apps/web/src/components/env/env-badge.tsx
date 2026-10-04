@@ -10,7 +10,7 @@ export interface EnvironmentLike {
   isProduction: boolean
 }
 
-/** Sets `--env-color` so children can use `bg-env`, `text-env`, `env-rail` and `hazard-stripes`. */
+/** Sets `--env-color` so children can use `bg-env`, `text-env` and `hazard-stripes`. */
 export function envStyle(env: Pick<EnvironmentLike, 'color'>): CSSProperties {
   return { ['--env-color' as string]: env.color }
 }

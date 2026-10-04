@@ -104,7 +104,7 @@ export function VariantSelect({
 }: VariantSelectProps) {
   const known = variants.some((variant) => variant.key === value)
   return (
-    <Select value={value || undefined} onValueChange={onValueChange} disabled={disabled}>
+    <Select value={value ?? ''} onValueChange={onValueChange} disabled={disabled}>
       <SelectTrigger id={id} size="sm" className={cn('w-full min-w-0', className)} {...aria}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
