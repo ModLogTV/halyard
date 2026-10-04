@@ -1,6 +1,6 @@
 {
   "name": "@modlogtv/halyard-engine",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Pure, dependency-free feature flag evaluation engine used by Halyard. Evaluate a flag configuration against an evaluation context and get a value with a reason.",
   "license": "MIT",
   "author": "modlog",
