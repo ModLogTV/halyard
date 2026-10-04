@@ -39,6 +39,43 @@ export function assertProjectAccess(
   assertPermission(actor, permissions)
 }
 
+/** `userId` of actors created by {@link systemActor}. */
+export const SYSTEM_USER_ID = 'system'
+
+/**
+ * An actor for background work done by Halyard itself (for example the scheduler
+ * applying a scheduled change). It holds the `owner` role so the services it calls
+ * accept it; audit rows written for it name it as `{ type: 'system', name }`.
+ * Never derive one from request input.
+ */
+export function systemActor(projectId: string, name: string): ProjectActor {
+  return {
+    userId: SYSTEM_USER_ID,
+    name,
+    email: 'system@halyard.invalid',
+    isAdmin: false,
+    projectId,
+    role: 'owner',
+  }
+}
+
+/** Prefix of `userId` for actors derived from a management API key. */
+export const API_KEY_USER_PREFIX = 'apikey:'
+
+/**
+ * The user id to store in `created_by` / `updated_by` columns, which reference the
+ * user table. System and API key actors are not users, so they are stored as null;
+ * the audit log still names them.
+ */
+export function persistedUserId(actor: Pick<Actor, 'userId'>): string | null {
+  if (actor.userId === SYSTEM_USER_ID || actor.userId.startsWith(API_KEY_USER_PREFIX)) return null
+  return actor.userId
+}
+
 export function auditActor(actor: Actor): AuditActor {
+  if (actor.userId === SYSTEM_USER_ID) return { type: 'system', name: actor.name }
+  if (actor.userId.startsWith(API_KEY_USER_PREFIX)) {
+    return { type: 'api_key', id: actor.userId.slice(API_KEY_USER_PREFIX.length), name: actor.name }
+  }
   return { type: 'user', id: actor.userId, name: actor.name }
 }

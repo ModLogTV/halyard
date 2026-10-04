@@ -13,7 +13,7 @@ import {
   updateEnvironmentSchema,
 } from '../schemas/environments'
 import { recordAudit } from './audit'
-import { assertProjectAccess, auditActor, type ProjectActor } from './authz'
+import { assertProjectAccess, auditActor, type ProjectActor, persistedUserId } from './authz'
 import { defaultEnvironmentConfig } from './flag-config'
 import type { Environment } from './projects'
 import { isUniqueViolation, one, parseInput } from './util'
@@ -83,7 +83,7 @@ export async function createEnvironment(
           projectFlags.map((flag) => ({
             flagId: flag.id,
             environmentId: created.id,
-            updatedBy: actor.userId,
+            updatedBy: persistedUserId(actor),
             ...defaultEnvironmentConfig(flag),
           })),
         )

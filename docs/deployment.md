@@ -22,6 +22,9 @@ docker build -t halyard:dev .
 | `PORT` | no | `3000` | Port the server listens on. |
 | `RUN_MIGRATIONS_ON_STARTUP` | no | `true` | Run database migrations before serving traffic. |
 | `ENABLE_WORKERS` | no | `true` | Run background workers (scheduled changes, webhook delivery, stats flushers). |
+| `WEBHOOK_BLOCK_PRIVATE_NETWORKS` | `false` | Refuse webhook targets resolving to loopback, private, link-local or CGNAT addresses. Recommended on multi-tenant instances. |
+| `SCHEDULER_INTERVAL_MS` | `15000` | Poll interval of the scheduled-change worker (it also wakes on change events). |
+| `WEBHOOK_DISPATCH_INTERVAL_MS` | `10000` | Poll interval of the webhook dispatcher. |
 | `METRICS_TOKEN` | no | unset | When set, `GET /metrics` requires `Authorization: Bearer <token>`. |
 
 Endpoints for operations:

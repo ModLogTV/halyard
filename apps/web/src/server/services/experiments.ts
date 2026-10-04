@@ -28,7 +28,7 @@ import {
   updateExperimentSchema,
 } from '../schemas/experiments'
 import { recordAudit } from './audit'
-import { assertProjectAccess, auditActor, type ProjectActor } from './authz'
+import { assertProjectAccess, auditActor, type ProjectActor, persistedUserId } from './authz'
 import { isUniqueViolation, jsonEqual, one, parseInput } from './util'
 
 export type { ConversionEvent, RecordConversionsResult } from '@/server/experiments/conversions'
@@ -293,7 +293,7 @@ export async function createExperiment(
             allocation: data.allocation,
             conversionEvent: data.conversionEvent,
             controlVariant: data.controlVariant,
-            createdBy: actor.userId,
+            createdBy: persistedUserId(actor),
           })
           .returning(),
       )

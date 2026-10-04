@@ -33,7 +33,7 @@ import {
   updateFlagSchema,
 } from '../schemas/flags'
 import { recordAudit } from './audit'
-import { assertProjectAccess, auditActor, type ProjectActor } from './authz'
+import { assertProjectAccess, auditActor, type ProjectActor, persistedUserId } from './authz'
 import {
   defaultEnvironmentConfig,
   defaultVariantsFor,
@@ -197,7 +197,7 @@ export async function createFlag(actor: ProjectActor, input: CreateFlagInput): P
             type: data.type,
             variants,
             tags: uniqueTags(data.tags ?? []),
-            createdBy: actor.userId,
+            createdBy: persistedUserId(actor),
           })
           .returning(),
       )
@@ -211,7 +211,7 @@ export async function createFlag(actor: ProjectActor, input: CreateFlagInput): P
           envs.map((env) => ({
             flagId: flag.id,
             environmentId: env.id,
-            updatedBy: actor.userId,
+            updatedBy: persistedUserId(actor),
             ...scheme,
           })),
         )
@@ -582,7 +582,7 @@ export async function updateFlagEnvironment(
     const updated = one(
       await tx
         .update(flagEnvironments)
-        .set({ ...merged, version: row.version + 1, updatedBy: actor.userId })
+        .set({ ...merged, version: row.version + 1, updatedBy: persistedUserId(actor) })
         .where(eq(flagEnvironments.id, row.id))
         .returning(),
     )
@@ -693,7 +693,7 @@ export async function copyFlagEnvironment(
     const updated = one(
       await tx
         .update(flagEnvironments)
-        .set({ ...after, version: target.version + 1, updatedBy: actor.userId })
+        .set({ ...after, version: target.version + 1, updatedBy: persistedUserId(actor) })
         .where(eq(flagEnvironments.id, target.id))
         .returning(),
     )

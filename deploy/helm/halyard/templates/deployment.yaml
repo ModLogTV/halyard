@@ -59,6 +59,8 @@ spec:
               value: {{ $migrateOnStart | quote }}
             - name: ENABLE_WORKERS
               value: {{ .Values.config.enableWorkers | quote }}
+            - name: WEBHOOK_BLOCK_PRIVATE_NETWORKS
+              value: {{ .Values.config.webhookBlockPrivateNetworks | quote }}
             {{- with include "halyard.authUrl" . }}
             - name: BETTER_AUTH_URL
               value: {{ . | quote }}

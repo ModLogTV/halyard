@@ -1,6 +1,7 @@
 import type { JsonValue } from '@halyard/engine'
 import type { DbOrTx } from '@/db'
 import { auditLog } from '@/db/schema'
+import { enqueueWebhookDeliveries } from './webhook-queue'
 
 export type AuditActor =
   | { type: 'user'; id: string; name: string }
@@ -29,19 +30,26 @@ export interface AuditEntry {
   after?: unknown
 }
 
-/** Writes one audit log row. Call inside the transaction performing the change. */
+/**
+ * Writes one audit log row and queues the matching webhook deliveries. Call inside
+ * the transaction performing the change.
+ */
 export async function recordAudit(tx: DbOrTx, entry: AuditEntry): Promise<void> {
-  await tx.insert(auditLog).values({
-    projectId: entry.projectId,
-    environmentId: entry.environmentId ?? null,
-    actorType: entry.actor.type,
-    actorId: entry.actor.type === 'system' ? null : entry.actor.id,
-    actorName: entry.actor.name,
-    action: entry.action,
-    entityType: entry.entityType,
-    entityId: entry.entityId,
-    entityKey: entry.entityKey ?? null,
-    before: (entry.before ?? null) as JsonValue,
-    after: (entry.after ?? null) as JsonValue,
-  })
+  const [row] = await tx
+    .insert(auditLog)
+    .values({
+      projectId: entry.projectId,
+      environmentId: entry.environmentId ?? null,
+      actorType: entry.actor.type,
+      actorId: entry.actor.type === 'system' ? null : entry.actor.id,
+      actorName: entry.actor.name,
+      action: entry.action,
+      entityType: entry.entityType,
+      entityId: entry.entityId,
+      entityKey: entry.entityKey ?? null,
+      before: (entry.before ?? null) as JsonValue,
+      after: (entry.after ?? null) as JsonValue,
+    })
+    .returning({ id: auditLog.id, createdAt: auditLog.createdAt })
+  if (row) await enqueueWebhookDeliveries(tx, { ...entry, id: row.id, createdAt: row.createdAt })
 }

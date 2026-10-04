@@ -70,6 +70,10 @@ config:
   # (ENABLE_WORKERS). Workers use SKIP LOCKED, so running them on all replicas is safe.
   # Set to false to build dedicated "web only" replicas.
   enableWorkers: true
+  # Refuse webhook targets that resolve to loopback, private, link-local or CGNAT
+  # addresses (WEBHOOK_BLOCK_PRIVATE_NETWORKS). Recommended on multi-tenant instances;
+  # leave false when webhooks must reach services inside the cluster.
+  webhookBlockPrivateNetworks: false
 
 # Additional environment variables, rendered as-is into the container `env`.
 extraEnv: []
