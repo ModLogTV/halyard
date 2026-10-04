@@ -32,6 +32,8 @@ function evaluatorFor(ruleset: Ruleset): Evaluator {
  * using the cached ruleset. Records metrics, evaluation stats and experiment
  * exposures in memory; nothing here waits on a database write.
  *
+ * Pass `track: false` (the playground does) to skip metrics, stats and exposures.
+ *
  * Returns null when the environment does not exist or, if `projectId` is given,
  * belongs to another project.
  */
@@ -40,6 +42,8 @@ export async function evaluateForEnvironment(options: {
   projectId?: string
   flagKey?: string
   context: EvaluationContext
+  /** Record metrics, evaluation stats and exposures. Defaults to true. */
+  track?: boolean
 }): Promise<EnvironmentEvaluation | null> {
   const cached = await getRuleset(options.environmentId)
   if (!cached) return null
@@ -49,7 +53,9 @@ export async function evaluateForEnvironment(options: {
     options.flagKey === undefined
       ? Object.values(evaluator.evaluateAll(options.context))
       : [evaluator.evaluate(options.flagKey, options.context)]
-  for (const details of results) record(cached, options.context, details)
+  if (options.track !== false) {
+    for (const details of results) record(cached, options.context, details)
+  }
   return { cached, results }
 }
 
