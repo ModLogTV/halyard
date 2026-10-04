@@ -1,4 +1,4 @@
-import { Link, createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, Link, redirect, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { AuthShell } from '@/components/auth/auth-shell'
@@ -51,7 +51,9 @@ function SignupPage() {
     <AuthShell>
       <div className="mb-6">
         <h2 className="text-2xl font-semibold tracking-tight">Create your account</h2>
-        <p className="mt-1 text-sm text-muted-foreground">You can create a project right after signing up.</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          You can create a project right after signing up.
+        </p>
       </div>
       <form onSubmit={onSubmit} noValidate>
         <FieldGroup>
@@ -65,7 +67,14 @@ function SignupPage() {
           </Field>
           <Field>
             <FieldLabel htmlFor="password">Password</FieldLabel>
-            <Input id="password" name="password" type="password" autoComplete="new-password" required minLength={8} />
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="new-password"
+              required
+              minLength={8}
+            />
             <FieldDescription>At least 8 characters.</FieldDescription>
           </Field>
           {error ? <FieldError>{error}</FieldError> : null}

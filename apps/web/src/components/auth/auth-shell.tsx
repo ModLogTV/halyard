@@ -17,8 +17,8 @@ export function AuthShell({ children }: { children: ReactNode }) {
               Raise features gradually. Lower them instantly.
             </h1>
             <p className="mt-3 text-muted-foreground">
-              Self-hosted feature flags with sticky rollouts, segments, experiments and an OpenFeature
-              compatible API. Your data stays on your infrastructure.
+              Self-hosted feature flags with sticky rollouts, segments, experiments and an
+              OpenFeature compatible API. Your data stays on your infrastructure.
             </p>
           </div>
         </div>
@@ -39,7 +39,13 @@ export function AuthShell({ children }: { children: ReactNode }) {
 
 /** A static rendering of a flag row across three environments, mirroring the real UI. */
 function FlagPreview() {
-  const rows: Array<{ env: string; color: string; on: boolean; rollout?: number; production?: boolean }> = [
+  const rows: Array<{
+    env: string
+    color: string
+    on: boolean
+    rollout?: number
+    production?: boolean
+  }> = [
     { env: 'development', color: '#3b82f6', on: true },
     { env: 'staging', color: '#f59e0b', on: true, rollout: 50 },
     { env: 'production', color: '#e11d48', on: false, production: true },
@@ -51,7 +57,9 @@ function FlagPreview() {
           <div className="font-mono text-sm">checkout.new-payment-flow</div>
           <div className="text-xs text-muted-foreground">boolean · 3 environments</div>
         </div>
-        <span className="rounded-md bg-on-soft px-2 py-0.5 font-mono text-[11px] text-foreground">v12</span>
+        <span className="rounded-md bg-on-soft px-2 py-0.5 font-mono text-[11px] text-foreground">
+          v12
+        </span>
       </div>
       <ul className="mt-4 divide-y">
         {rows.map((r) => (

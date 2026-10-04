@@ -1,4 +1,6 @@
-import { Outlet, createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
+import { CommandPaletteProvider } from '@/components/command-palette'
+import { listProjects } from '@/server/functions/projects'
 import { getSession } from '@/server/functions/session'
 
 export const Route = createFileRoute('/app')({
@@ -7,7 +9,25 @@ export const Route = createFileRoute('/app')({
     if (!session) {
       throw redirect({ to: '/login', search: { redirect: location.href } })
     }
-    return { session }
+    const role = session.user.role ?? 'user'
+    return {
+      user: {
+        id: session.user.id,
+        name: session.user.name,
+        email: session.user.email,
+        isAdmin: role.split(',').includes('admin'),
+      },
+    }
   },
-  component: () => <Outlet />,
+  loader: async () => ({ projects: await listProjects() }),
+  component: AppLayout,
 })
+
+function AppLayout() {
+  const { projects } = Route.useLoaderData()
+  return (
+    <CommandPaletteProvider projects={projects}>
+      <Outlet />
+    </CommandPaletteProvider>
+  )
+}

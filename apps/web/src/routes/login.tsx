@@ -1,4 +1,4 @@
-import { Link, createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, Link, redirect, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -10,7 +10,14 @@ import { Spinner } from '@/components/ui/spinner'
 import { authClient } from '@/lib/auth-client'
 import { getSession } from '@/server/functions/session'
 
-const searchSchema = z.object({ redirect: z.string().optional() })
+/** Only same-origin relative paths are accepted as post-login destinations. */
+const safePath = z
+  .string()
+  .refine((v) => v.startsWith('/') && !v.startsWith('//') && !v.startsWith('/\\'))
+  .optional()
+  .catch(undefined)
+
+const searchSchema = z.object({ redirect: safePath })
 
 export const Route = createFileRoute('/login')({
   validateSearch: searchSchema,
@@ -50,7 +57,9 @@ function LoginPage() {
     <AuthShell>
       <div className="mb-6">
         <h2 className="text-2xl font-semibold tracking-tight">Sign in</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Use the email and password of your Halyard account.</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Use the email and password of your Halyard account.
+        </p>
       </div>
       <form onSubmit={onSubmit} noValidate>
         <FieldGroup>
@@ -60,7 +69,13 @@ function LoginPage() {
           </Field>
           <Field>
             <FieldLabel htmlFor="password">Password</FieldLabel>
-            <Input id="password" name="password" type="password" autoComplete="current-password" required />
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+            />
           </Field>
           {error ? <FieldError>{error}</FieldError> : null}
           <Field>

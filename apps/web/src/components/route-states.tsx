@@ -1,7 +1,14 @@
 import { Link, useRouter } from '@tanstack/react-router'
 import { AlertTriangleIcon, CompassIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty'
 import { Skeleton } from '@/components/ui/skeleton'
 
 export function DefaultPending() {
@@ -28,7 +35,9 @@ export function DefaultErrorComponent({ error }: { error: unknown }) {
           <AlertTriangleIcon />
         </EmptyMedia>
         <EmptyTitle>Something went wrong</EmptyTitle>
-        <EmptyDescription className="max-w-md font-mono text-xs break-words">{message}</EmptyDescription>
+        <EmptyDescription className="max-w-md font-mono text-xs break-words">
+          {message}
+        </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
         <Button onClick={() => router.invalidate()}>Try again</Button>
@@ -45,7 +54,9 @@ export function DefaultNotFound() {
           <CompassIcon />
         </EmptyMedia>
         <EmptyTitle>Page not found</EmptyTitle>
-        <EmptyDescription>The page you are looking for does not exist or was moved.</EmptyDescription>
+        <EmptyDescription>
+          The page you are looking for does not exist or was moved.
+        </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
         <Button asChild>

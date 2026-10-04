@@ -3,8 +3,8 @@ import type {
   ExperimentAllocation,
   FlagType,
   JsonValue,
-  Rule,
   RolloutVariation,
+  Rule,
   Serve,
   Variant,
 } from '@halyard/engine'
