@@ -9,6 +9,9 @@ It uses streamable HTTP, is stateless (every replica can answer every request) a
 
 ## Connect
 
+**Settings → MCP** shows the server URL and ready-to-paste configurations for Claude Code, Claude Desktop,
+Codex, Cursor, VS Code, Gemini CLI and Windsurf. Paste a management key there to fill it in.
+
 The MCP server authenticates with a **management key**, exactly like the [REST API](rest-api.md): create
 one under **Settings → API keys → Create management key**. The key decides the project; agents never
 pick one.

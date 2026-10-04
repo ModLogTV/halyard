@@ -8,7 +8,8 @@
   "nav": {
     "pageTitle": "Settings · Halyard",
     "description": "Manage this project, who can use it and how it is accessed.",
-    "transfer": "Import & export"
+    "transfer": "Import & export",
+    "mcp": "MCP"
   },
   "general": {
     "pageTitle": "General settings · Halyard",
@@ -219,6 +220,36 @@
       "cliLabel": "CLI command",
       "cliCopy": "Copy CLI command",
       "done": "I have copied the key"
+    }
+  },
+  "mcp": {
+    "pageTitle": "MCP · Halyard",
+    "title": "MCP server",
+    "description": "Let AI agents such as Claude Code, Codex or Cursor manage this project through the Model Context Protocol. Agents sign in with a management key, and every change they make appears in the audit log under the key's name.",
+    "url": {
+      "label": "Server URL",
+      "copy": "Copy server URL"
+    },
+    "key": {
+      "label": "Management key",
+      "description": "Paste a management key to fill it into the snippets below. It stays in your browser.",
+      "invalid": "This is not a management key. Management keys start with hal_mgmt_."
+    },
+    "guide": {
+      "title": "Connect your agent",
+      "clientsLabel": "MCP client",
+      "copy": "Copy configuration for {{client}}",
+      "snippetLabel": "Configuration for {{client}}",
+      "access": "Read keys only offer read tools. Read & write keys can also change flags, segments, experiments and scheduled changes. Use one key per agent so you can revoke each on its own."
+    },
+    "clients": {
+      "claudeCode": "Run this in a terminal. Add <0>--scope user</0> to use the server in every project.",
+      "claudeDesktop": "Add to <0>claude_desktop_config.json</0> (Settings → Developer → Edit config) and restart Claude Desktop. Needs Node.js for <1>mcp-remote</1>.",
+      "codex": "Add to <0>~/.codex/config.toml</0>. The Codex CLI and IDE extension share this file.",
+      "cursor": "Add to <0>~/.cursor/mcp.json</0>. Avoid the project file <1>.cursor/mcp.json</1> so the key does not end up in Git.",
+      "vscode": "Run “MCP: Open User Configuration” from the command palette and add this to <0>mcp.json</0>.",
+      "gemini": "Add to <0>~/.gemini/settings.json</0>.",
+      "windsurf": "Add to <0>~/.codeium/windsurf/mcp_config.json</0>."
     }
   },
   "transfer": {

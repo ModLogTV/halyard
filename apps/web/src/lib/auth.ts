@@ -10,11 +10,10 @@ import { env } from '@/lib/env'
 import { ac, roles } from '@/lib/permissions'
 import { ipAddressOptions, parseTrustedProxies } from '@/lib/trusted-proxies'
 import { evaluateSignup } from '@/server/auth/signup-policy'
+import { MANAGEMENT_KEY_PREFIX, SDK_KEY_PREFIX } from './key-prefixes'
 
-/** Prefix for environment-scoped SDK keys used by OFREP and the tracking endpoint. */
-export const SDK_KEY_PREFIX = 'hal_sdk_'
-/** Prefix for project-scoped management keys used by the CLI and the REST API. */
-export const MANAGEMENT_KEY_PREFIX = 'hal_mgmt_'
+// Kept in a separate module so client code can use them without importing the server.
+export { MANAGEMENT_KEY_PREFIX, SDK_KEY_PREFIX }
 
 export const auth = betterAuth({
   appName: 'Halyard',

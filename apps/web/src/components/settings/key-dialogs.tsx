@@ -302,7 +302,7 @@ export function KeyRevealDialog({
         if (!open) onClose()
       }}
     >
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className="sm:max-w-xl [&>*]:min-w-0">
         {revealed ? <RevealBody revealed={revealed} onClose={onClose} /> : null}
       </DialogContent>
     </Dialog>

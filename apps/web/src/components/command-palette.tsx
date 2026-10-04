@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useNavigate, useRouter } from '@tanstack/react-router'
 import {
   CalendarClockIcon,
+  ChartAreaIcon,
   ColumnsIcon,
   FlagIcon,
   FlaskConicalIcon,
@@ -318,6 +319,11 @@ export function CommandPaletteProvider({
                         <PlusIcon /> {t('commandPalette.items.newFlag')}
                       </CommandItem>
                     ) : null}
+                    <CommandItem
+                      onSelect={() => go('/app/$projectSlug/insights', { projectSlug: slug })}
+                    >
+                      <ChartAreaIcon /> {t('sidebar.insights')}
+                    </CommandItem>
                     <CommandItem
                       onSelect={() => go('/app/$projectSlug/segments', { projectSlug: slug })}
                     >

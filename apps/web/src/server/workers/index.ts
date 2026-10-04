@@ -1,5 +1,6 @@
 import { startTrackingFlusher, stopTrackingFlusher } from '@/server/evaluation/tracking'
 import { startEventListener, stopEventListener } from '@/server/events'
+import { startHistoryPruner, stopHistoryPruner } from './history-pruner'
 import { startScheduler, stopScheduler } from './scheduler'
 import { startWebhookDispatcher, stopWebhookDispatcher } from './webhook-dispatcher'
 
@@ -17,11 +18,12 @@ export async function startWorkers(): Promise<void> {
   startTrackingFlusher()
   startScheduler()
   startWebhookDispatcher()
+  startHistoryPruner()
 }
 
 export async function stopWorkers(): Promise<void> {
   started = false
-  await Promise.all([stopScheduler(), stopWebhookDispatcher()])
+  await Promise.all([stopScheduler(), stopWebhookDispatcher(), stopHistoryPruner()])
   await stopEventListener()
   await stopTrackingFlusher()
 }

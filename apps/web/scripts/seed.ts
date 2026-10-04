@@ -10,11 +10,13 @@ import { eq, sql } from 'drizzle-orm'
 import { db } from '../src/db'
 import { flagEvaluationStats, flags, organization, user } from '../src/db/schema'
 import { auth } from '../src/lib/auth'
+import { env as appEnv } from '../src/lib/env'
 import { createManagementKey, createSdkKey } from '../src/server/services/api-keys'
 import type { ProjectActorWithHeaders, UserActorWithHeaders } from '../src/server/services/authz'
 import { createFlag, updateFlagEnvironment } from '../src/server/services/flags'
 import { createProject } from '../src/server/services/projects'
 import { createSegment } from '../src/server/services/segments'
+import { seedEvaluationHistory } from './seed-history'
 
 const ADMIN = { name: 'Ada Admin', email: 'admin@example.com', password: 'password123' }
 const OWNER = { name: 'Dana Developer', email: 'dev@example.com', password: 'password123' }
@@ -348,6 +350,9 @@ await db.insert(flagEvaluationStats).values([
   },
 ])
 
+// Evaluation history for the insights charts -------------------------------------
+await seedEvaluationHistory({ flagId, environmentId: (key) => env(key).id })
+
 // API keys ----------------------------------------------------------------------
 const keys: string[] = []
 for (const e of project.environments) {
@@ -366,7 +371,7 @@ const management = await createManagementKey(actor, {
 
 await db.execute(sql`select 1`)
 console.log(`
-Seeded project "Acme" (http://localhost:3000/app/acme)
+Seeded project "Acme" (${appEnv().BETTER_AUTH_URL}/app/acme)
 
 Sign in with
   owner  ${OWNER.email} / ${OWNER.password}

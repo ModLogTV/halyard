@@ -1,3 +1,4 @@
+import deAnalytics from './de/analytics.json'
 import deAudit from './de/audit.json'
 import deAuth from './de/auth.json'
 import deCommon from './de/common.json'
@@ -10,6 +11,7 @@ import deProjects from './de/projects.json'
 import deSchedules from './de/schedules.json'
 import deSegments from './de/segments.json'
 import deSettings from './de/settings.json'
+import enAnalytics from './en/analytics.json'
 import enAudit from './en/audit.json'
 import enAuth from './en/auth.json'
 import enCommon from './en/common.json'
@@ -37,6 +39,7 @@ export const resources = {
     experiments: enExperiments,
     schedules: enSchedules,
     settings: enSettings,
+    analytics: enAnalytics,
   },
   de: {
     common: deCommon,
@@ -51,6 +54,7 @@ export const resources = {
     experiments: deExperiments,
     schedules: deSchedules,
     settings: deSettings,
+    analytics: deAnalytics,
   },
 } as const
 

@@ -1,0 +1,69 @@
+{
+  "page": {
+    "pageTitle": "Insights · Halyard",
+    "title": "Insights",
+    "description": "How often your flags were evaluated recently. The hourly history covers the last 30 days; for long-term analysis, scrape the Prometheus metrics at /metrics.",
+    "loading": "Loading insights"
+  },
+  "filters": {
+    "range": "Time range",
+    "ranges": {
+      "24h": "24 hours",
+      "7d": "7 days",
+      "30d": "30 days"
+    },
+    "environment": "Environment",
+    "allEnvironments": "All environments"
+  },
+  "periods": {
+    "24h": "the previous 24 hours",
+    "7d": "the previous 7 days",
+    "30d": "the previous 30 days"
+  },
+  "stats": {
+    "evaluations": "Evaluations",
+    "evaluationsCount_one": "{{count, number}} evaluation",
+    "evaluationsCount_other": "{{count, number}} evaluations",
+    "change": "{{value}} vs. {{period}}",
+    "noPrevious": "No data for {{period}}",
+    "activeFlags": "Flags in use",
+    "activeFlagsValue": "{{evaluated}} of {{total}}",
+    "unusedFlags_one": "{{count, number}} flag without evaluations",
+    "unusedFlags_other": "{{count, number}} flags without evaluations",
+    "allFlagsUsed": "Every flag was evaluated",
+    "peakHour": "Peak hour",
+    "peakDay": "Peak day",
+    "noPeak": "No evaluations yet"
+  },
+  "charts": {
+    "inProgress": "in progress",
+    "evaluations": {
+      "title": "Evaluations over time",
+      "description": "{{scope}} · last {{period}}",
+      "summary": "Area chart of evaluations ({{scope}}, last {{period}}): {{total, number}} in total."
+    },
+    "topFlags": {
+      "title": "Most evaluated flags",
+      "description": "Top 8 · {{scope}} · last {{period}}"
+    },
+    "flagEvaluations": {
+      "title": "Evaluations by variant",
+      "summary": "Stacked area chart of evaluations per served variant ({{scope}}, last {{period}}): {{total, number}} in total."
+    },
+    "variants": {
+      "title": "Served variants",
+      "description": "Share of evaluations · {{scope}} · last {{period}}",
+      "variant": "Variant",
+      "share": "Share",
+      "errors": "Errors"
+    }
+  },
+  "empty": {
+    "title": "No evaluations yet",
+    "projectDescription": "No flag was evaluated in this time range ({{scope}}). Evaluations through OFREP show up here within seconds.",
+    "flagDescription": "This flag was not evaluated in this time range ({{scope}})."
+  },
+  "errors": {
+    "loadFailed": "Could not load the insights."
+  }
+}

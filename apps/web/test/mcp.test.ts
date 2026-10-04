@@ -79,11 +79,12 @@ beforeEach(async () => {
 
 describe('authentication', () => {
   it('answers 401 without a valid management key', async () => {
-    for (const headers of [
+    const cases: Record<string, string>[] = [
       {},
       { authorization: 'Bearer hal_mgmt_nope' },
       { authorization: 'Bearer hal_sdk_whatever' },
-    ]) {
+    ]
+    for (const headers of cases) {
       const response = await post(headers)
       expect(response.status).toBe(401)
       expect(await response.json()).toMatchObject({ error: 'UNAUTHORIZED' })

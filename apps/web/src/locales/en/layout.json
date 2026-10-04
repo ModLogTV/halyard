@@ -20,10 +20,12 @@
     "environments": "Environments",
     "flags": "Flags",
     "apiKeys": "API keys",
+    "mcp": "MCP",
     "newExperiment": "New experiment",
     "newFlag": "New flag",
     "newSegment": "New segment",
-    "segments": "Segments"
+    "segments": "Segments",
+    "insights": "Insights"
   },
   "sidebar": {
     "search": "Search",
@@ -32,7 +34,8 @@
     "compare": "Compare",
     "collapse": "Collapse sidebar",
     "expand": "Expand sidebar",
-    "toggle": "Toggle sidebar"
+    "toggle": "Toggle sidebar",
+    "insights": "Insights"
   },
   "projectSwitcher": {
     "ariaLabel": "Current project: {{name}}. Switch project",

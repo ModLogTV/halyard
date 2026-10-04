@@ -1,8 +1,9 @@
-import { createFileRoute, useRouter } from '@tanstack/react-router'
+import { createFileRoute, useNavigate, useRouter } from '@tanstack/react-router'
 import { KeyRoundIcon, PlusIcon, ShieldIcon, Trash2Icon } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { z } from 'zod'
 import { EnvBadge } from '@/components/env/env-badge'
 import { ConfirmDialog } from '@/components/settings/confirm-dialog'
 import { HintedButton, IconButton } from '@/components/settings/hinted-button'
@@ -38,6 +39,10 @@ import type { ApiKeySummary } from '@/server/services/api-keys'
 
 export const Route = createFileRoute('/app/$projectSlug/settings/api-keys')({
   staticData: { crumbKey: 'apiKeys' },
+  validateSearch: z.object({
+    /** Opens the create dialog, for example from the MCP settings. */
+    create: z.enum(['management']).optional().catch(undefined),
+  }),
   loader: async ({ parentMatchPromise }) => {
     const parent = await parentMatchPromise
     const projectId = parent.loaderData?.projectId
@@ -71,6 +76,14 @@ function ApiKeysSettings() {
   const [revoking, setRevoking] = useState<ApiKeySummary | null>(null)
   const [revokeOpen, setRevokeOpen] = useState(false)
   const router = useRouter()
+  const { create } = Route.useSearch()
+  const navigate = useNavigate({ from: Route.fullPath })
+
+  useEffect(() => {
+    if (!create) return
+    if (isOwner) setManagementOpen(true)
+    navigate({ search: {}, replace: true })
+  }, [create, isOwner, navigate])
 
   const sdkKeys = keys.filter((k) => k.configId === 'sdk')
   const managementKeys = keys.filter((k) => k.configId === 'management')

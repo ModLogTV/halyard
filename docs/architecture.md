@@ -22,9 +22,11 @@ The JSON shapes stored in `rules`, `fallthrough`, `variants` and `conditions` ar
 SDK key ──▶ authenticateSdkKey (60 s in-memory cache, invalidated on key changes)
         ──▶ getRuleset(environmentId) (in-memory cache, invalidated via events)
         ──▶ @modlogtv/halyard-engine evaluate
-        ──▶ response; evaluation stats and exposures go to an in-memory buffer
-            that is flushed to Postgres in batches
+        ──▶ response; evaluation stats, hourly evaluation counts and exposures go
+            to an in-memory buffer that is flushed to Postgres in batches
 ```
+
+The hourly counts (`flag_evaluation_buckets`, per flag, environment, hour and served variant) feed the insights charts. They are kept for 62 days, so the 30 day view can be compared with the 30 days before; a background worker deletes older rows. Long-term analysis belongs in Prometheus (`halyard_evaluations_total`).
 
 The playground, the OFREP endpoints and the ruleset download all use the same engine package. The engine is published so that clients can evaluate a downloaded ruleset locally when the server is unreachable.
 

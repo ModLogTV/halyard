@@ -280,7 +280,8 @@
     "pendingSchedules_one": "{{count}} geplante Änderung steht für dieses Flag aus – <0>anzeigen</0>",
     "pendingSchedules_other": "{{count}} geplante Änderungen stehen für dieses Flag aus – <0>anzeigen</0>",
     "tabs": {
-      "targeting": "Targeting"
+      "targeting": "Targeting",
+      "insights": "Analysen"
     },
     "activity": {
       "title": "Aktivität",

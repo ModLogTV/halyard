@@ -5,22 +5,25 @@ const boolFromString = z
   .default('true')
   .transform((v) => v === 'true')
 
-const schema = z.object({
-  DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
-  BETTER_AUTH_URL: z.string().url().default('http://localhost:3000'),
-  BETTER_AUTH_SECRET: z.string().min(16, 'BETTER_AUTH_SECRET must be at least 16 characters'),
-  PORT: z.coerce.number().int().positive().default(3000),
-  RUN_MIGRATIONS_ON_STARTUP: boolFromString,
-  ENABLE_WORKERS: boolFromString,
-  METRICS_TOKEN: z.string().optional(),
-  /** Who may create accounts: `invite` (first user, then invited emails only) or `open`. */
-  AUTH_SIGNUP_MODE: z.enum(['open', 'invite']).default('invite'),
-  /** Comma separated IPs/CIDRs of reverse proxies whose forwarding headers carry the client IP. */
-  TRUSTED_PROXIES: z.string().optional(),
-  /** How long startup waits for Postgres to accept connections. */
-  DATABASE_CONNECT_TIMEOUT_MS: z.coerce.number().int().positive().default(60_000),
-  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-})
+const schema = z
+  .object({
+    DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
+    /** Public URL of the app. Defaults to `http://localhost:<PORT>`. */
+    BETTER_AUTH_URL: z.string().url().optional(),
+    BETTER_AUTH_SECRET: z.string().min(16, 'BETTER_AUTH_SECRET must be at least 16 characters'),
+    PORT: z.coerce.number().int().positive().default(3000),
+    RUN_MIGRATIONS_ON_STARTUP: boolFromString,
+    ENABLE_WORKERS: boolFromString,
+    METRICS_TOKEN: z.string().optional(),
+    /** Who may create accounts: `invite` (first user, then invited emails only) or `open`. */
+    AUTH_SIGNUP_MODE: z.enum(['open', 'invite']).default('invite'),
+    /** Comma separated IPs/CIDRs of reverse proxies whose forwarding headers carry the client IP. */
+    TRUSTED_PROXIES: z.string().optional(),
+    /** How long startup waits for Postgres to accept connections. */
+    DATABASE_CONNECT_TIMEOUT_MS: z.coerce.number().int().positive().default(60_000),
+    NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
+  })
+  .transform((e) => ({ ...e, BETTER_AUTH_URL: e.BETTER_AUTH_URL ?? `http://localhost:${e.PORT}` }))
 
 export type Env = z.infer<typeof schema>
 

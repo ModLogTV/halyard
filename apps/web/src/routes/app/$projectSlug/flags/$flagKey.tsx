@@ -24,6 +24,7 @@ import { useMemo, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { FlagInsights } from '@/components/analytics'
 import { AuditTimeline } from '@/components/audit'
 import { EnvBadge, EnvDot, envStyle } from '@/components/env/env-badge'
 import { HazardBand } from '@/components/env/hazard-band'
@@ -88,13 +89,18 @@ import {
 } from '@/server/functions/flags'
 import { listScheduledChanges } from '@/server/functions/scheduled-changes'
 import { listSegments } from '@/server/functions/segments'
+import { type AnalyticsRange, analyticsRangeSchema } from '@/server/schemas/analytics'
 
 const projectRoute = getRouteApi('/app/$projectSlug')
+
+const DEFAULT_RANGE: AnalyticsRange = '7d'
 
 export const Route = createFileRoute('/app/$projectSlug/flags/$flagKey')({
   validateSearch: z.object({
     env: z.string().optional().catch(undefined),
-    tab: z.enum(['targeting', 'history']).optional().catch(undefined),
+    tab: z.enum(['targeting', 'insights', 'history']).optional().catch(undefined),
+    /** Time range of the insights tab. */
+    range: analyticsRangeSchema.optional().catch(undefined),
   }),
   loader: async ({ params, parentMatchPromise }) => {
     const parent = await parentMatchPromise
@@ -330,13 +336,14 @@ function FlagDetailPage() {
           value={search.tab ?? 'targeting'}
           onValueChange={(tab) =>
             navigate({
-              search: (p) => ({ ...p, tab: tab as 'targeting' | 'history' }),
+              search: (p) => ({ ...p, tab: tab as 'targeting' | 'insights' | 'history' }),
               replace: true,
             })
           }
         >
           <TabsList>
             <TabsTrigger value="targeting">{t('detail.tabs.targeting')}</TabsTrigger>
+            <TabsTrigger value="insights">{t('detail.tabs.insights')}</TabsTrigger>
             <TabsTrigger value="history">{t('common:labels.history')}</TabsTrigger>
           </TabsList>
           <TabsContent value="targeting" className="mt-4">
@@ -385,6 +392,24 @@ function FlagDetailPage() {
                 )
               })}
             </Tabs>
+          </TabsContent>
+          <TabsContent value="insights" className="mt-4">
+            <FlagInsights
+              projectId={project.id}
+              flag={flag}
+              environments={environments}
+              environmentKey={search.env}
+              range={search.range ?? DEFAULT_RANGE}
+              onRangeChange={(range) =>
+                navigate({
+                  search: (p) => ({ ...p, range: range === DEFAULT_RANGE ? undefined : range }),
+                  replace: true,
+                })
+              }
+              onEnvironmentChange={(env) =>
+                navigate({ search: (p) => ({ ...p, env }), replace: true })
+              }
+            />
           </TabsContent>
           <TabsContent value="history" className="mt-4">
             <AuditTimeline items={history.items as never} />

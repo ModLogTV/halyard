@@ -8,7 +8,8 @@
   "nav": {
     "pageTitle": "Einstellungen · Halyard",
     "description": "Verwalte dieses Projekt, wer es nutzen darf und wie darauf zugegriffen wird.",
-    "transfer": "Import & Export"
+    "transfer": "Import & Export",
+    "mcp": "MCP"
   },
   "general": {
     "pageTitle": "Allgemeine Einstellungen · Halyard",
@@ -219,6 +220,36 @@
       "cliLabel": "CLI-Befehl",
       "cliCopy": "CLI-Befehl kopieren",
       "done": "Ich habe den Schlüssel kopiert"
+    }
+  },
+  "mcp": {
+    "pageTitle": "MCP · Halyard",
+    "title": "MCP-Server",
+    "description": "Lass KI-Agenten wie Claude Code, Codex oder Cursor dieses Projekt über das Model Context Protocol verwalten. Agenten melden sich mit einem Management-Schlüssel an, und jede ihrer Änderungen erscheint im Audit-Log unter dem Namen des Schlüssels.",
+    "url": {
+      "label": "Server-URL",
+      "copy": "Server-URL kopieren"
+    },
+    "key": {
+      "label": "Management-Schlüssel",
+      "description": "Füge einen Management-Schlüssel ein, um ihn in die Snippets unten einzusetzen. Er verlässt deinen Browser nicht.",
+      "invalid": "Das ist kein Management-Schlüssel. Management-Schlüssel beginnen mit hal_mgmt_."
+    },
+    "guide": {
+      "title": "Agent verbinden",
+      "clientsLabel": "MCP-Client",
+      "copy": "Konfiguration für {{client}} kopieren",
+      "snippetLabel": "Konfiguration für {{client}}",
+      "access": "Lese-Schlüssel bieten nur lesende Tools. Schlüssel mit Lesen & Schreiben können auch Flags, Segmente, Experimente und geplante Änderungen ändern. Nutze einen Schlüssel pro Agent, damit du jeden einzeln widerrufen kannst."
+    },
+    "clients": {
+      "claudeCode": "Führe das in einem Terminal aus. Mit <0>--scope user</0> steht der Server in jedem Projekt zur Verfügung.",
+      "claudeDesktop": "Füge das in <0>claude_desktop_config.json</0> ein (Einstellungen → Entwickler → Konfiguration bearbeiten) und starte Claude Desktop neu. <1>mcp-remote</1> benötigt Node.js.",
+      "codex": "Füge das in <0>~/.codex/config.toml</0> ein. Die Codex-CLI und die IDE-Erweiterung teilen sich diese Datei.",
+      "cursor": "Füge das in <0>~/.cursor/mcp.json</0> ein. Verwende nicht die Projektdatei <1>.cursor/mcp.json</1>, damit der Schlüssel nicht in Git landet.",
+      "vscode": "Führe „MCP: Open User Configuration“ in der Befehlspalette aus und füge das in <0>mcp.json</0> ein.",
+      "gemini": "Füge das in <0>~/.gemini/settings.json</0> ein.",
+      "windsurf": "Füge das in <0>~/.codeium/windsurf/mcp_config.json</0> ein."
     }
   },
   "transfer": {

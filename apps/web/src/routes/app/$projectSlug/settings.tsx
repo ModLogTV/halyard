@@ -1,6 +1,7 @@
 import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
 import {
   ArrowLeftRightIcon,
+  BotIcon,
   KeyRoundIcon,
   LayersIcon,
   SlidersHorizontalIcon,
@@ -81,6 +82,13 @@ function SettingsLayout() {
                 activeProps={activeProps}
               >
                 <KeyRoundIcon /> {t('common:labels.apiKeys')}
+              </Link>
+            </Button>
+          </li>
+          <li>
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/app/$projectSlug/settings/mcp" params={params} activeProps={activeProps}>
+                <BotIcon /> {t('nav.mcp')}
               </Link>
             </Button>
           </li>

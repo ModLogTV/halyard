@@ -52,7 +52,7 @@ Rollout state always lists every variant of the flag; zero weights are kept in t
 `VariantValue`: `value, type, variantKey?, index?, hideValue?, className?`. Colour comes from `index`
 (position in the flag's variants), falling back to a hash of `variantKey`.
 `VariantSelect`: `variants, value, onValueChange(key), type?, disabled?, placeholder?, id?, aria-label?, aria-invalid?, className?`.
-`variantColor(index)` returns `var(--chart-1..5)`.
+`variantColor(index)` returns `var(--chart-1..8)`.
 
 ## RolloutBar
 

@@ -263,6 +263,32 @@ export const flagEvaluationStats = pgTable(
   (t) => [primaryKey({ columns: [t.flagId, t.environmentId] })],
 )
 
+/**
+ * Evaluations per flag, environment, hour and served variant, for the analytics charts.
+ * `variant` is an empty string for evaluations that returned an error. Rows older than
+ * the retention window are deleted by the history pruner.
+ */
+export const flagEvaluationBuckets = pgTable(
+  'flag_evaluation_buckets',
+  {
+    flagId: uuid()
+      .notNull()
+      .references(() => flags.id, { onDelete: 'cascade' }),
+    environmentId: uuid()
+      .notNull()
+      .references(() => environments.id, { onDelete: 'cascade' }),
+    /** Start of the hour (UTC). */
+    bucketStart: timestamp({ withTimezone: true }).notNull(),
+    variant: text().notNull(),
+    count: bigint({ mode: 'number' }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.flagId, t.environmentId, t.bucketStart, t.variant] }),
+    index('flag_evaluation_buckets_env_bucket_idx').on(t.environmentId, t.bucketStart),
+    index('flag_evaluation_buckets_bucket_idx').on(t.bucketStart),
+  ],
+)
+
 export const auditActorTypeEnum = pgEnum('audit_actor_type', ['user', 'api_key', 'system'])
 
 export const auditLog = pgTable(

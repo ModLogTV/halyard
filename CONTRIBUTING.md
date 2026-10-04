@@ -11,6 +11,10 @@ bun run setup
 bun run dev
 ```
 
+The root `.env` is the only one: docker compose and every `apps/web` script (`dev`, `start`, `test`,
+`db:*`) read it. Change the app port with `PORT` and the Postgres port with `POSTGRES_PORT`;
+`BETTER_AUTH_URL` follows `PORT` unless you set it.
+
 ## Checks
 
 Package tasks run through Turborepo (`turbo.json`), so results are cached per package.

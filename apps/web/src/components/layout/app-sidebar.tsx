@@ -1,6 +1,7 @@
 import { Link, useMatchRoute } from '@tanstack/react-router'
 import {
   CalendarClockIcon,
+  ChartAreaIcon,
   ColumnsIcon,
   FlagIcon,
   FlaskConicalIcon,
@@ -31,6 +32,12 @@ import {
 
 const projectNav = [
   { titleKey: 'common:labels.flags', to: '/app/$projectSlug/flags', icon: FlagIcon, shortcut: 'F' },
+  {
+    titleKey: 'sidebar.insights',
+    to: '/app/$projectSlug/insights',
+    icon: ChartAreaIcon,
+    shortcut: 'I',
+  },
   {
     titleKey: 'common:labels.segments',
     to: '/app/$projectSlug/segments',

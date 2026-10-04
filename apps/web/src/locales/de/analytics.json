@@ -1,0 +1,69 @@
+{
+  "page": {
+    "pageTitle": "Analysen · Halyard",
+    "title": "Analysen",
+    "description": "Wie oft deine Flags zuletzt ausgewertet wurden. Der stündliche Verlauf reicht 30 Tage zurück; für Langzeitanalysen fragst du die Prometheus-Metriken unter /metrics ab.",
+    "loading": "Analysen werden geladen"
+  },
+  "filters": {
+    "range": "Zeitraum",
+    "ranges": {
+      "24h": "24 Stunden",
+      "7d": "7 Tage",
+      "30d": "30 Tage"
+    },
+    "environment": "Umgebung",
+    "allEnvironments": "Alle Umgebungen"
+  },
+  "periods": {
+    "24h": "den vorherigen 24 Stunden",
+    "7d": "den vorherigen 7 Tagen",
+    "30d": "den vorherigen 30 Tagen"
+  },
+  "stats": {
+    "evaluations": "Auswertungen",
+    "evaluationsCount_one": "{{count, number}} Auswertung",
+    "evaluationsCount_other": "{{count, number}} Auswertungen",
+    "change": "{{value}} ggü. {{period}}",
+    "noPrevious": "Keine Daten aus {{period}}",
+    "activeFlags": "Genutzte Flags",
+    "activeFlagsValue": "{{evaluated}} von {{total}}",
+    "unusedFlags_one": "{{count, number}} Flag ohne Auswertung",
+    "unusedFlags_other": "{{count, number}} Flags ohne Auswertung",
+    "allFlagsUsed": "Jedes Flag wurde ausgewertet",
+    "peakHour": "Spitzenstunde",
+    "peakDay": "Spitzentag",
+    "noPeak": "Noch keine Auswertungen"
+  },
+  "charts": {
+    "inProgress": "läuft noch",
+    "evaluations": {
+      "title": "Auswertungen im Zeitverlauf",
+      "description": "{{scope}} · letzte {{period}}",
+      "summary": "Flächendiagramm der Auswertungen ({{scope}}, letzte {{period}}): insgesamt {{total, number}}."
+    },
+    "topFlags": {
+      "title": "Meistgenutzte Flags",
+      "description": "Top 8 · {{scope}} · letzte {{period}}"
+    },
+    "flagEvaluations": {
+      "title": "Auswertungen nach Variante",
+      "summary": "Gestapeltes Flächendiagramm der Auswertungen je ausgelieferter Variante ({{scope}}, letzte {{period}}): insgesamt {{total, number}}."
+    },
+    "variants": {
+      "title": "Ausgelieferte Varianten",
+      "description": "Anteil an den Auswertungen · {{scope}} · letzte {{period}}",
+      "variant": "Variante",
+      "share": "Anteil",
+      "errors": "Fehler"
+    }
+  },
+  "empty": {
+    "title": "Noch keine Auswertungen",
+    "projectDescription": "In diesem Zeitraum wurde kein Flag ausgewertet ({{scope}}). Auswertungen über OFREP erscheinen hier nach wenigen Sekunden.",
+    "flagDescription": "Dieses Flag wurde in diesem Zeitraum nicht ausgewertet ({{scope}})."
+  },
+  "errors": {
+    "loadFailed": "Die Analysen konnten nicht geladen werden."
+  }
+}

@@ -7,7 +7,8 @@ import { db } from '@/db'
  * evaluation path never waits on the database.
  *
  * Evaluation stats are aggregated per (flag, environment) and written with a single
- * upsert per flush. Experiment exposures are deduplicated per (experiment, subject)
+ * upsert per flush. The evaluation history for the analytics charts is counted per
+ * (flag, environment, hour, variant) and added to the stored hourly buckets. Experiment exposures are deduplicated per (experiment, subject)
  * and inserted with `on conflict do nothing`. A flush runs every few seconds, and
  * early when a buffer grows past {@link FLUSH_THRESHOLD}. Buffers are capped; when a
  * cap is reached new data is dropped with a (throttled) warning instead of growing
@@ -17,6 +18,8 @@ const FLUSH_INTERVAL_MS = 5_000
 const FLUSH_THRESHOLD = 10_000
 const MAX_STAT_ENTRIES = 50_000
 const MAX_EXPOSURE_ENTRIES = 100_000
+const MAX_BUCKET_ENTRIES = 50_000
+const HOUR_MS = 3_600_000
 const EXPOSURE_BATCH_SIZE = 5_000
 const WARN_INTERVAL_MS = 60_000
 
@@ -40,6 +43,17 @@ interface StatEntry {
   mixed: boolean
 }
 
+/** Evaluations of one variant of one flag in one environment during one hour. */
+interface BucketEntry {
+  flagId: string
+  environmentId: string
+  /** Start of the hour, epoch milliseconds. */
+  bucketStart: number
+  /** Served variant; empty for `ERROR` results. */
+  variant: string
+  count: number
+}
+
 interface ExposureEntry {
   experimentId: string
   subjectHash: string
@@ -49,6 +63,7 @@ interface ExposureEntry {
 
 interface TrackingState {
   stats: Map<string, StatEntry>
+  buckets: Map<string, BucketEntry>
   exposures: Map<string, ExposureEntry>
   flushing: Promise<void> | undefined
   timer: ReturnType<typeof setInterval> | undefined
@@ -62,11 +77,14 @@ declare global {
 
 globalThis.__halyardTracking ??= {
   stats: new Map(),
+  buckets: new Map(),
   exposures: new Map(),
   flushing: undefined,
   timer: undefined,
   lastWarning: 0,
 }
+// A state created before the evaluation history existed survives HMR without buckets.
+globalThis.__halyardTracking.buckets ??= new Map()
 const state = globalThis.__halyardTracking
 
 /**
@@ -85,6 +103,22 @@ function warnDropped(what: string): void {
   console.warn(`evaluation tracking buffer full, dropping ${what} until the next flush succeeds`)
 }
 
+function recordBucket(flagId: string, environmentId: string, variant: string, now: number): void {
+  const bucketStart = now - (now % HOUR_MS)
+  const key = `${flagId}:${environmentId}:${bucketStart}:${variant}`
+  const entry = state.buckets.get(key)
+  if (entry) {
+    entry.count += 1
+    return
+  }
+  if (state.buckets.size >= MAX_BUCKET_ENTRIES) {
+    warnDropped('evaluation history')
+    return
+  }
+  state.buckets.set(key, { flagId, environmentId, bucketStart, variant, count: 1 })
+  if (state.buckets.size >= FLUSH_THRESHOLD) void flushTracking()
+}
+
 /**
  * Records one evaluation of a flag. `variant` is undefined for `ERROR` results.
  * Synchronous and allocation-light; never touches the database.
@@ -95,6 +129,7 @@ export function recordEvaluation(
   variant: string | undefined,
   now = Date.now(),
 ): void {
+  recordBucket(flagId, environmentId, variant ?? '', now)
   const key = `${flagId}:${environmentId}`
   const entry = state.stats.get(key)
   const served = variant ?? null
@@ -184,6 +219,15 @@ function requeueStats(failed: Map<string, StatEntry>): void {
   }
 }
 
+function requeueBuckets(failed: Map<string, BucketEntry>): void {
+  for (const [key, older] of failed) {
+    const newer = state.buckets.get(key)
+    if (newer) newer.count += older.count
+    else if (state.buckets.size < MAX_BUCKET_ENTRIES) state.buckets.set(key, older)
+    else warnDropped('evaluation history')
+  }
+}
+
 function requeueExposures(failed: ExposureEntry[]): void {
   for (const exposure of failed) {
     const key = `${exposure.experimentId}:${exposure.subjectHash}`
@@ -266,6 +310,26 @@ async function writeStats(entries: StatEntry[]): Promise<void> {
   `)
 }
 
+/** Adds the counts of one window to the stored hourly buckets. */
+async function writeBuckets(entries: BucketEntry[]): Promise<void> {
+  await db.execute(sql`
+    insert into flag_evaluation_buckets as b (flag_id, environment_id, bucket_start, variant, count)
+    select i.flag_id, i.environment_id, i.bucket_start, i.variant, i.count
+    from unnest(
+      ${sql.param(entries.map((e) => e.flagId))}::uuid[],
+      ${sql.param(entries.map((e) => e.environmentId))}::uuid[],
+      ${sql.param(entries.map((e) => iso(e.bucketStart)))}::timestamptz[],
+      ${sql.param(entries.map((e) => e.variant))}::text[],
+      ${sql.param(entries.map((e) => e.count))}::bigint[]
+    ) as i(flag_id, environment_id, bucket_start, variant, count)
+    -- Flags or environments deleted since the evaluation would fail the whole batch.
+    where exists (select 1 from flags f where f.id = i.flag_id)
+      and exists (select 1 from environments e where e.id = i.environment_id)
+    on conflict (flag_id, environment_id, bucket_start, variant) do update set
+      count = b.count + excluded.count
+  `)
+}
+
 async function writeExposures(entries: ExposureEntry[]): Promise<void> {
   await db.execute(sql`
     insert into experiment_exposures (experiment_id, subject_hash, variant, first_seen_at)
@@ -283,9 +347,11 @@ async function writeExposures(entries: ExposureEntry[]): Promise<void> {
 
 async function flushOnce(): Promise<void> {
   const stats = state.stats
+  const buckets = state.buckets
   const exposures = state.exposures
-  if (stats.size === 0 && exposures.size === 0) return
+  if (stats.size === 0 && buckets.size === 0 && exposures.size === 0) return
   state.stats = new Map()
+  state.buckets = new Map()
   state.exposures = new Map()
 
   if (stats.size > 0) {
@@ -294,6 +360,15 @@ async function flushOnce(): Promise<void> {
     } catch (error) {
       console.error('failed to flush evaluation stats, retrying with the next flush', error)
       requeueStats(stats)
+    }
+  }
+
+  if (buckets.size > 0) {
+    try {
+      await writeBuckets([...buckets.values()])
+    } catch (error) {
+      console.error('failed to flush evaluation history, retrying with the next flush', error)
+      requeueBuckets(buckets)
     }
   }
 
@@ -342,10 +417,11 @@ export async function stopTrackingFlusher(): Promise<void> {
 /** Drops buffered data without writing it. For tests. */
 export function resetTracking(): void {
   state.stats.clear()
+  state.buckets.clear()
   state.exposures.clear()
 }
 
 /** Number of buffered entries, for tests and diagnostics. */
-export function trackingBufferSize(): { stats: number; exposures: number } {
-  return { stats: state.stats.size, exposures: state.exposures.size }
+export function trackingBufferSize(): { stats: number; buckets: number; exposures: number } {
+  return { stats: state.stats.size, buckets: state.buckets.size, exposures: state.exposures.size }
 }

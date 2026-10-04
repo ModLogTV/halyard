@@ -10,9 +10,9 @@ import {
 import { formatVariantValue } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
-const PALETTE_SIZE = 5
+const PALETTE_SIZE = 8
 
-/** CSS colour for the variant at `index`; cycles through `--chart-1..5`. */
+/** CSS colour for the variant at `index`; cycles through `--chart-1..8`. */
 export function variantColor(index: number): string {
   const safe = Number.isFinite(index) && index >= 0 ? Math.floor(index) : 0
   return `var(--chart-${(safe % PALETTE_SIZE) + 1})`

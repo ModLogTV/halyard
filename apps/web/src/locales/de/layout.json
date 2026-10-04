@@ -20,10 +20,12 @@
     "environments": "Umgebungen",
     "flags": "Flags",
     "apiKeys": "API-Schlüssel",
+    "mcp": "MCP",
     "newExperiment": "Neues Experiment",
     "newFlag": "Neues Flag",
     "newSegment": "Neues Segment",
-    "segments": "Segmente"
+    "segments": "Segmente",
+    "insights": "Analysen"
   },
   "sidebar": {
     "search": "Suchen",
@@ -32,7 +34,8 @@
     "compare": "Vergleichen",
     "collapse": "Seitenleiste einklappen",
     "expand": "Seitenleiste ausklappen",
-    "toggle": "Seitenleiste umschalten"
+    "toggle": "Seitenleiste umschalten",
+    "insights": "Analysen"
   },
   "projectSwitcher": {
     "ariaLabel": "Aktuelles Projekt: {{name}}. Projekt wechseln",

@@ -5,7 +5,7 @@ import { Client } from 'pg'
  * with TEST_DATABASE_NAME), derived from DATABASE_URL. The database is created if missing and migrated
  * once per run; individual tests truncate the tables they touch via `resetDatabase`.
  */
-const base = process.env.DATABASE_URL ?? 'postgresql://halyard:halyard@localhost:5433/halyard'
+const base = process.env.DATABASE_URL ?? 'postgresql://halyard:halyard@localhost:5432/halyard'
 const url = new URL(base)
 const adminUrl = new URL(base)
 const testDbName = process.env.TEST_DATABASE_NAME ?? 'halyard_test'
@@ -13,7 +13,8 @@ url.pathname = `/${testDbName}`
 
 process.env.DATABASE_URL = url.toString()
 process.env.BETTER_AUTH_SECRET ??= 'test-secret-test-secret-test-secret'
-process.env.BETTER_AUTH_URL ??= 'http://localhost:3000'
+// Pinned instead of taken from the .env: the tests send requests to http://localhost:3000.
+process.env.BETTER_AUTH_URL = 'http://localhost:3000'
 process.env.NODE_ENV = 'test'
 process.env.RUN_MIGRATIONS_ON_STARTUP = 'false'
 process.env.ENABLE_WORKERS = 'false'

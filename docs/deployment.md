@@ -18,7 +18,7 @@ docker build -t halyard:dev .
 | --- | --- | --- | --- |
 | `DATABASE_URL` | yes | | Postgres connection string, e.g. `postgresql://user:pass@host:5432/halyard`. Use a direct (session) connection, see [Multiple replicas](#multiple-replicas). |
 | `BETTER_AUTH_SECRET` | yes | | Session signing secret, at least 16 characters (use 32+ random). `openssl rand -base64 32` |
-| `BETTER_AUTH_URL` | recommended | `http://localhost:3000` | Public URL of the app. Used for cookies and redirects; set it to the URL users open in the browser. |
+| `BETTER_AUTH_URL` | recommended | `http://localhost:$PORT` | Public URL of the app. Used for cookies and redirects; set it to the URL users open in the browser. |
 | `PORT` | no | `3000` | Port the server listens on. |
 | `AUTH_SIGNUP_MODE` | no | `invite` | Who may create accounts, see [Accounts and sign-up](#accounts-and-sign-up). |
 | `TRUSTED_PROXIES` | recommended | unset | Reverse proxies (IPs/CIDRs, comma separated) whose `X-Forwarded-For` / `X-Real-IP` carry the client address, see [Reverse proxy and TLS](#reverse-proxy-and-tls). |

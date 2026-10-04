@@ -212,7 +212,7 @@ describe('evaluation stats', () => {
     await db.delete(flags).where(eq(flags.id, other.id))
     const row = await stats()
     expect(row?.evaluationCount).toBe(1)
-    expect(trackingBufferSize()).toEqual({ stats: 0, exposures: 0 })
+    expect(trackingBufferSize()).toEqual({ stats: 0, buckets: 0, exposures: 0 })
   })
 
   it('does not double count with concurrent flushes', async () => {

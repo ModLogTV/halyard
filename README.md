@@ -18,6 +18,8 @@ so every OpenFeature SDK can talk to it without a vendor SDK.
   segment or bucket decided, using the same engine as production.
 - **Scheduled changes and staged rollouts.** Enable, disable or change a rollout at a point in
   time, or step a percentage up on a schedule. Runs exactly once with several replicas.
+- **Insights.** How often each flag is evaluated and which variants it serves, over the last
+  24 hours, 7 or 30 days, per environment. Long-term analysis via the Prometheus metrics.
 - **Stale flag detection, audit log, webhooks, Prometheus metrics.**
 - **OFREP, local evaluation, CLI.** Single and bulk evaluation with ETags, a downloadable ruleset
   that the published `@modlogtv/halyard-engine` evaluates locally, and a CLI that generates TypeScript

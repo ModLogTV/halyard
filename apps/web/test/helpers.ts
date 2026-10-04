@@ -9,7 +9,8 @@ export async function resetDatabase(): Promise<void> {
   await db.execute(sql`
     truncate table
       "audit_log", "webhook_deliveries", "webhooks", "scheduled_changes",
-      "flag_evaluation_stats", "experiment_conversions", "experiment_exposures", "experiments",
+      "flag_evaluation_stats", "flag_evaluation_buckets",
+      "experiment_conversions", "experiment_exposures", "experiments",
       "flag_environments", "flags", "segments", "environments", "projects",
       "apikey", "invitation", "member", "organization",
       "verification", "account", "session", "user"

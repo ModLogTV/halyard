@@ -280,7 +280,8 @@
     "pendingSchedules_one": "{{count}} scheduled change pending for this flag — <0>view</0>",
     "pendingSchedules_other": "{{count}} scheduled changes pending for this flag — <0>view</0>",
     "tabs": {
-      "targeting": "Targeting"
+      "targeting": "Targeting",
+      "insights": "Insights"
     },
     "activity": {
       "title": "Activity",
