@@ -52,6 +52,12 @@ export interface ExperimentFormProps {
 }
 
 /** Creates a draft experiment or edits one (flag, environment and key are fixed in edit mode). */
+/** True when the display name is just the key with different separators, e.g. `mod-inventory-search` vs "mod inventory search". */
+function nameRepeatsKey(key: string, name: string): boolean {
+  const normalise = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, '')
+  return normalise(key) === normalise(name)
+}
+
 export function ExperimentForm({
   mode,
   flags,
@@ -166,13 +172,24 @@ export function ExperimentForm({
                     ) : null}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent position="popper">
+                <SelectContent
+                  position="popper"
+                  className="w-(--radix-select-trigger-width) max-w-(--radix-select-trigger-width)"
+                >
                   {flags.map((f) => (
-                    <SelectItem key={f.key} value={f.key}>
-                      <span className="flex min-w-0 items-center gap-2">
-                        <span className="font-mono text-xs">{f.key}</span>
-                        <FlagTypeBadge type={f.type} />
-                        <span className="truncate text-muted-foreground text-xs">{f.name}</span>
+                    <SelectItem
+                      key={f.key}
+                      value={f.key}
+                      className="items-start *:[span]:last:min-w-0 *:[span]:last:flex-1"
+                    >
+                      <span className="flex min-w-0 flex-col gap-0.5">
+                        <span className="flex min-w-0 items-center gap-2">
+                          <span className="truncate font-mono text-xs">{f.key}</span>
+                          <FlagTypeBadge type={f.type} />
+                        </span>
+                        {nameRepeatsKey(f.key, f.name) ? null : (
+                          <span className="truncate text-muted-foreground text-xs">{f.name}</span>
+                        )}
                       </span>
                     </SelectItem>
                   ))}
