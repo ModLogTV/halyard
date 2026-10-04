@@ -52,6 +52,16 @@ async function run(cmd: string[], cwd: string, allowFailure = false) {
   return { stdout, stderr, exitCode }
 }
 
+/**
+ * Run a command attached to this terminal. `npm publish` needs that for the
+ * interactive 2FA step of a local publish (browser login or one-time password).
+ */
+async function runInteractive(cmd: string[], cwd: string) {
+  const proc = Bun.spawn(cmd, { cwd, stdin: 'inherit', stdout: 'inherit', stderr: 'inherit' })
+  const exitCode = await proc.exited
+  if (exitCode !== 0) throw new Error(`${cmd.join(' ')} failed (${exitCode})`)
+}
+
 async function isPublished(name: string, version: string): Promise<boolean> {
   const { stdout, exitCode } = await run(
     ['npm', 'view', `${name}@${version}`, 'version', '--json'],
@@ -86,9 +96,7 @@ async function main() {
     console.log(`Publishing ${tag}${dryRun ? ' (dry run)' : ''}`)
     try {
       writeFileSync(manifestPath, `${JSON.stringify(prepared, null, 2)}\n`)
-      const { stdout, stderr } = await run(args, dir)
-      process.stdout.write(stdout)
-      process.stderr.write(stderr)
+      await runInteractive(args, dir)
     } finally {
       writeFileSync(manifestPath, original)
     }
