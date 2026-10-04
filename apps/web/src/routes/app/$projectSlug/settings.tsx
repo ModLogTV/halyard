@@ -20,10 +20,9 @@ export const Route = createFileRoute('/app/$projectSlug/settings')({
   component: SettingsLayout,
 })
 
-// These pages are added separately and are not in the generated route tree yet. The casts can be
-// removed once `settings/webhooks.tsx` and `settings/transfer.tsx` exist.
+// This page is added separately and is not in the generated route tree yet. The cast can be
+// removed once `settings/webhooks.tsx` exists.
 const WEBHOOKS_TO = '/app/$projectSlug/settings/webhooks' as '/app/$projectSlug/settings'
-const TRANSFER_TO = '/app/$projectSlug/settings/transfer' as '/app/$projectSlug/settings'
 
 const activeProps = {
   'aria-current': 'page' as const,
@@ -96,7 +95,11 @@ function SettingsLayout() {
           </li>
           <li>
             <Button asChild variant="ghost" size="sm">
-              <Link to={TRANSFER_TO} params={params} activeProps={activeProps}>
+              <Link
+                to="/app/$projectSlug/settings/transfer"
+                params={params}
+                activeProps={activeProps}
+              >
                 <ArrowLeftRightIcon /> Import &amp; export
               </Link>
             </Button>
