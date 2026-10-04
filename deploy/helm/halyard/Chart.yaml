@@ -1,0 +1,12 @@
+apiVersion: v2
+name: halyard
+description: Halyard, a self-hosted feature flag platform. Requires an external PostgreSQL database.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+kubeVersion: ">=1.25.0-0"
+keywords:
+  - feature-flags
+  - feature-toggles
+  - openfeature
+  - ofrep

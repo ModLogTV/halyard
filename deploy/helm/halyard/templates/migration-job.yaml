@@ -1,0 +1,107 @@
+{{- if .Values.migrations.job.enabled }}
+{{- if not (or .Values.database.url .Values.database.existingSecret .Values.existingSecret) }}
+{{- fail "migrations.job.enabled requires database.url, database.existingSecret or existingSecret" }}
+{{- end }}
+{{- /*
+  Helm runs pre-install hooks before any regular resource exists, so a
+  chart-managed Secret would not be there yet. Ship a hook copy of it for the Job.
+*/}}
+{{- $secretName := include "halyard.secretName" . }}
+{{- if include "halyard.createSecret" . }}
+{{- $secretName = printf "%s-migrate" (include "halyard.fullname" .) }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $secretName }}
+  labels:
+    {{- include "halyard.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "-10"
+    "helm.sh/hook-delete-policy": before-hook-creation
+type: Opaque
+stringData:
+  {{- if and .Values.database.url (not .Values.database.existingSecret) }}
+  DATABASE_URL: {{ .Values.database.url | quote }}
+  {{- end }}
+  BETTER_AUTH_SECRET: {{ required "auth.secret is required" .Values.auth.secret | quote }}
+{{- end }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "halyard.fullname" . }}-migrate
+  labels:
+    {{- include "halyard.labels" . | nindent 4 }}
+    app.kubernetes.io/component: migrate
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    {{- with .Values.migrations.job.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  backoffLimit: {{ .Values.migrations.job.backoffLimit }}
+  activeDeadlineSeconds: {{ .Values.migrations.job.activeDeadlineSeconds }}
+  template:
+    metadata:
+      labels:
+        # Deliberately not the Deployment/Service selector labels.
+        app.kubernetes.io/name: {{ include "halyard.name" . }}-migrate
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: migrate
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      restartPolicy: Never
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      # The ServiceAccount is not created yet during pre-install and the Job needs no API access.
+      automountServiceAccountToken: false
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: migrate
+          image: {{ include "halyard.image" . | quote }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["bun", "run", "apps/web/scripts/migrate.ts"]
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          {{- include "halyard.secretRefs" (dict "root" . "secretName" $secretName) | nindent 10 }}
+          env:
+            {{- with include "halyard.authUrl" . }}
+            - name: BETTER_AUTH_URL
+              value: {{ . | quote }}
+            {{- end }}
+            {{- include "halyard.databaseUrlEnv" . | nindent 12 }}
+            {{- with .Values.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.migrations.job.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

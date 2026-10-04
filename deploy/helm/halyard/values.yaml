@@ -1,0 +1,216 @@
+# Default values for the Halyard chart.
+#
+# Minimal install (external Postgres, chart-managed Secret):
+#   helm install halyard ./deploy/helm/halyard \
+#     --set image.repository=ghcr.io/<owner>/halyard \
+#     --set database.url=postgresql://user:pass@host:5432/halyard \
+#     --set auth.secret="$(openssl rand -base64 32)" \
+#     --set auth.url=https://flags.example.com
+
+# Number of replicas. Halyard coordinates replicas through Postgres
+# (LISTEN/NOTIFY, FOR UPDATE SKIP LOCKED, advisory-locked migrations), so any
+# value >= 1 is safe. Ignored when autoscaling.enabled is true.
+replicaCount: 1
+
+image:
+  # Registry path of the published image (the release workflow pushes to
+  # ghcr.io/<github-owner>/<repo>). Replace "your-org/halyard" accordingly.
+  repository: ghcr.io/your-org/halyard
+  # Defaults to the chart appVersion when empty.
+  tag: ""
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# ---------------------------------------------------------------------------
+# Database (external PostgreSQL, 14+). The chart does not deploy Postgres.
+# ---------------------------------------------------------------------------
+database:
+  # Connection string, stored in the chart-managed Secret.
+  # Ignored when database.existingSecret or the top-level existingSecret is set.
+  url: ""
+  # Name of an existing Secret holding the connection string.
+  existingSecret: ""
+  # Key inside database.existingSecret.
+  existingSecretKey: DATABASE_URL
+
+# ---------------------------------------------------------------------------
+# Authentication (better-auth)
+# ---------------------------------------------------------------------------
+auth:
+  # Public URL of the app (BETTER_AUTH_URL), e.g. https://flags.example.com.
+  # When empty and ingress is enabled, it is derived from the first ingress host
+  # (https if ingress.tls is set, otherwise http).
+  url: ""
+  # Session signing secret (BETTER_AUTH_SECRET, >= 16 characters; use 32+ random
+  # characters). Stored in the chart-managed Secret. Generate with:
+  #   openssl rand -base64 32
+  secret: ""
+
+# Name of an existing Secret to use instead of the chart-managed one. It is
+# mounted with envFrom, so it must contain the keys:
+#   DATABASE_URL        (unless database.existingSecret is used)
+#   BETTER_AUTH_SECRET
+#   METRICS_TOKEN       (optional, see metrics.existingSecretHasToken)
+# When set, the chart does not create a Secret and ignores database.url,
+# auth.secret and metrics.token.
+existingSecret: ""
+
+# ---------------------------------------------------------------------------
+# Application configuration
+# ---------------------------------------------------------------------------
+config:
+  # Run Drizzle migrations when a pod starts (RUN_MIGRATIONS_ON_STARTUP).
+  # Safe with several replicas: migrations take a Postgres advisory lock.
+  # Automatically forced to "false" when migrations.job.enabled is true.
+  runMigrationsOnStartup: true
+  # Run background workers (scheduler, webhooks, flushers) in every pod
+  # (ENABLE_WORKERS). Workers use SKIP LOCKED, so running them on all replicas is safe.
+  # Set to false to build dedicated "web only" replicas.
+  enableWorkers: true
+
+# Additional environment variables, rendered as-is into the container `env`.
+extraEnv: []
+#  - name: SOME_VAR
+#    value: "value"
+#  - name: FROM_SECRET
+#    valueFrom:
+#      secretKeyRef: { name: my-secret, key: key }
+
+# Additional envFrom sources (ConfigMaps or Secrets).
+extraEnvFrom: []
+
+# ---------------------------------------------------------------------------
+# Database migration Job (alternative to migrating on startup)
+# ---------------------------------------------------------------------------
+migrations:
+  job:
+    # Run migrations in a Helm pre-install,pre-upgrade hook Job
+    # (`bun run apps/web/scripts/migrate.ts`) instead of inside the pods. The
+    # Deployment is then started with RUN_MIGRATIONS_ON_STARTUP=false.
+    # With a chart-managed Secret, a hook copy of the Secret is created for the Job.
+    enabled: false
+    backoffLimit: 2
+    activeDeadlineSeconds: 600
+    resources: {}
+    annotations: {}
+
+# ---------------------------------------------------------------------------
+# Networking
+# ---------------------------------------------------------------------------
+containerPort: 3000
+
+service:
+  type: ClusterIP
+  port: 80
+  annotations: {}
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  #  cert-manager.io/cluster-issuer: letsencrypt
+  #  nginx.ingress.kubernetes.io/proxy-body-size: 8m
+  hosts:
+    - host: halyard.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - secretName: halyard-tls
+  #    hosts: [halyard.example.com]
+
+# ---------------------------------------------------------------------------
+# Metrics (Prometheus)
+# ---------------------------------------------------------------------------
+metrics:
+  # Optional bearer token protecting GET /metrics (METRICS_TOKEN). Stored in the
+  # chart-managed Secret; the ServiceMonitor then authenticates with it.
+  token: ""
+  # Set to true when `existingSecret` contains a METRICS_TOKEN key, so the
+  # ServiceMonitor sends it as a bearer token.
+  existingSecretHasToken: false
+  serviceMonitor:
+    # Requires the Prometheus Operator CRDs.
+    enabled: false
+    interval: 30s
+    scrapeTimeout: 10s
+    path: /metrics
+    # Extra labels, e.g. the `release` label your Prometheus selects on.
+    labels: {}
+    annotations: {}
+    namespace: ""
+    relabelings: []
+    metricRelabelings: []
+
+# ---------------------------------------------------------------------------
+# Scheduling and availability
+# ---------------------------------------------------------------------------
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    memory: 512Mi
+
+# Probes target GET /healthz (200 when Postgres is reachable, else 503). The
+# server only starts listening after migrations ran, so the startup probe allows
+# up to failureThreshold * periodSeconds (5 minutes by default) for them.
+probes:
+  startup:
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 60
+  liveness:
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+  readiness:
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: null
+
+pdb:
+  enabled: false
+  # Set one of the two. minAvailable wins if both are set.
+  minAvailable: 1
+  maxUnavailable: null
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+  automountServiceAccountToken: false
+
+podAnnotations: {}
+podLabels: {}
+
+# The image runs as uid/gid 1000 ("bun").
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: [ALL]
+
+terminationGracePeriodSeconds: 30
+nodeSelector: {}
+tolerations: []
+affinity: {}
+topologySpreadConstraints: []

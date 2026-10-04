@@ -1,0 +1,41 @@
+Halyard {{ .Chart.AppVersion }} has been deployed as "{{ .Release.Name }}".
+
+{{- if .Values.ingress.enabled }}
+
+Open the app at:
+{{- range .Values.ingress.hosts }}
+  {{ if $.Values.ingress.tls }}https{{ else }}http{{ end }}://{{ .host }}
+{{- end }}
+{{- else if contains "NodePort" .Values.service.type }}
+
+  export NODE_PORT=$(kubectl get -n {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "halyard.fullname" . }})
+  export NODE_IP=$(kubectl get nodes -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+{{- else if contains "LoadBalancer" .Values.service.type }}
+
+  kubectl get svc -n {{ .Release.Namespace }} {{ include "halyard.fullname" . }} -w   # wait for EXTERNAL-IP
+{{- else }}
+
+Port-forward to try it out:
+  kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "halyard.fullname" . }} 8080:{{ .Values.service.port }}
+  open http://localhost:8080
+{{- end }}
+{{- if not (include "halyard.authUrl" .) }}
+
+WARNING: auth.url (BETTER_AUTH_URL) is not set. better-auth defaults to http://localhost:3000,
+so sign-in cookies and redirects will not work on your public URL. Set --set auth.url=https://...
+{{- end }}
+{{- if .Values.migrations.job.enabled }}
+
+Migrations run in a pre-install/pre-upgrade Job; RUN_MIGRATIONS_ON_STARTUP is disabled in the pods.
+{{- else if .Values.config.runMigrationsOnStartup }}
+
+Migrations run at pod startup (advisory-locked, safe with {{ .Values.replicaCount }} replica(s)).
+Pods can take a while to become ready on the first start or after an upgrade with new migrations.
+{{- end }}
+{{- if .Values.metrics.serviceMonitor.enabled }}
+
+A ServiceMonitor scrapes {{ .Values.metrics.serviceMonitor.path }} every {{ .Values.metrics.serviceMonitor.interval }}.
+{{- end }}
+
+Health:  GET /healthz     Metrics: GET {{ .Values.metrics.serviceMonitor.path }}{{ if include "halyard.metricsHasToken" . }} (Bearer token required){{ end }}

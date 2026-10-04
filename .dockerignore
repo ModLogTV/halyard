@@ -1,0 +1,34 @@
+# VCS and tooling
+.git
+.github
+.gitignore
+.DS_Store
+.vite
+.turbo
+.output
+coverage
+*.log
+
+# Dependencies and build output are produced inside the image
+node_modules
+**/node_modules
+dist
+**/dist
+apps/web/.tanstack
+apps/web/.nitro
+
+# Secrets and local config
+.env
+.env.*
+!.env.example
+
+# Not needed at build or runtime
+docs
+deploy
+assets
+*.md
+docker-compose*.yml
+Dockerfile
+.dockerignore
+apps/web/test
+packages/*/test
