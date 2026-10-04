@@ -7,8 +7,10 @@ import {
   UsersIcon,
   WebhookIcon,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/layout/page-header'
 import { Button } from '@/components/ui/button'
+import { translate } from '@/lib/i18n'
 
 export const Route = createFileRoute('/app/$projectSlug/settings')({
   staticData: { crumbKey: 'settings' },
@@ -16,7 +18,9 @@ export const Route = createFileRoute('/app/$projectSlug/settings')({
     const parent = await parentMatchPromise
     return { projectId: parent.loaderData?.project.id ?? null }
   },
-  head: () => ({ meta: [{ title: 'Settings · Halyard' }] }),
+  head: ({ match }) => ({
+    meta: [{ title: translate(match.context.locale)('settings:nav.pageTitle') }],
+  }),
   component: SettingsLayout,
 })
 
@@ -26,16 +30,14 @@ const activeProps = {
 }
 
 function SettingsLayout() {
+  const { t } = useTranslation(['settings', 'common'])
   const { projectSlug } = Route.useParams()
   const params = { projectSlug }
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 p-6 md:p-8">
-      <PageHeader
-        title="Settings"
-        description="Manage this project, who can use it and how it is accessed."
-      />
-      <nav aria-label="Settings" className="-mx-1 overflow-x-auto px-1 pb-1">
+      <PageHeader title={t('common:labels.settings')} description={t('nav.description')} />
+      <nav aria-label={t('common:labels.settings')} className="-mx-1 overflow-x-auto px-1 pb-1">
         <ul className="flex items-center gap-1 border-b pb-2">
           <li>
             <Button asChild variant="ghost" size="sm">
@@ -45,7 +47,7 @@ function SettingsLayout() {
                 activeOptions={{ exact: true }}
                 activeProps={activeProps}
               >
-                <SlidersHorizontalIcon /> General
+                <SlidersHorizontalIcon /> {t('common:labels.general')}
               </Link>
             </Button>
           </li>
@@ -56,7 +58,7 @@ function SettingsLayout() {
                 params={params}
                 activeProps={activeProps}
               >
-                <LayersIcon /> Environments
+                <LayersIcon /> {t('common:labels.environments')}
               </Link>
             </Button>
           </li>
@@ -67,7 +69,7 @@ function SettingsLayout() {
                 params={params}
                 activeProps={activeProps}
               >
-                <UsersIcon /> Members
+                <UsersIcon /> {t('common:labels.members')}
               </Link>
             </Button>
           </li>
@@ -78,7 +80,7 @@ function SettingsLayout() {
                 params={params}
                 activeProps={activeProps}
               >
-                <KeyRoundIcon /> API keys
+                <KeyRoundIcon /> {t('common:labels.apiKeys')}
               </Link>
             </Button>
           </li>
@@ -89,7 +91,7 @@ function SettingsLayout() {
                 params={params}
                 activeProps={activeProps}
               >
-                <WebhookIcon /> Webhooks
+                <WebhookIcon /> {t('common:labels.webhooks')}
               </Link>
             </Button>
           </li>
@@ -100,7 +102,7 @@ function SettingsLayout() {
                 params={params}
                 activeProps={activeProps}
               >
-                <ArrowLeftRightIcon /> Import &amp; export
+                <ArrowLeftRightIcon /> {t('nav.transfer')}
               </Link>
             </Button>
           </li>

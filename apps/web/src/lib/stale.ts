@@ -7,6 +7,8 @@
  * penalised for having no evaluations yet.
  */
 
+import type { TFunction } from 'i18next'
+
 const DAY_MS = 24 * 60 * 60 * 1000
 
 export interface StaleThresholds {
@@ -85,16 +87,25 @@ export function assessStaleness(
   return { stale: everyEnvironmentStale && reasons.length > 0, reasons }
 }
 
+/** Human-readable, translated sentence for a stale reason. */
 export function describeStaleReason(
   reason: StaleReason,
   environmentName: (id: string) => string,
+  t: TFunction<['flags', 'common']>,
 ): string {
   switch (reason.kind) {
     case 'never-evaluated':
-      return `Never evaluated in ${reason.days} days`
+      return t('stale.reasons.neverEvaluated', { count: reason.days })
     case 'not-evaluated':
-      return `Not evaluated in ${environmentName(reason.environmentId)} for ${reason.days} days`
+      return t('stale.reasons.notEvaluated', {
+        environment: environmentName(reason.environmentId),
+        count: reason.days,
+      })
     case 'single-variant':
-      return `Returned "${reason.variant ?? 'nothing'}" to everyone in ${environmentName(reason.environmentId)} for ${reason.days} days`
+      return t('stale.reasons.singleVariant', {
+        variant: reason.variant ?? t('stale.reasons.noVariant'),
+        environment: environmentName(reason.environmentId),
+        count: reason.days,
+      })
   }
 }

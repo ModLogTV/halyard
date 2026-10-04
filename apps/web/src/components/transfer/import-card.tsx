@@ -2,8 +2,10 @@ import type { JsonValue } from '@halyard/engine'
 import { useRouter } from '@tanstack/react-router'
 import { CircleAlertIcon, EyeIcon, TriangleAlertIcon, UploadIcon } from 'lucide-react'
 import { useId, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { EnvBadge, type EnvironmentLike, envStyle } from '@/components/env/env-badge'
+import { HazardBand } from '@/components/env/hazard-band'
 import { errorMessage } from '@/components/settings/form-utils'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import {
@@ -23,7 +25,6 @@ import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
-import { pluralize } from '@/lib/format'
 import { applyImport, previewImport } from '@/server/functions/transfer'
 import type { ImportPreview } from '@/server/services/transfer'
 import { DiffView, productionImpact } from './diff-view'
@@ -50,6 +51,7 @@ export function ImportCard({
   environments: EnvironmentLike[]
   canImport: boolean
 }) {
+  const { t } = useTranslation(['settings', 'common'])
   const router = useRouter()
   const textId = useId()
   const fileId = useId()
@@ -73,7 +75,7 @@ export function ImportCard({
       setText(await file.text())
       invalidate()
     } catch (error) {
-      toast.error(errorMessage(error, 'Could not read the file'))
+      toast.error(errorMessage(error, t('transfer.import.readFailed')))
     }
   }
 
@@ -83,7 +85,7 @@ export function ImportCard({
       document = JSON.parse(text)
     } catch {
       setState(null)
-      setParseError('This is not valid JSON. Paste or upload a Halyard export file.')
+      setParseError(t('transfer.import.invalidJson'))
       return
     }
     setParseError(null)
@@ -94,7 +96,7 @@ export function ImportCard({
       })
       setState({ result, document, prune })
     } catch (error) {
-      toast.error(errorMessage(error, 'Could not preview the import'))
+      toast.error(errorMessage(error, t('transfer.import.previewFailed')))
     } finally {
       setPreviewing(false)
     }
@@ -109,14 +111,16 @@ export function ImportCard({
       })
       const changed = totalChanges(result.diff)
       toast.success(
-        changed === 0 ? 'Nothing to change' : `Import applied: ${pluralize(changed, 'change')}`,
+        changed === 0
+          ? t('transfer.import.nothingToChange')
+          : t('transfer.import.applied', { count: changed }),
       )
       setConfirming(false)
       setText('')
       setState(null)
       await router.invalidate()
     } catch (error) {
-      toast.error(errorMessage(error, 'The import was not applied'))
+      toast.error(errorMessage(error, t('transfer.import.applyFailed')))
     } finally {
       setApplying(false)
     }
@@ -135,17 +139,14 @@ export function ImportCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Import</CardTitle>
-        <CardDescription>
-          Apply a Halyard export to this project. Entities are matched by key; the preview shows
-          exactly what would change before anything is written.
-        </CardDescription>
+        <CardTitle>{t('transfer.import.title')}</CardTitle>
+        <CardDescription>{t('transfer.import.description')}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-6">
         {canImport ? (
           <>
             <Field>
-              <FieldLabel htmlFor={fileId}>Export file</FieldLabel>
+              <FieldLabel htmlFor={fileId}>{t('transfer.import.fileLabel')}</FieldLabel>
               <Input
                 id={fileId}
                 type="file"
@@ -155,10 +156,10 @@ export function ImportCard({
                   event.target.value = ''
                 }}
               />
-              <FieldDescription>Choose a .json file, or paste the document below.</FieldDescription>
+              <FieldDescription>{t('transfer.import.fileHint')}</FieldDescription>
             </Field>
             <Field data-invalid={parseError ? true : undefined}>
-              <FieldLabel htmlFor={textId}>Document</FieldLabel>
+              <FieldLabel htmlFor={textId}>{t('transfer.import.documentLabel')}</FieldLabel>
               <Textarea
                 id={textId}
                 value={text}
@@ -184,13 +185,9 @@ export function ImportCard({
                 }}
               />
               <FieldContent>
-                <FieldLabel htmlFor={pruneId}>
-                  Remove flags, segments and environments missing from the file
-                </FieldLabel>
+                <FieldLabel htmlFor={pruneId}>{t('transfer.import.pruneLabel')}</FieldLabel>
                 <FieldDescription className={prune ? 'text-destructive' : undefined}>
-                  {prune
-                    ? 'Anything not in the file is deleted, including its history of targeting and the SDK keys of removed environments. This cannot be undone.'
-                    : 'Off: the import only adds and updates; nothing is deleted.'}
+                  {prune ? t('transfer.import.pruneOnHint') : t('transfer.import.pruneOffHint')}
                 </FieldDescription>
               </FieldContent>
             </Field>
@@ -201,17 +198,15 @@ export function ImportCard({
                 onClick={runPreview}
                 disabled={previewing || text.trim() === ''}
               >
-                {previewing ? <Spinner /> : <EyeIcon />} Preview changes
+                {previewing ? <Spinner /> : <EyeIcon />} {t('transfer.import.preview')}
               </Button>
             </div>
           </>
         ) : (
           <Alert>
             <CircleAlertIcon />
-            <AlertTitle>Importing needs the editor or owner role</AlertTitle>
-            <AlertDescription>
-              Viewers can export this project but not change it. Ask an owner for a higher role.
-            </AlertDescription>
+            <AlertTitle>{t('transfer.import.viewerTitle')}</AlertTitle>
+            <AlertDescription>{t('transfer.import.viewerDescription')}</AlertDescription>
           </Alert>
         )}
 
@@ -221,8 +216,7 @@ export function ImportCard({
               <Alert variant="destructive">
                 <CircleAlertIcon />
                 <AlertTitle>
-                  {pluralize(result.errors.length, 'problem')} in the document, nothing can be
-                  applied
+                  {t('transfer.import.problems', { count: result.errors.length })}
                 </AlertTitle>
                 <AlertDescription>
                   <ul className="mt-1 flex list-disc flex-col gap-1 pl-4">
@@ -236,7 +230,9 @@ export function ImportCard({
             {result.warnings.length > 0 ? (
               <Alert>
                 <TriangleAlertIcon />
-                <AlertTitle>{pluralize(result.warnings.length, 'note')}</AlertTitle>
+                <AlertTitle>
+                  {t('transfer.import.notes', { count: result.warnings.length })}
+                </AlertTitle>
                 <AlertDescription>
                   <ul className="mt-1 flex list-disc flex-col gap-1 pl-4">
                     {result.warnings.map((warning) => (
@@ -247,18 +243,16 @@ export function ImportCard({
               </Alert>
             ) : null}
             {result.errors.length === 0 && changed === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Nothing to change. This project already matches the document.
-              </p>
+              <p className="text-sm text-muted-foreground">{t('transfer.import.noChanges')}</p>
             ) : null}
             <DiffView diff={result.diff} environments={environments} />
             <div className="flex flex-wrap items-center gap-3">
               <Button type="button" onClick={() => setConfirming(true)} disabled={blocked}>
-                <UploadIcon /> Apply import
+                <UploadIcon /> {t('transfer.import.apply')}
               </Button>
               {changed > 0 ? (
                 <p className="text-sm text-muted-foreground">
-                  {pluralize(changed, 'change')} will be written in one step.
+                  {t('transfer.import.willBeWritten', { count: changed })}
                 </p>
               ) : null}
             </div>
@@ -268,24 +262,19 @@ export function ImportCard({
 
       <AlertDialog open={confirming} onOpenChange={(open) => !applying && setConfirming(open)}>
         <AlertDialogContent>
-          {impact && impact.environments.length > 0 ? (
-            <div className="hazard-stripes -mx-6 -mt-6 mb-2 h-2 rounded-t-lg" aria-hidden="true" />
-          ) : null}
+          {impact && impact.environments.length > 0 ? <HazardBand /> : null}
           <AlertDialogHeader>
             <AlertDialogTitle>
               {impact && impact.environments.length > 0
-                ? 'Apply import to production?'
-                : 'Apply this import?'}
+                ? t('transfer.import.confirm.titleProduction')
+                : t('transfer.import.confirm.title')}
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="flex flex-col gap-3">
-                <p>
-                  {pluralize(changed, 'change')} will be written to this project in one step and
-                  take effect immediately.
-                </p>
+                <p>{t('transfer.import.confirm.description', { count: changed })}</p>
                 {impact && impact.environments.length > 0 ? (
                   <p className="flex flex-wrap items-center gap-1.5">
-                    Production environments affected:
+                    {t('transfer.import.confirm.productionAffected')}
                     {impact.environments.map((env) => (
                       <span key={env.key} style={envStyle(env)}>
                         <EnvBadge env={env} />
@@ -295,14 +284,14 @@ export function ImportCard({
                 ) : null}
                 {deletions > 0 ? (
                   <p className="text-destructive">
-                    {pluralize(deletions, 'item')} will be deleted. This cannot be undone.
+                    {t('transfer.import.confirm.deletions', { count: deletions })}
                   </p>
                 ) : null}
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={applying}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={applying}>{t('common:actions.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               disabled={applying}
               variant={deletions > 0 ? 'destructive' : 'default'}
@@ -312,7 +301,9 @@ export function ImportCard({
               }}
             >
               {applying ? <Spinner /> : null}
-              {impact && impact.environments.length > 0 ? 'Apply to production' : 'Apply import'}
+              {impact && impact.environments.length > 0
+                ? t('transfer.import.confirm.applyProduction')
+                : t('transfer.import.apply')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

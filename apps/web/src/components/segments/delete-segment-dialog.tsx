@@ -1,5 +1,6 @@
 import { TriangleAlertIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { EnvironmentLike } from '@/components/env/env-badge'
 import {
   AlertDialog,
@@ -12,7 +13,6 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Spinner } from '@/components/ui/spinner'
-import { pluralize } from '@/lib/format'
 import { type SegmentUsageItem, UsageList } from './segment-usages'
 
 /**
@@ -42,6 +42,7 @@ export function DeleteSegmentDialog({
   onConfirm: () => void
   trigger?: ReactNode
 }) {
+  const { t } = useTranslation(['segments', 'common'])
   const inUse = usages.length > 0
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -49,12 +50,14 @@ export function DeleteSegmentDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            {inUse ? `Segment "${segmentKey}" is still in use` : `Delete segment "${segmentKey}"?`}
+            {inUse
+              ? t('deleteDialog.inUseTitle', { key: segmentKey })
+              : t('deleteDialog.title', { key: segmentKey })}
           </AlertDialogTitle>
           <AlertDialogDescription>
             {inUse
-              ? `${pluralize(usages.length, 'flag rule')} reference this segment. Remove the segment condition from these rules first, then delete it.`
-              : 'This cannot be undone. No flag rules reference this segment.'}
+              ? t('deleteDialog.inUseDescription', { count: usages.length })
+              : t('deleteDialog.description')}
           </AlertDialogDescription>
         </AlertDialogHeader>
         {inUse ? (
@@ -69,7 +72,9 @@ export function DeleteSegmentDialog({
           </p>
         ) : null}
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={pending}>{inUse ? 'Close' : 'Cancel'}</AlertDialogCancel>
+          <AlertDialogCancel disabled={pending}>
+            {inUse ? t('common:actions.close') : t('common:actions.cancel')}
+          </AlertDialogCancel>
           <AlertDialogAction
             variant="destructive"
             disabled={pending || inUse}
@@ -79,7 +84,7 @@ export function DeleteSegmentDialog({
             }}
           >
             {pending ? <Spinner /> : null}
-            Delete segment
+            {t('deleteDialog.confirm')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -1,6 +1,7 @@
 import { useRouter } from '@tanstack/react-router'
 import { TriangleAlertIcon } from 'lucide-react'
 import { type FormEvent, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { EnvDot } from '@/components/env/env-badge'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -114,6 +115,7 @@ function CreateKeyForm({
   onDone: () => void
   onCreated: (key: RevealedKey) => void
 }) {
+  const { t } = useTranslation(['settings', 'common'])
   const router = useRouter()
   const [name, setName] = useState('')
   const [environmentId, setEnvironmentId] = useState(environments[0]?.id ?? '')
@@ -124,7 +126,8 @@ function CreateKeyForm({
 
   const nameError = firstError(nameSchema, name)
   const showName = submitted ? nameError : undefined
-  const envError = kind === 'sdk' && !environmentId ? 'Choose an environment' : undefined
+  const envError =
+    kind === 'sdk' && !environmentId ? t('apiKeys.create.environmentRequired') : undefined
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -142,7 +145,7 @@ function CreateKeyForm({
       onDone()
       onCreated({ kind, name: trimmed, key: created.key })
     } catch (error) {
-      setServerError(errorMessage(error, 'Could not create the key'))
+      setServerError(errorMessage(error, t('apiKeys.create.failed')))
     } finally {
       setPending(false)
     }
@@ -151,21 +154,27 @@ function CreateKeyForm({
   return (
     <form onSubmit={onSubmit} noValidate className="contents">
       <DialogHeader>
-        <DialogTitle>{kind === 'sdk' ? 'Create SDK key' : 'Create management key'}</DialogTitle>
+        <DialogTitle>
+          {kind === 'sdk' ? t('apiKeys.create.sdkTitle') : t('apiKeys.create.managementTitle')}
+        </DialogTitle>
         <DialogDescription>
           {kind === 'sdk'
-            ? 'SDK keys evaluate flags for a single environment. Use one per service so you can revoke them independently.'
-            : 'Management keys act on the whole project through the CLI and REST API.'}
+            ? t('apiKeys.create.sdkDescription')
+            : t('apiKeys.create.managementDescription')}
         </DialogDescription>
       </DialogHeader>
       <FieldGroup className="gap-5">
         <Field data-invalid={showName ? true : undefined}>
-          <FieldLabel htmlFor="key-name">Name</FieldLabel>
+          <FieldLabel htmlFor="key-name">{t('common:labels.name')}</FieldLabel>
           <Input
             id="key-name"
             value={name}
             onChange={(event) => setName(event.target.value)}
-            placeholder={kind === 'sdk' ? 'Checkout service' : 'CI pipeline'}
+            placeholder={
+              kind === 'sdk'
+                ? t('apiKeys.create.sdkNamePlaceholder')
+                : t('apiKeys.create.managementNamePlaceholder')
+            }
             maxLength={64}
             aria-invalid={showName ? true : undefined}
             autoComplete="off"
@@ -176,10 +185,10 @@ function CreateKeyForm({
 
         {kind === 'sdk' ? (
           <Field data-invalid={submitted && envError ? true : undefined}>
-            <FieldLabel htmlFor="key-environment">Environment</FieldLabel>
+            <FieldLabel htmlFor="key-environment">{t('common:labels.environment')}</FieldLabel>
             <Select value={environmentId} onValueChange={setEnvironmentId}>
               <SelectTrigger id="key-environment" className="w-full">
-                <SelectValue placeholder="Choose an environment" />
+                <SelectValue placeholder={t('apiKeys.create.environmentPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
                 {environments.map((env) => (
@@ -193,12 +202,12 @@ function CreateKeyForm({
             {submitted && envError ? (
               <FieldError>{envError}</FieldError>
             ) : (
-              <FieldDescription>The key can only read flags of this environment.</FieldDescription>
+              <FieldDescription>{t('apiKeys.create.environmentHint')}</FieldDescription>
             )}
           </Field>
         ) : (
           <FieldSet>
-            <FieldLegend variant="label">Access</FieldLegend>
+            <FieldLegend variant="label">{t('apiKeys.create.accessLegend')}</FieldLegend>
             <RadioGroup
               value={access}
               onValueChange={(next) => setAccess(next as 'read' | 'write')}
@@ -206,10 +215,8 @@ function CreateKeyForm({
               <FieldLabel htmlFor="key-access-read">
                 <Field orientation="horizontal">
                   <FieldContent>
-                    <FieldTitle>Read</FieldTitle>
-                    <FieldDescription>
-                      List and export flags, segments and settings.
-                    </FieldDescription>
+                    <FieldTitle>{t('apiKeys.create.readTitle')}</FieldTitle>
+                    <FieldDescription>{t('apiKeys.create.readDescription')}</FieldDescription>
                   </FieldContent>
                   <RadioGroupItem value="read" id="key-access-read" />
                 </Field>
@@ -217,8 +224,8 @@ function CreateKeyForm({
               <FieldLabel htmlFor="key-access-write">
                 <Field orientation="horizontal">
                   <FieldContent>
-                    <FieldTitle>Read and write</FieldTitle>
-                    <FieldDescription>Also change flags and import configuration.</FieldDescription>
+                    <FieldTitle>{t('apiKeys.create.writeTitle')}</FieldTitle>
+                    <FieldDescription>{t('apiKeys.create.writeDescription')}</FieldDescription>
                   </FieldContent>
                   <RadioGroupItem value="write" id="key-access-write" />
                 </Field>
@@ -231,18 +238,18 @@ function CreateKeyForm({
       </FieldGroup>
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onDone} disabled={pending}>
-          Cancel
+          {t('common:actions.cancel')}
         </Button>
         <Button type="submit" disabled={pending}>
           {pending ? <Spinner /> : null}
-          Create key
+          {t('apiKeys.create.submit')}
         </Button>
       </DialogFooter>
     </form>
   )
 }
 
-function Snippet({ code, label }: { code: string; label: string }) {
+function Snippet({ code, label, copyLabel }: { code: string; label: string; copyLabel: string }) {
   return (
     <div className="relative">
       <section
@@ -256,7 +263,7 @@ function Snippet({ code, label }: { code: string; label: string }) {
         </pre>
       </section>
       <div className="absolute top-2 right-2">
-        <CopyButton value={code} label={`Copy ${label.toLowerCase()}`} />
+        <CopyButton value={code} label={copyLabel} />
       </div>
     </div>
   )
@@ -303,6 +310,7 @@ export function KeyRevealDialog({
 }
 
 function RevealBody({ revealed, onClose }: { revealed: RevealedKey; onClose: () => void }) {
+  const { t } = useTranslation(['settings', 'common'])
   const origin = typeof window === 'undefined' ? '' : window.location.origin
   const sdk = sdkSnippets(origin, revealed.key)
   const cli = `halyard login --url ${origin} --key ${revealed.key}`
@@ -310,22 +318,22 @@ function RevealBody({ revealed, onClose }: { revealed: RevealedKey; onClose: () 
   return (
     <>
       <DialogHeader>
-        <DialogTitle>Copy your new key</DialogTitle>
+        <DialogTitle>{t('apiKeys.reveal.title')}</DialogTitle>
         <DialogDescription>
-          {revealed.kind === 'sdk' ? 'SDK key' : 'Management key'} "{revealed.name}" is ready.
+          {revealed.kind === 'sdk'
+            ? t('apiKeys.reveal.readySdk', { name: revealed.name })
+            : t('apiKeys.reveal.readyManagement', { name: revealed.name })}
         </DialogDescription>
       </DialogHeader>
 
       <Alert variant="destructive">
         <TriangleAlertIcon />
-        <AlertTitle>This key will not be shown again</AlertTitle>
-        <AlertDescription>
-          Store it in your secrets manager now. If you lose it, revoke it and create a new one.
-        </AlertDescription>
+        <AlertTitle>{t('apiKeys.reveal.notShownTitle')}</AlertTitle>
+        <AlertDescription>{t('apiKeys.reveal.notShownDescription')}</AlertDescription>
       </Alert>
 
       <Field>
-        <FieldLabel htmlFor="revealed-key">Key</FieldLabel>
+        <FieldLabel htmlFor="revealed-key">{t('common:labels.key')}</FieldLabel>
         <div className="flex gap-2">
           <Input
             id="revealed-key"
@@ -345,22 +353,34 @@ function RevealBody({ revealed, onClose }: { revealed: RevealedKey; onClose: () 
             <TabsTrigger value="node">Node OpenFeature</TabsTrigger>
           </TabsList>
           <TabsContent value="curl">
-            <Snippet code={sdk.curl} label="curl command" />
+            <Snippet
+              code={sdk.curl}
+              label={t('apiKeys.reveal.curlLabel')}
+              copyLabel={t('apiKeys.reveal.curlCopy')}
+            />
           </TabsContent>
           <TabsContent value="node">
-            <Snippet code={sdk.node} label="Node snippet" />
+            <Snippet
+              code={sdk.node}
+              label={t('apiKeys.reveal.nodeLabel')}
+              copyLabel={t('apiKeys.reveal.nodeCopy')}
+            />
           </TabsContent>
         </Tabs>
       ) : (
         <div className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium">Log in with the CLI</span>
-          <Snippet code={cli} label="CLI command" />
+          <span className="text-sm font-medium">{t('apiKeys.reveal.cliHeading')}</span>
+          <Snippet
+            code={cli}
+            label={t('apiKeys.reveal.cliLabel')}
+            copyLabel={t('apiKeys.reveal.cliCopy')}
+          />
         </div>
       )}
 
       <DialogFooter>
         <Button type="button" onClick={onClose}>
-          I have copied the key
+          {t('apiKeys.reveal.done')}
         </Button>
       </DialogFooter>
     </>

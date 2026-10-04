@@ -1,9 +1,11 @@
 import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { HalyardMark } from '@/components/brand'
 import { LocaleSelect } from '@/components/locale-switcher'
 
 /** Two-column layout for sign in and sign up. The left panel is the product's one marketing moment. */
 export function AuthShell({ children }: { children: ReactNode }) {
+  const { t } = useTranslation('auth')
   return (
     <div className="grid min-h-dvh lg:grid-cols-[1.1fr_1fr]">
       <aside className="relative hidden overflow-hidden border-r bg-sidebar p-10 lg:flex lg:flex-col lg:justify-between">
@@ -15,15 +17,12 @@ export function AuthShell({ children }: { children: ReactNode }) {
           <FlagPreview />
           <div>
             <h1 className="text-3xl font-semibold tracking-tight text-balance">
-              Raise features gradually. Lower them instantly.
+              {t('shell.headline')}
             </h1>
-            <p className="mt-3 text-muted-foreground">
-              Self-hosted feature flags with sticky rollouts, segments, experiments and an
-              OpenFeature compatible API. Your data stays on your infrastructure.
-            </p>
+            <p className="mt-3 text-muted-foreground">{t('shell.description')}</p>
           </div>
         </div>
-        <p className="text-xs text-muted-foreground">Open source, MIT licensed.</p>
+        <p className="text-xs text-muted-foreground">{t('shell.license')}</p>
       </aside>
       <main className="flex items-center justify-center p-6">
         <div className="w-full max-w-sm">
@@ -43,6 +42,7 @@ export function AuthShell({ children }: { children: ReactNode }) {
 
 /** A static rendering of a flag row across three environments, mirroring the real UI. */
 function FlagPreview() {
+  const { t } = useTranslation('auth')
   const rows: Array<{
     env: string
     color: string
@@ -59,7 +59,9 @@ function FlagPreview() {
       <div className="flex items-center justify-between">
         <div>
           <div className="font-mono text-sm">checkout.new-payment-flow</div>
-          <div className="text-xs text-muted-foreground">boolean · 3 environments</div>
+          <div className="text-xs text-muted-foreground">
+            {t('shell.preview.summary', { count: rows.length })}
+          </div>
         </div>
         <span className="rounded-md bg-on-soft px-2 py-0.5 font-mono text-[11px] text-foreground">
           v12
@@ -74,7 +76,7 @@ function FlagPreview() {
           >
             <span className="text-sm">{r.env}</span>
             <span className="flex items-center gap-3 text-xs text-muted-foreground tabular">
-              {r.rollout ? <span>{r.rollout}% rollout</span> : null}
+              {r.rollout ? <span>{t('shell.preview.rollout', { percent: r.rollout })}</span> : null}
               <span
                 className={`inline-flex h-5 w-9 items-center rounded-full p-0.5 transition-colors ${r.on ? 'bg-on' : 'bg-off'}`}
                 aria-hidden="true"

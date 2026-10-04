@@ -1,1 +1,84 @@
-{}
+{
+  "page": {
+    "pageTitle": "Audit log · Halyard",
+    "title": "Audit log",
+    "description": "Every change to flags, segments, environments and members in this project.",
+    "loading": "Loading audit log"
+  },
+  "filters": {
+    "ariaLabel": "Filter audit log",
+    "allEnvironments": "All environments",
+    "entity": "Entity",
+    "allEntities": "All entities",
+    "action": "Action",
+    "actionHint": "e.g. flag.*",
+    "from": "From",
+    "to": "To",
+    "rangeInvalid": "The start of the range is after its end."
+  },
+  "feed": {
+    "noMatches": {
+      "title": "No matching entries",
+      "description": "Nothing in the audit log matches these filters."
+    },
+    "loadMore": "Load more",
+    "loadMoreFailed": "Could not load more entries",
+    "end": "End of the audit log"
+  },
+  "timeline": {
+    "empty": {
+      "title": "No activity",
+      "description": "Changes will show up here as they happen."
+    },
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "system": "System",
+    "preposition": {
+      "in": "in",
+      "to": "to"
+    },
+    "entities": {
+      "project": "project",
+      "environment": "environment",
+      "flag": "flag",
+      "segment": "segment",
+      "experiment": "experiment",
+      "schedule": "schedule",
+      "webhook": "webhook",
+      "apiKey": "API key",
+      "member": "member"
+    },
+    "actions": {
+      "created": "<0/> created {{entity}} <1/> <2/>",
+      "updated": "<0/> updated {{entity}} <1/> <2/>",
+      "deleted": "<0/> deleted {{entity}} <1/> <2/>",
+      "archived": "<0/> archived {{entity}} <1/> <2/>",
+      "unarchived": "<0/> restored {{entity}} <1/> <2/>",
+      "promoted": "<0/> promoted {{entity}} <1/> <2/>",
+      "invited": "<0/> invited {{entity}} <1/> <2/>",
+      "invitationCanceled": "<0/> canceled the invitation for {{entity}} <1/> <2/>",
+      "roleChanged": "<0/> changed the role of {{entity}} <1/> <2/>",
+      "removed": "<0/> removed {{entity}} <1/> <2/>",
+      "environmentUpdated": "<0/> updated the targeting of {{entity}} <1/> <2/>",
+      "started": "<0/> started {{entity}} <1/> <2/>",
+      "stopped": "<0/> stopped {{entity}} <1/> <2/>",
+      "completed": "<0/> completed {{entity}} <1/> <2/>",
+      "rotated": "<0/> rotated {{entity}} <1/> <2/>",
+      "revoked": "<0/> revoked {{entity}} <1/> <2/>",
+      "toggled": "<0/> toggled {{entity}} <1/> <2/>",
+      "enabled": "<0/> enabled {{entity}} <1/> <2/>",
+      "disabled": "<0/> disabled {{entity}} <1/> <2/>",
+      "memberJoined": "<0/> joined the project",
+      "memberLeft": "<0/> left the project",
+      "raw": "<0/> performed <3/> <1/> <2/>"
+    }
+  },
+  "diff": {
+    "added": "Added",
+    "removed": "Removed",
+    "changed": "Changed",
+    "noChanges": "No field changes.",
+    "moreFields_one": "and {{count}} more changed field",
+    "moreFields_other": "and {{count}} more changed fields"
+  }
+}

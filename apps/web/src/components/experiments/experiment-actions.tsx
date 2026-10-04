@@ -1,8 +1,10 @@
 import { useRouter } from '@tanstack/react-router'
 import { TriangleAlertIcon } from 'lucide-react'
 import { type ReactNode, useCallback, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { EnvBadge, envStyle } from '@/components/env/env-badge'
+import { HazardBand } from '@/components/env/hazard-band'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,12 +31,6 @@ interface Pending {
   target: ExperimentActionTarget
 }
 
-const SUCCESS: Record<ExperimentActionType, string> = {
-  start: 'started',
-  stop: 'stopped',
-  delete: 'deleted',
-}
-
 /**
  * Start, stop and delete with the right confirmation. Starting outside production runs
  * straight away; everything else asks first, and production gets the hazard dialog.
@@ -50,6 +46,7 @@ export function useExperimentActions({
   request: (type: ExperimentActionType, target: ExperimentActionTarget) => void
   dialogs: ReactNode
 } {
+  const { t } = useTranslation(['experiments', 'common'])
   const router = useRouter()
   const [pending, setPending] = useState<Pending | null>(null)
   const [busy, setBusy] = useState(false)
@@ -62,18 +59,18 @@ export function useExperimentActions({
         if (type === 'start') await startExperiment({ data })
         else if (type === 'stop') await stopExperiment({ data })
         else await deleteExperiment({ data })
-        toast.success(`Experiment ${target.key} ${SUCCESS[type]}`)
+        toast.success(t(`actions.toast.${type}`, { key: target.key }))
         setPending(null)
         await onDone?.(type, target)
         await router.invalidate()
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : `Could not ${type} the experiment`)
+        toast.error(error instanceof Error ? error.message : t(`actions.failed.${type}`))
         setPending(null)
       } finally {
         setBusy(false)
       }
     },
-    [projectId, router, onDone],
+    [projectId, router, onDone, t],
   )
 
   const request = useCallback(
@@ -98,40 +95,43 @@ export function useExperimentActions({
     >
       {pending && target ? (
         <AlertDialogContent style={envStyle(target.environment)}>
-          {type === 'start' && production ? (
-            <div className="hazard-stripes -mx-6 -mt-6 mb-2 h-2 rounded-t-lg" aria-hidden="true" />
-          ) : null}
+          {type === 'start' && production ? <HazardBand /> : null}
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               {type === 'start' && production ? (
                 <TriangleAlertIcon className="size-5 text-(--env-color)" />
               ) : null}
               {type === 'start'
-                ? 'Start this experiment in production?'
+                ? t('actions.startTitle')
                 : type === 'stop'
-                  ? `Stop ${target.key}?`
-                  : `Delete ${target.key}?`}
+                  ? t('actions.stopTitle', { key: target.key })
+                  : t('actions.deleteTitle', { key: target.key })}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {type === 'start' ? (
-                <>
-                  <span className="font-mono text-foreground">{target.key}</span> starts splitting
-                  real users in <EnvBadge env={target.environment} className="align-middle" /> right
-                  away. Experiments in production affect real users. Allocation, control and
-                  conversion event are locked once it runs.
-                </>
+                <Trans
+                  t={t}
+                  i18nKey="actions.startBody"
+                  values={{ key: target.key }}
+                  components={[
+                    <span key="key" className="font-mono text-foreground" />,
+                    <EnvBadge key="env" env={target.environment} className="align-middle" />,
+                  ]}
+                />
               ) : type === 'stop' ? (
-                'Stopping freezes the results and removes the allocation from evaluation. A stopped experiment cannot be restarted.'
+                t('actions.stopBody')
               ) : (
-                <>
-                  This removes <span className="font-mono text-foreground">{target.key}</span> with
-                  all its exposures and conversions. This cannot be undone.
-                </>
+                <Trans
+                  t={t}
+                  i18nKey="actions.deleteBody"
+                  values={{ key: target.key }}
+                  components={[<span key="key" className="font-mono text-foreground" />]}
+                />
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={busy}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={busy}>{t('common:actions.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               variant={type === 'delete' ? 'destructive' : 'default'}
               disabled={busy}
@@ -140,11 +140,7 @@ export function useExperimentActions({
                 void run(pending.type, pending.target)
               }}
             >
-              {type === 'start'
-                ? 'Start experiment'
-                : type === 'stop'
-                  ? 'Stop experiment'
-                  : 'Delete experiment'}
+              {t(`actions.confirm.${pending.type}`)}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -24,5 +24,62 @@
     "newFlag": "New flag",
     "newSegment": "New segment",
     "segments": "Segments"
+  },
+  "sidebar": {
+    "search": "Search",
+    "searchTooltip": "Search (⌘K)",
+    "projectGroup": "Project",
+    "compare": "Compare",
+    "collapse": "Collapse sidebar",
+    "expand": "Expand sidebar",
+    "toggle": "Toggle sidebar"
+  },
+  "projectSwitcher": {
+    "ariaLabel": "Current project: {{name}}. Switch project",
+    "newProject": "New project"
+  },
+  "commandPalette": {
+    "title": "Command palette",
+    "description": "Search flags, segments and pages",
+    "searchPlaceholder": "Type a flag key, segment, page or command…",
+    "noResults": "No results found.",
+    "noActions": "No actions.",
+    "flagActionsPlaceholder": "Actions for {{key}}",
+    "openFlag": "Open flag",
+    "turnOnIn": "Turn on in",
+    "turnOffIn": "Turn off in",
+    "backToSearch": "Back to search",
+    "groups": {
+      "flags": "Flags",
+      "segments": "Segments",
+      "goTo": "Go to",
+      "projects": "Projects",
+      "appearance": "Appearance"
+    },
+    "items": {
+      "newFlag": "New flag",
+      "compareEnvironments": "Compare environments",
+      "newProject": "New project",
+      "lightTheme": "Light theme",
+      "darkTheme": "Dark theme"
+    },
+    "toasts": {
+      "turnedOn": "{{key}} is now on in {{environment}}",
+      "turnedOff": "{{key}} is now off in {{environment}}",
+      "updateFailed": "Could not update the flag"
+    },
+    "confirm": {
+      "enableTitle": "Enable in production?",
+      "disableTitle": "Disable in production?",
+      "enableDescription": "<0>{{key}}</0> will be turned <1>on</1> for everyone in {{environment}} immediately.",
+      "disableDescription": "<0>{{key}}</0> will be turned <1>off</1> for everyone in {{environment}} immediately.",
+      "enableAction": "Enable in production",
+      "disableAction": "Disable in production"
+    }
+  },
+  "routeStates": {
+    "notFoundTitle": "Page not found",
+    "notFoundDescription": "The page you are looking for does not exist or was moved.",
+    "goHome": "Go home"
   }
 }

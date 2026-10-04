@@ -16,10 +16,21 @@ export interface ContextDraft {
   rows: AttributeRow[]
 }
 
+/** Problems with an attribute row; text lives in `playground:editor.errors.<code>`. */
+export type ContextErrorCode =
+  | 'invalidNumber'
+  | 'invalidJson'
+  | 'nameRequired'
+  | 'useTargetingKeyField'
+  | 'duplicate'
+
+/** Problems with the JSON tab; text lives in `playground:editor.json.errors.<code>`. */
+export type ContextJsonErrorCode = 'invalidJson' | 'notObject' | 'targetingKeyNotString'
+
 export interface BuiltContext {
   context: EvaluationContext
   /** Problems keyed by row id. */
-  errors: Record<string, string>
+  errors: Record<string, ContextErrorCode>
 }
 
 let counter = 0
@@ -33,7 +44,7 @@ export function newRow(partial: Partial<Omit<AttributeRow, 'id'>> = {}): Attribu
 
 export function parseRowValue(row: Pick<AttributeRow, 'type' | 'value'>): {
   value?: JsonValue
-  error?: string
+  error?: ContextErrorCode
 } {
   switch (row.type) {
     case 'string':
@@ -41,7 +52,7 @@ export function parseRowValue(row: Pick<AttributeRow, 'type' | 'value'>): {
     case 'number': {
       const text = row.value.trim()
       const parsed = Number(text)
-      if (text === '' || !Number.isFinite(parsed)) return { error: 'Enter a valid number' }
+      if (text === '' || !Number.isFinite(parsed)) return { error: 'invalidNumber' }
       return { value: parsed }
     }
     case 'boolean':
@@ -50,7 +61,7 @@ export function parseRowValue(row: Pick<AttributeRow, 'type' | 'value'>): {
       try {
         return { value: JSON.parse(row.value) as JsonValue }
       } catch {
-        return { error: 'Enter valid JSON' }
+        return { error: 'invalidJson' }
       }
   }
 }
@@ -58,22 +69,22 @@ export function parseRowValue(row: Pick<AttributeRow, 'type' | 'value'>): {
 /** Builds the context to evaluate. Rows with errors are left out and reported. */
 export function draftToContext(draft: ContextDraft): BuiltContext {
   const context: EvaluationContext = {}
-  const errors: Record<string, string> = {}
+  const errors: Record<string, ContextErrorCode> = {}
   const targetingKey = draft.targetingKey.trim()
   if (targetingKey) context.targetingKey = targetingKey
   const seen = new Set<string>()
   for (const row of draft.rows) {
     const key = row.key.trim()
     if (!key) {
-      if (row.value.trim()) errors[row.id] = 'Name the attribute'
+      if (row.value.trim()) errors[row.id] = 'nameRequired'
       continue
     }
     if (key === 'targetingKey') {
-      errors[row.id] = 'Use the targeting key field'
+      errors[row.id] = 'useTargetingKeyField'
       continue
     }
     if (seen.has(key)) {
-      errors[row.id] = 'Duplicate attribute'
+      errors[row.id] = 'duplicate'
       continue
     }
     seen.add(key)
@@ -101,21 +112,24 @@ export function contextToDraft(context: Record<string, JsonValue | undefined>): 
   }
 }
 
-export function parseContextJson(text: string): { draft: ContextDraft } | { error: string } {
+/** `detail` is the parser's own message for syntax errors; it comes from the JS runtime and is not translated. */
+export function parseContextJson(
+  text: string,
+): { draft: ContextDraft } | { error: ContextJsonErrorCode; detail?: string } {
   let parsed: unknown
   try {
     parsed = JSON.parse(text)
   } catch (error) {
-    return { error: error instanceof Error ? error.message : 'Invalid JSON' }
+    return { error: 'invalidJson', detail: error instanceof Error ? error.message : undefined }
   }
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-    return { error: 'The context must be a JSON object' }
+    return { error: 'notObject' }
   }
   if (
     'targetingKey' in parsed &&
     typeof (parsed as Record<string, unknown>).targetingKey !== 'string'
   ) {
-    return { error: 'targetingKey must be a string' }
+    return { error: 'targetingKeyNotString' }
   }
   return { draft: contextToDraft(parsed as Record<string, JsonValue>) }
 }

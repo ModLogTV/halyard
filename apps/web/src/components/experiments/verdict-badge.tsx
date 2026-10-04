@@ -1,4 +1,6 @@
+import type { TFunction } from 'i18next'
 import { CircleHelpIcon, TrendingDownIcon, TrendingUpIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import {
@@ -8,29 +10,33 @@ import {
   type Verdict,
 } from '@/server/experiments/stats'
 
-export function minimumSampleRule(): string {
-  return `A result needs at least ${MIN_EXPOSURES_PER_VARIANT} exposures and ${MIN_CONVERSIONS_PER_VARIANT} conversions in both the variant and the control.`
+export function minimumSampleRule(t: TFunction<['experiments', 'common']>): string {
+  return t('verdict.minimumSample', {
+    exposures: MIN_EXPOSURES_PER_VARIANT,
+    conversions: MIN_CONVERSIONS_PER_VARIANT,
+  })
 }
 
 /** Winner green, loser red, no difference muted, insufficient data an outline with the sample rule. */
 export function VerdictBadge({ verdict }: { verdict: Verdict | null }) {
+  const { t } = useTranslation(['experiments', 'common'])
   switch (verdict) {
     case 'winner':
       return (
         <Badge className="gap-1 border-on/30 bg-on-soft text-foreground">
-          <TrendingUpIcon className="text-on" /> Winner
+          <TrendingUpIcon className="text-on" /> {t('verdict.winner')}
         </Badge>
       )
     case 'loser':
       return (
         <Badge className="gap-1 border-destructive/30 bg-destructive/10 text-destructive">
-          <TrendingDownIcon /> Loser
+          <TrendingDownIcon /> {t('verdict.loser')}
         </Badge>
       )
     case 'no-difference':
       return (
         <Badge variant="secondary" className="text-muted-foreground">
-          No difference
+          {t('verdict.noDifference')}
         </Badge>
       )
     case 'insufficient-data':
@@ -38,11 +44,14 @@ export function VerdictBadge({ verdict }: { verdict: Verdict | null }) {
         <Tooltip>
           <TooltipTrigger asChild>
             <Badge variant="outline" className="gap-1 text-muted-foreground">
-              Insufficient data <CircleHelpIcon />
+              {t('verdict.insufficientData')} <CircleHelpIcon />
             </Badge>
           </TooltipTrigger>
           <TooltipContent className="max-w-64">
-            {minimumSampleRule()} Significance is tested at p &lt; {SIGNIFICANCE_LEVEL}.
+            {t('verdict.insufficientTooltip', {
+              rule: minimumSampleRule(t),
+              level: SIGNIFICANCE_LEVEL,
+            })}
           </TooltipContent>
         </Tooltip>
       )

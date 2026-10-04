@@ -1,9 +1,11 @@
 import { CheckIcon, CopyIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { IconButton } from './hinted-button'
 
-export function CopyButton({ value, label = 'Copy' }: { value: string; label?: string }) {
+export function CopyButton({ value, label }: { value: string; label?: string }) {
+  const { t } = useTranslation(['settings', 'common'])
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
@@ -16,14 +18,14 @@ export function CopyButton({ value, label = 'Copy' }: { value: string; label?: s
     try {
       await navigator.clipboard.writeText(value)
       setCopied(true)
-      toast.success('Copied')
+      toast.success(t('common:toasts.copied'))
     } catch {
-      toast.error('Could not copy. Select the text and copy it manually.')
+      toast.error(t('shared.copyFailed'))
     }
   }
 
   return (
-    <IconButton label={label} variant="outline" onClick={copy}>
+    <IconButton label={label ?? t('common:actions.copy')} variant="outline" onClick={copy}>
       {copied ? <CheckIcon /> : <CopyIcon />}
     </IconButton>
   )

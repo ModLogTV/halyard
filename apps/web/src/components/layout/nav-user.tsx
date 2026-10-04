@@ -50,6 +50,7 @@ export function NavUser({ user }: { user: { name: string; email: string; isAdmin
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
+              tooltip={user.name}
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               aria-label={t('userMenu.ariaLabel')}
             >

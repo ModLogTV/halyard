@@ -10,12 +10,12 @@ import {
 } from 'lucide-react'
 import { AnimatePresence, MotionConfig, motion } from 'motion/react'
 import { useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { formatDelta } from '@/components/schedules/utils'
 import { ConfirmDialog } from '@/components/settings/confirm-dialog'
 import { errorMessage } from '@/components/settings/form-utils'
 import { DisabledHint, HintedButton } from '@/components/settings/hinted-button'
-import { OWNER_ONLY_MESSAGE } from '@/components/settings/use-settings-context'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -49,13 +49,14 @@ import type { RevealedSecret } from './secret-reveal-dialog'
 const MAX_EVENT_BADGES = 3
 
 export function EventBadges({ events }: { events: string[] }) {
+  const { t } = useTranslation('settings')
   const shown = events.slice(0, MAX_EVENT_BADGES)
   const rest = events.slice(MAX_EVENT_BADGES)
   return (
     <div className="flex flex-wrap items-center gap-1">
       {shown.map((event) => (
         <Badge key={event} variant="secondary" className="font-mono font-normal">
-          {event === '*' ? 'all events' : event}
+          {event === '*' ? t('webhooks.list.allEvents') : event}
         </Badge>
       ))}
       {rest.length > 0 ? (
@@ -91,22 +92,27 @@ export function WebhookList({
   onEdit,
   onReveal,
 }: WebhookListProps) {
+  const { t, i18n } = useTranslation(['settings', 'common'])
   const router = useRouter()
   const navigate = useNavigate()
   // Optimistic state of the enabled switches while the request is in flight.
   const [enabledOverride, setEnabledOverride] = useState<Record<string, boolean>>({})
   const [rotating, setRotating] = useState<Webhook | null>(null)
   const [deleting, setDeleting] = useState<Webhook | null>(null)
-  const reason = isOwner ? undefined : OWNER_ONLY_MESSAGE
+  const reason = isOwner ? undefined : t('shared.ownerOnly')
 
   async function setEnabled(webhook: Webhook, enabled: boolean) {
     setEnabledOverride((prev) => ({ ...prev, [webhook.id]: enabled }))
     try {
       await updateWebhook({ data: { projectId, webhookId: webhook.id, patch: { enabled } } })
-      toast.success(`${webhook.name} ${enabled ? 'enabled' : 'disabled'}`)
+      toast.success(
+        enabled
+          ? t('webhooks.list.enabledToast', { name: webhook.name })
+          : t('webhooks.list.disabledToast', { name: webhook.name }),
+      )
       await router.invalidate()
     } catch (error) {
-      toast.error(errorMessage(error, 'Could not update the webhook'))
+      toast.error(errorMessage(error, t('webhooks.list.updateFailed')))
     } finally {
       setEnabledOverride((prev) => {
         const { [webhook.id]: _, ...rest } = prev
@@ -118,10 +124,10 @@ export function WebhookList({
   async function sendTest(webhook: Webhook) {
     try {
       await sendTestWebhook({ data: { projectId, webhookId: webhook.id } })
-      toast.success('Test event queued', {
-        description: 'It is sent within a few seconds.',
+      toast.success(t('webhooks.testQueued'), {
+        description: t('webhooks.testQueuedDescription'),
         action: {
-          label: 'View deliveries',
+          label: t('webhooks.list.viewDeliveries'),
           onClick: () =>
             void navigate({
               to: '/app/$projectSlug/settings/webhooks/$webhookId',
@@ -131,7 +137,7 @@ export function WebhookList({
       })
       await router.invalidate()
     } catch (error) {
-      toast.error(errorMessage(error, 'Could not send the test event'))
+      toast.error(errorMessage(error, t('webhooks.testFailed')))
     }
   }
 
@@ -142,16 +148,12 @@ export function WebhookList({
           <EmptyMedia variant="icon">
             <WebhookIcon />
           </EmptyMedia>
-          <EmptyTitle>No webhooks yet</EmptyTitle>
-          <EmptyDescription>
-            A webhook sends a signed HTTP request to your server whenever something changes in this
-            project: a flag is toggled, a scheduled change runs, a segment is edited. Use it to post
-            to chat, trigger a deploy check or keep another system in sync.
-          </EmptyDescription>
+          <EmptyTitle>{t('webhooks.empty.title')}</EmptyTitle>
+          <EmptyDescription>{t('webhooks.empty.description')}</EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <HintedButton onClick={onAdd} disabledReason={reason}>
-            Add webhook
+            {t('webhooks.add')}
           </HintedButton>
         </EmptyContent>
       </Empty>
@@ -187,7 +189,7 @@ export function WebhookList({
                       </Link>
                       {enabled ? null : (
                         <Badge variant="outline" className="font-normal text-muted-foreground">
-                          Disabled
+                          {t('common:states.disabled')}
                         </Badge>
                       )}
                       {last ? (
@@ -202,10 +204,21 @@ export function WebhookList({
                             </span>
                           </TooltipTrigger>
                           <TooltipContent>
-                            Last delivery: <span className="font-mono">{last.eventType}</span>,{' '}
-                            {last.status === 'success' ? 'delivered' : last.status}
-                            {last.lastStatusCode ? ` (HTTP ${last.lastStatusCode})` : ''},{' '}
-                            {formatDelta(last.createdAt)}
+                            <Trans
+                              t={t}
+                              i18nKey={
+                                last.lastStatusCode
+                                  ? 'webhooks.list.lastDeliveryWithCode'
+                                  : 'webhooks.list.lastDelivery'
+                              }
+                              values={{
+                                event: last.eventType,
+                                status: t(`webhooks.deliveries.statusInline.${last.status}`),
+                                code: last.lastStatusCode,
+                                when: formatDelta(last.createdAt, new Date(), i18n.language),
+                              }}
+                              components={[<span key="event" className="font-mono" />]}
+                            />
                           </TooltipContent>
                         </Tooltip>
                       ) : null}
@@ -221,13 +234,17 @@ export function WebhookList({
                   <ItemActions>
                     {reason ? (
                       <DisabledHint reason={reason}>
-                        <Switch checked={enabled} disabled aria-label={`Enable ${webhook.name}`} />
+                        <Switch
+                          checked={enabled}
+                          disabled
+                          aria-label={t('webhooks.list.enableAria', { name: webhook.name })}
+                        />
                       </DisabledHint>
                     ) : (
                       <Switch
                         checked={enabled}
                         onCheckedChange={(checked) => void setEnabled(webhook, checked)}
-                        aria-label={`Enable ${webhook.name}`}
+                        aria-label={t('webhooks.list.enableAria', { name: webhook.name })}
                       />
                     )}
                     <DropdownMenu>
@@ -237,13 +254,13 @@ export function WebhookList({
                             <Button
                               variant="ghost"
                               size="icon-sm"
-                              aria-label={`Actions for ${webhook.name}`}
+                              aria-label={t('webhooks.list.actionsAria', { name: webhook.name })}
                             >
                               <MoreHorizontalIcon />
                             </Button>
                           </DropdownMenuTrigger>
                         </TooltipTrigger>
-                        <TooltipContent>Actions</TooltipContent>
+                        <TooltipContent>{t('common:labels.actions')}</TooltipContent>
                       </Tooltip>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem asChild>
@@ -251,29 +268,29 @@ export function WebhookList({
                             to="/app/$projectSlug/settings/webhooks/$webhookId"
                             params={{ projectSlug, webhookId: webhook.id }}
                           >
-                            <HistoryIcon /> Deliveries
+                            <HistoryIcon /> {t('webhooks.list.deliveries')}
                           </Link>
                         </DropdownMenuItem>
                         {isOwner ? (
                           <>
                             <DropdownMenuItem onClick={() => onEdit(webhook)}>
-                              <PencilIcon /> Edit
+                              <PencilIcon /> {t('common:actions.edit')}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               disabled={!enabled}
                               onClick={() => void sendTest(webhook)}
                             >
-                              <SendIcon /> Send test event
+                              <SendIcon /> {t('webhooks.sendTest')}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setRotating(webhook)}>
-                              <KeyRoundIcon /> Rotate secret
+                              <KeyRoundIcon /> {t('webhooks.list.rotateSecret')}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               variant="destructive"
                               onClick={() => setDeleting(webhook)}
                             >
-                              <Trash2Icon /> Delete
+                              <Trash2Icon /> {t('common:actions.delete')}
                             </DropdownMenuItem>
                           </>
                         ) : null}
@@ -292,9 +309,11 @@ export function WebhookList({
         onOpenChange={(open) => {
           if (!open) setRotating(null)
         }}
-        title={`Rotate the secret of ${rotating?.name ?? 'this webhook'}?`}
-        description="Halyard generates a new signing secret and shows it once. Requests are signed with the new secret right away, so your endpoint rejects them until you update it."
-        confirmLabel="Rotate secret"
+        title={t('webhooks.list.rotate.title', {
+          name: rotating?.name ?? t('webhooks.list.rotate.fallbackName'),
+        })}
+        description={t('webhooks.list.rotate.description')}
+        confirmLabel={t('webhooks.list.rotate.confirm')}
         onConfirm={async () => {
           if (!rotating) return
           const result = await rotateWebhookSecret({
@@ -309,13 +328,15 @@ export function WebhookList({
         onOpenChange={(open) => {
           if (!open) setDeleting(null)
         }}
-        title={`Delete ${deleting?.name ?? 'this webhook'}?`}
-        description="It stops receiving events and its delivery history is deleted. This cannot be undone."
-        confirmLabel="Delete webhook"
+        title={t('webhooks.list.delete.title', {
+          name: deleting?.name ?? t('webhooks.list.rotate.fallbackName'),
+        })}
+        description={t('webhooks.list.delete.description')}
+        confirmLabel={t('webhooks.list.delete.confirm')}
         onConfirm={async () => {
           if (!deleting) return
           await deleteWebhook({ data: { projectId, webhookId: deleting.id } })
-          toast.success(`Webhook "${deleting.name}" deleted`)
+          toast.success(t('webhooks.list.delete.deleted', { name: deleting.name }))
           await router.invalidate()
         }}
       />

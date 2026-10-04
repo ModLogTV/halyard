@@ -1,11 +1,12 @@
 import { createFileRoute, useNavigate, useRouter } from '@tanstack/react-router'
 import { type FormEvent, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { ConfirmDialog } from '@/components/settings/confirm-dialog'
 import { errorMessage } from '@/components/settings/form-utils'
 import { HintedButton } from '@/components/settings/hinted-button'
 import { SettingsPending } from '@/components/settings/settings-section'
-import { OWNER_ONLY_MESSAGE, useSettingsContext } from '@/components/settings/use-settings-context'
+import { useSettingsContext } from '@/components/settings/use-settings-context'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -29,6 +30,7 @@ import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from '@/co
 import { Separator } from '@/components/ui/separator'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
+import { translate } from '@/lib/i18n'
 import { leaveProject, listMembers } from '@/server/functions/members'
 import { deleteProject, updateProject } from '@/server/functions/projects'
 import { updateProjectSchema } from '@/server/schemas/projects'
@@ -41,7 +43,9 @@ export const Route = createFileRoute('/app/$projectSlug/settings/')({
     const { members } = await listMembers({ data: { projectId } })
     return { ownerCount: members.filter((m) => m.role === 'owner').length }
   },
-  head: () => ({ meta: [{ title: 'General settings · Halyard' }] }),
+  head: ({ match }) => ({
+    meta: [{ title: translate(match.context.locale)('settings:general.pageTitle') }],
+  }),
   pendingComponent: () => <SettingsPending rows={4} />,
   component: GeneralSettings,
 })
@@ -62,6 +66,7 @@ function GeneralSettings() {
 }
 
 function ProjectForm() {
+  const { t } = useTranslation(['settings', 'common'])
   const router = useRouter()
   const { project, isOwner } = useSettingsContext()
   const [name, setName] = useState(project.name)
@@ -97,7 +102,7 @@ function ProjectForm() {
         if (!field || next[field]) continue
         next[field] =
           field === 'staleAfterDays' || field === 'singleVariantAfterDays'
-            ? 'Enter a whole number of days between 1 and 3650'
+            ? t('general.project.daysError')
             : issue.message
       }
       setErrors(next)
@@ -108,10 +113,10 @@ function ProjectForm() {
     setPending(true)
     try {
       await updateProject({ data: { projectId: project.id, patch: parsed.data } })
-      toast.success('Project settings saved')
+      toast.success(t('general.project.saved'))
       await router.invalidate()
     } catch (error) {
-      setServerError(errorMessage(error, 'Could not save the settings'))
+      setServerError(errorMessage(error, t('general.project.saveFailed')))
     } finally {
       setPending(false)
     }
@@ -130,17 +135,17 @@ function ProjectForm() {
     <Card>
       <form onSubmit={onSubmit} noValidate>
         <CardHeader>
-          <CardTitle>Project</CardTitle>
+          <CardTitle>{t('common:labels.project')}</CardTitle>
           <CardDescription>
             {isOwner
-              ? 'Name and describe the project, and decide when flags count as cleanup candidates.'
-              : 'Only owners can change these settings.'}
+              ? t('general.project.descriptionOwner')
+              : t('general.project.descriptionReadOnly')}
           </CardDescription>
         </CardHeader>
         <CardContent className="mt-6">
           <FieldGroup>
             <Field data-invalid={errors.name ? true : undefined}>
-              <FieldLabel htmlFor="project-name">Name</FieldLabel>
+              <FieldLabel htmlFor="project-name">{t('common:labels.name')}</FieldLabel>
               <Input
                 id="project-name"
                 value={name}
@@ -152,21 +157,21 @@ function ProjectForm() {
               <FieldError>{errors.name}</FieldError>
             </Field>
             <Field>
-              <FieldLabel htmlFor="project-slug">Slug</FieldLabel>
+              <FieldLabel htmlFor="project-slug">{t('general.project.slugLabel')}</FieldLabel>
               <Input id="project-slug" value={project.slug} readOnly className="font-mono" />
-              <FieldDescription>
-                Used in URLs and the CLI. The slug cannot be changed.
-              </FieldDescription>
+              <FieldDescription>{t('general.project.slugHint')}</FieldDescription>
             </Field>
             <Field data-invalid={errors.description ? true : undefined}>
-              <FieldLabel htmlFor="project-description">Description</FieldLabel>
+              <FieldLabel htmlFor="project-description">
+                {t('common:labels.description')}
+              </FieldLabel>
               <Textarea
                 id="project-description"
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
                 rows={3}
                 disabled={!isOwner}
-                placeholder="What is this project for?"
+                placeholder={t('general.project.descriptionPlaceholder')}
                 aria-invalid={errors.description ? true : undefined}
               />
               <FieldError>{errors.description}</FieldError>
@@ -175,14 +180,13 @@ function ProjectForm() {
             <Separator />
 
             <FieldSet>
-              <FieldLegend>Flag cleanup</FieldLegend>
-              <FieldDescription>
-                Flags that match these rules are listed as cleanup candidates, so dead code and
-                forgotten rollouts do not pile up.
-              </FieldDescription>
+              <FieldLegend>{t('general.cleanup.legend')}</FieldLegend>
+              <FieldDescription>{t('general.cleanup.description')}</FieldDescription>
               <div className="grid gap-6 sm:grid-cols-2">
                 <Field data-invalid={errors.staleAfterDays ? true : undefined}>
-                  <FieldLabel htmlFor="stale-after">Stale after (days)</FieldLabel>
+                  <FieldLabel htmlFor="stale-after">
+                    {t('general.cleanup.staleAfterLabel')}
+                  </FieldLabel>
                   <Input
                     id="stale-after"
                     type="number"
@@ -198,13 +202,13 @@ function ProjectForm() {
                   {errors.staleAfterDays ? (
                     <FieldError>{errors.staleAfterDays}</FieldError>
                   ) : (
-                    <FieldDescription>
-                      A flag is stale when it has had no changes for this long.
-                    </FieldDescription>
+                    <FieldDescription>{t('general.cleanup.staleAfterHint')}</FieldDescription>
                   )}
                 </Field>
                 <Field data-invalid={errors.singleVariantAfterDays ? true : undefined}>
-                  <FieldLabel htmlFor="single-after">Single variant after (days)</FieldLabel>
+                  <FieldLabel htmlFor="single-after">
+                    {t('general.cleanup.singleVariantLabel')}
+                  </FieldLabel>
                   <Input
                     id="single-after"
                     type="number"
@@ -220,10 +224,7 @@ function ProjectForm() {
                   {errors.singleVariantAfterDays ? (
                     <FieldError>{errors.singleVariantAfterDays}</FieldError>
                   ) : (
-                    <FieldDescription>
-                      A flag is a cleanup candidate when it has served only one variant to everyone
-                      for this long.
-                    </FieldDescription>
+                    <FieldDescription>{t('general.cleanup.singleVariantHint')}</FieldDescription>
                   )}
                 </Field>
               </div>
@@ -234,16 +235,16 @@ function ProjectForm() {
         <CardFooter className="mt-6 justify-end gap-2 border-t pt-6">
           {dirty && isOwner ? (
             <Button type="button" variant="ghost" onClick={reset} disabled={pending}>
-              Discard changes
+              {t('general.project.discardChanges')}
             </Button>
           ) : null}
           <HintedButton
             type="submit"
-            disabledReason={isOwner ? undefined : OWNER_ONLY_MESSAGE}
+            disabledReason={isOwner ? undefined : t('shared.ownerOnly')}
             disabled={pending || !dirty}
           >
             {pending ? <Spinner /> : null}
-            Save changes
+            {t('shared.saveChanges')}
           </HintedButton>
         </CardFooter>
       </form>
@@ -252,6 +253,7 @@ function ProjectForm() {
 }
 
 function DangerZone() {
+  const { t } = useTranslation(['settings', 'common'])
   const router = useRouter()
   const navigate = useNavigate()
   const { project, isOwner } = useSettingsContext()
@@ -263,14 +265,14 @@ function DangerZone() {
 
   async function leaveAndExit() {
     await leaveProject({ data: { projectId: project.id } })
-    toast.success(`You left ${project.name}`)
+    toast.success(t('general.dangerZone.leave.left', { name: project.name }))
     await navigate({ to: '/app' })
     await router.invalidate()
   }
 
   async function deleteAndExit() {
     await deleteProject({ data: { projectId: project.id } })
-    toast.success(`Project "${project.name}" deleted`)
+    toast.success(t('general.dangerZone.delete.deleted', { name: project.name }))
     await navigate({ to: '/app' })
     await router.invalidate()
   }
@@ -278,46 +280,39 @@ function DangerZone() {
   return (
     <Card className="border-destructive/40">
       <CardHeader>
-        <CardTitle className="text-destructive">Danger zone</CardTitle>
-        <CardDescription>These actions affect your access or remove data for good.</CardDescription>
+        <CardTitle className="text-destructive">{t('general.dangerZone.title')}</CardTitle>
+        <CardDescription>{t('general.dangerZone.description')}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
         <Item variant="outline">
           <ItemContent>
-            <ItemTitle>Leave project</ItemTitle>
+            <ItemTitle>{t('general.dangerZone.leave.action')}</ItemTitle>
             <ItemDescription>
-              You lose access to {project.name} until an owner invites you again.
+              {t('general.dangerZone.leave.description', { name: project.name })}
             </ItemDescription>
           </ItemContent>
           <ItemActions>
             <HintedButton
               variant="outline"
               onClick={() => setLeaveOpen(true)}
-              disabledReason={
-                soleOwner
-                  ? 'You are the only owner. Make another member an owner first.'
-                  : undefined
-              }
+              disabledReason={soleOwner ? t('general.dangerZone.leave.soleOwner') : undefined}
             >
-              Leave project
+              {t('general.dangerZone.leave.action')}
             </HintedButton>
           </ItemActions>
         </Item>
         <Item variant="outline">
           <ItemContent>
-            <ItemTitle>Delete project</ItemTitle>
-            <ItemDescription>
-              Permanently delete the project with its flags, segments, environments, SDK keys and
-              audit log.
-            </ItemDescription>
+            <ItemTitle>{t('general.dangerZone.delete.action')}</ItemTitle>
+            <ItemDescription>{t('general.dangerZone.delete.description')}</ItemDescription>
           </ItemContent>
           <ItemActions>
             <HintedButton
               variant="destructive"
               onClick={() => setDeleteOpen(true)}
-              disabledReason={isOwner ? undefined : OWNER_ONLY_MESSAGE}
+              disabledReason={isOwner ? undefined : t('shared.ownerOnly')}
             >
-              Delete project
+              {t('general.dangerZone.delete.action')}
             </HintedButton>
           </ItemActions>
         </Item>
@@ -326,23 +321,18 @@ function DangerZone() {
       <ConfirmDialog
         open={leaveOpen}
         onOpenChange={setLeaveOpen}
-        title={`Leave ${project.name}?`}
-        description="You will lose access to this project. An owner can invite you again."
-        confirmLabel="Leave project"
+        title={t('general.dangerZone.leave.confirmTitle', { name: project.name })}
+        description={t('general.dangerZone.leave.confirmDescription')}
+        confirmLabel={t('general.dangerZone.leave.action')}
         onConfirm={leaveAndExit}
       />
       <ConfirmDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
-        title={`Delete ${project.name}?`}
-        description={
-          <>
-            This permanently deletes all flags, segments, environments, API keys and the audit log
-            of this project. SDKs using its keys will stop receiving flags.
-          </>
-        }
+        title={t('general.dangerZone.delete.confirmTitle', { name: project.name })}
+        description={t('general.dangerZone.delete.confirmDescription')}
         requireText={project.slug}
-        confirmLabel="Delete project"
+        confirmLabel={t('general.dangerZone.delete.action')}
         onConfirm={deleteAndExit}
       />
     </Card>

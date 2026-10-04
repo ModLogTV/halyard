@@ -1,5 +1,6 @@
 import { TriangleAlertIcon } from 'lucide-react'
 import { type FormEvent, type ReactNode, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import {
   AlertDialog,
@@ -47,11 +48,12 @@ function ConfirmBody({
   title,
   description,
   confirmLabel,
-  cancelLabel = 'Cancel',
+  cancelLabel,
   onConfirm,
   requireText,
   destructive = true,
 }: Omit<ConfirmDialogProps, 'open'>) {
+  const { t } = useTranslation(['settings', 'common'])
   const [pending, setPending] = useState(false)
   const [typed, setTyped] = useState('')
   const armed = requireText === undefined || typed === requireText
@@ -64,7 +66,7 @@ function ConfirmBody({
       await onConfirm()
       onOpenChange(false)
     } catch (error) {
-      toast.error(errorMessage(error, 'Something went wrong'))
+      toast.error(errorMessage(error, t('common:errors.generic')))
     } finally {
       setPending(false)
     }
@@ -86,7 +88,12 @@ function ConfirmBody({
       {requireText !== undefined ? (
         <Field>
           <FieldLabel htmlFor="confirm-text">
-            Type <span className="font-mono font-semibold">{requireText}</span> to confirm
+            <Trans
+              t={t}
+              i18nKey="shared.typeToConfirm"
+              values={{ value: requireText }}
+              components={[<span key="value" className="font-mono font-semibold" />]}
+            />
           </FieldLabel>
           <Input
             id="confirm-text"
@@ -98,12 +105,12 @@ function ConfirmBody({
             className="font-mono"
             autoFocus
           />
-          <FieldDescription>This cannot be undone.</FieldDescription>
+          <FieldDescription>{t('common:confirm.deleteBody')}</FieldDescription>
         </Field>
       ) : null}
       <AlertDialogFooter>
         <AlertDialogCancel type="button" disabled={pending}>
-          {cancelLabel}
+          {cancelLabel ?? t('common:actions.cancel')}
         </AlertDialogCancel>
         <Button
           type="submit"

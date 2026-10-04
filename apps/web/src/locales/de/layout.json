@@ -1,1 +1,85 @@
-{}
+{
+  "userMenu": {
+    "ariaLabel": "Kontomenü",
+    "theme": "Design",
+    "language": "Sprache",
+    "instanceAdmin": "Instanz-Administration",
+    "signOut": "Abmelden",
+    "signedOut": "Abgemeldet"
+  },
+  "crumbs": {
+    "auditLog": "Audit-Log",
+    "schedules": "Geplante Änderungen",
+    "settings": "Einstellungen",
+    "experiments": "Experimente",
+    "compare": "Vergleichen",
+    "webhooks": "Webhooks",
+    "playground": "Playground",
+    "transfer": "Import & Export",
+    "members": "Mitglieder",
+    "environments": "Umgebungen",
+    "flags": "Flags",
+    "apiKeys": "API-Schlüssel",
+    "newExperiment": "Neues Experiment",
+    "newFlag": "Neues Flag",
+    "newSegment": "Neues Segment",
+    "segments": "Segmente"
+  },
+  "sidebar": {
+    "search": "Suchen",
+    "searchTooltip": "Suchen (⌘K)",
+    "projectGroup": "Projekt",
+    "compare": "Vergleichen",
+    "collapse": "Seitenleiste einklappen",
+    "expand": "Seitenleiste ausklappen",
+    "toggle": "Seitenleiste umschalten"
+  },
+  "projectSwitcher": {
+    "ariaLabel": "Aktuelles Projekt: {{name}}. Projekt wechseln",
+    "newProject": "Neues Projekt"
+  },
+  "commandPalette": {
+    "title": "Befehlspalette",
+    "description": "Flags, Segmente und Seiten durchsuchen",
+    "searchPlaceholder": "Flag-Schlüssel, Segment, Seite oder Befehl eingeben…",
+    "noResults": "Keine Ergebnisse gefunden.",
+    "noActions": "Keine Aktionen.",
+    "flagActionsPlaceholder": "Aktionen für {{key}}",
+    "openFlag": "Flag öffnen",
+    "turnOnIn": "Einschalten in",
+    "turnOffIn": "Ausschalten in",
+    "backToSearch": "Zurück zur Suche",
+    "groups": {
+      "flags": "Flags",
+      "segments": "Segmente",
+      "goTo": "Gehe zu",
+      "projects": "Projekte",
+      "appearance": "Darstellung"
+    },
+    "items": {
+      "newFlag": "Neues Flag",
+      "compareEnvironments": "Umgebungen vergleichen",
+      "newProject": "Neues Projekt",
+      "lightTheme": "Helles Design",
+      "darkTheme": "Dunkles Design"
+    },
+    "toasts": {
+      "turnedOn": "{{key}} ist jetzt in {{environment}} an",
+      "turnedOff": "{{key}} ist jetzt in {{environment}} aus",
+      "updateFailed": "Das Flag konnte nicht aktualisiert werden"
+    },
+    "confirm": {
+      "enableTitle": "In der Produktion aktivieren?",
+      "disableTitle": "In der Produktion deaktivieren?",
+      "enableDescription": "<0>{{key}}</0> wird für alle in {{environment}} sofort <1>eingeschaltet</1>.",
+      "disableDescription": "<0>{{key}}</0> wird für alle in {{environment}} sofort <1>ausgeschaltet</1>.",
+      "enableAction": "In der Produktion aktivieren",
+      "disableAction": "In der Produktion deaktivieren"
+    }
+  },
+  "routeStates": {
+    "notFoundTitle": "Seite nicht gefunden",
+    "notFoundDescription": "Die gesuchte Seite existiert nicht oder wurde verschoben.",
+    "goHome": "Zur Startseite"
+  }
+}

@@ -1,6 +1,7 @@
 import { createFileRoute, getRouteApi, redirect, useRouter } from '@tanstack/react-router'
 import { ChevronLeftIcon, ChevronRightIcon, SearchIcon, UsersIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 import { FirstAdminNote, UsersTable } from '@/components/admin'
 import { PageHeader } from '@/components/layout/page-header'
@@ -15,6 +16,7 @@ import {
 } from '@/components/ui/empty'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+import { translate } from '@/lib/i18n'
 import { listUsers } from '@/server/functions/admin'
 
 const appRoute = getRouteApi('/app')
@@ -36,7 +38,9 @@ export const Route = createFileRoute('/app/admin')({
     listUsers({
       data: { search: deps.q, limit: PAGE_SIZE, offset: (deps.page - 1) * PAGE_SIZE },
     }),
-  head: () => ({ meta: [{ title: 'Instance admin · Halyard' }] }),
+  head: ({ match }) => ({
+    meta: [{ title: translate(match.context.locale)('projects:admin.pageTitle') }],
+  }),
   pendingComponent: AdminPending,
   component: AdminPage,
 })
@@ -60,6 +64,7 @@ function AdminPending() {
 }
 
 function AdminPage() {
+  const { t } = useTranslation(['projects', 'common'])
   const { users, total } = Route.useLoaderData()
   const search = Route.useSearch()
   const navigate = Route.useNavigate()
@@ -82,7 +87,7 @@ function AdminPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 p-6">
-      <PageHeader title="Instance admin" description="All accounts on this Halyard instance." />
+      <PageHeader title={t('admin.title')} description={t('admin.description')} />
 
       <div className="relative w-full max-w-sm">
         <SearchIcon
@@ -93,8 +98,8 @@ function AdminPage() {
           type="search"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search by email"
-          aria-label="Search accounts by email"
+          placeholder={t('admin.searchPlaceholder')}
+          aria-label={t('admin.searchAriaLabel')}
           className="pl-8"
         />
       </div>
@@ -105,15 +110,19 @@ function AdminPage() {
             <EmptyMedia variant="icon">
               <UsersIcon />
             </EmptyMedia>
-            <EmptyTitle>{search.q ? 'No matching accounts' : 'No accounts'}</EmptyTitle>
+            <EmptyTitle>
+              {search.q ? t('admin.empty.noMatchTitle') : t('admin.empty.noAccountsTitle')}
+            </EmptyTitle>
             <EmptyDescription>
-              {search.q ? `No email contains "${search.q}".` : 'Nobody has signed up yet.'}
+              {search.q
+                ? t('admin.empty.noMatchDescription', { query: search.q })
+                : t('admin.empty.noAccountsDescription')}
             </EmptyDescription>
           </EmptyHeader>
           {search.q ? (
             <EmptyContent>
               <Button variant="outline" onClick={() => navigate({ search: {}, replace: true })}>
-                Clear search
+                {t('admin.empty.clearSearch')}
               </Button>
             </EmptyContent>
           ) : null}
@@ -123,9 +132,12 @@ function AdminPage() {
       )}
 
       {total > PAGE_SIZE ? (
-        <nav className="flex items-center justify-between" aria-label="Pagination">
+        <nav
+          className="flex items-center justify-between"
+          aria-label={t('admin.pagination.ariaLabel')}
+        >
           <p className="text-muted-foreground text-sm">
-            Page {page} of {pageCount} · {total} accounts
+            {t('admin.pagination.summary', { page, pageCount, count: total })}
           </p>
           <div className="flex gap-2">
             <Button
@@ -136,7 +148,7 @@ function AdminPage() {
                 navigate({ search: (prev) => ({ ...prev, page: page - 1 || undefined }) })
               }
             >
-              <ChevronLeftIcon /> Previous
+              <ChevronLeftIcon /> {t('admin.pagination.previous')}
             </Button>
             <Button
               variant="outline"
@@ -144,7 +156,7 @@ function AdminPage() {
               disabled={page >= pageCount}
               onClick={() => navigate({ search: (prev) => ({ ...prev, page: page + 1 }) })}
             >
-              Next <ChevronRightIcon />
+              {t('admin.pagination.next')} <ChevronRightIcon />
             </Button>
           </div>
         </nav>

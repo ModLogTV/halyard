@@ -1,6 +1,7 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { KeyRoundIcon, PlusIcon, ShieldIcon, Trash2Icon } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { EnvBadge } from '@/components/env/env-badge'
 import { ConfirmDialog } from '@/components/settings/confirm-dialog'
@@ -12,7 +13,7 @@ import {
   type RevealedKey,
 } from '@/components/settings/key-dialogs'
 import { SettingsPending, SettingsSection } from '@/components/settings/settings-section'
-import { OWNER_ONLY_MESSAGE, useSettingsContext } from '@/components/settings/use-settings-context'
+import { useSettingsContext } from '@/components/settings/use-settings-context'
 import { Badge } from '@/components/ui/badge'
 import {
   Empty,
@@ -31,6 +32,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { formatDateTime, formatRelativeTime } from '@/lib/format'
+import { translate } from '@/lib/i18n'
 import { listApiKeys, revokeApiKey } from '@/server/functions/api-keys'
 import type { ApiKeySummary } from '@/server/services/api-keys'
 
@@ -42,21 +44,25 @@ export const Route = createFileRoute('/app/$projectSlug/settings/api-keys')({
     if (!projectId) return { keys: [] }
     return { keys: await listApiKeys({ data: { projectId } }) }
   },
-  head: () => ({ meta: [{ title: 'API keys · Halyard' }] }),
+  head: ({ match }) => ({
+    meta: [{ title: translate(match.context.locale)('settings:apiKeys.pageTitle') }],
+  }),
   pendingComponent: () => <SettingsPending rows={3} />,
   component: ApiKeysSettings,
 })
 
-function RelativeTime({ value, never = 'Never' }: { value: Date | string | null; never?: string }) {
-  if (!value) return <span className="text-muted-foreground/70">{never}</span>
+function RelativeTime({ value }: { value: Date | string | null }) {
+  const { t, i18n } = useTranslation('common')
+  if (!value) return <span className="text-muted-foreground/70">{t('states.never')}</span>
   return (
-    <time dateTime={new Date(value).toISOString()} title={formatDateTime(value)}>
-      {formatRelativeTime(value)}
+    <time dateTime={new Date(value).toISOString()} title={formatDateTime(value, i18n.language)}>
+      {formatRelativeTime(value, { locale: i18n.language })}
     </time>
   )
 }
 
 function ApiKeysSettings() {
+  const { t } = useTranslation(['settings', 'common'])
   const { project, isOwner } = useSettingsContext()
   const { keys } = Route.useLoaderData()
   const [sdkOpen, setSdkOpen] = useState(false)
@@ -68,29 +74,29 @@ function ApiKeysSettings() {
 
   const sdkKeys = keys.filter((k) => k.configId === 'sdk')
   const managementKeys = keys.filter((k) => k.configId === 'management')
-  const reason = isOwner ? undefined : OWNER_ONLY_MESSAGE
+  const reason = isOwner ? undefined : t('shared.ownerOnly')
   const environments = [...project.environments].sort((a, b) => a.sortOrder - b.sortOrder)
 
   const createSdk = (
     <HintedButton
       onClick={() => setSdkOpen(true)}
       disabledReason={
-        reason ?? (environments.length === 0 ? 'Add an environment first' : undefined)
+        reason ?? (environments.length === 0 ? t('apiKeys.addEnvironmentFirst') : undefined)
       }
     >
-      <PlusIcon /> Create SDK key
+      <PlusIcon /> {t('apiKeys.sdk.create')}
     </HintedButton>
   )
   const createManagement = (
     <HintedButton onClick={() => setManagementOpen(true)} disabledReason={reason}>
-      <PlusIcon /> Create management key
+      <PlusIcon /> {t('apiKeys.management.create')}
     </HintedButton>
   )
 
   function revokeButton(key: ApiKeySummary) {
     return (
       <IconButton
-        label={`Revoke ${key.name ?? 'key'}`}
+        label={t('apiKeys.revokeAria', { name: key.name ?? t('apiKeys.revokeFallbackName') })}
         className="text-destructive hover:text-destructive"
         disabledReason={reason}
         onClick={() => {
@@ -106,8 +112,8 @@ function ApiKeysSettings() {
   return (
     <div className="flex flex-col gap-10">
       <SettingsSection
-        title="SDK keys"
-        description="Environment-scoped keys for OpenFeature SDKs and anything that speaks OFREP. Keys can only read flags."
+        title={t('apiKeys.sdk.title')}
+        description={t('apiKeys.sdk.description')}
         actions={sdkKeys.length > 0 ? createSdk : undefined}
       >
         {sdkKeys.length === 0 ? (
@@ -116,11 +122,8 @@ function ApiKeysSettings() {
               <EmptyMedia variant="icon">
                 <KeyRoundIcon />
               </EmptyMedia>
-              <EmptyTitle>No SDK keys</EmptyTitle>
-              <EmptyDescription>
-                Create a key to evaluate flags from your application. Each key is tied to one
-                environment.
-              </EmptyDescription>
+              <EmptyTitle>{t('apiKeys.sdk.empty.title')}</EmptyTitle>
+              <EmptyDescription>{t('apiKeys.sdk.empty.description')}</EmptyDescription>
             </EmptyHeader>
             <EmptyContent>{createSdk}</EmptyContent>
           </Empty>
@@ -129,13 +132,15 @@ function ApiKeysSettings() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Environment</TableHead>
-                  <TableHead>Key</TableHead>
-                  <TableHead className="hidden md:table-cell">Created</TableHead>
-                  <TableHead className="hidden md:table-cell">Last used</TableHead>
+                  <TableHead>{t('common:labels.name')}</TableHead>
+                  <TableHead>{t('common:labels.environment')}</TableHead>
+                  <TableHead>{t('common:labels.key')}</TableHead>
+                  <TableHead className="hidden md:table-cell">
+                    {t('common:labels.created')}
+                  </TableHead>
+                  <TableHead className="hidden md:table-cell">{t('apiKeys.lastUsed')}</TableHead>
                   <TableHead className="w-12">
-                    <span className="sr-only">Actions</span>
+                    <span className="sr-only">{t('common:labels.actions')}</span>
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -144,12 +149,16 @@ function ApiKeysSettings() {
                   const env = environments.find((e) => e.id === key.environmentId)
                   return (
                     <TableRow key={key.id}>
-                      <TableCell className="font-medium">{key.name ?? 'Untitled key'}</TableCell>
+                      <TableCell className="font-medium">
+                        {key.name ?? t('apiKeys.untitled')}
+                      </TableCell>
                       <TableCell>
                         {env ? (
                           <EnvBadge env={env} />
                         ) : (
-                          <span className="text-muted-foreground">Unknown environment</span>
+                          <span className="text-muted-foreground">
+                            {t('apiKeys.unknownEnvironment')}
+                          </span>
                         )}
                       </TableCell>
                       <TableCell className="font-mono text-xs">{key.start ?? ''}…</TableCell>
@@ -170,8 +179,8 @@ function ApiKeysSettings() {
       </SettingsSection>
 
       <SettingsSection
-        title="Management keys"
-        description="Project-scoped keys for the Halyard CLI and the REST API."
+        title={t('apiKeys.management.title')}
+        description={t('apiKeys.management.description')}
         actions={managementKeys.length > 0 ? createManagement : undefined}
       >
         {managementKeys.length === 0 ? (
@@ -180,10 +189,8 @@ function ApiKeysSettings() {
               <EmptyMedia variant="icon">
                 <ShieldIcon />
               </EmptyMedia>
-              <EmptyTitle>No management keys</EmptyTitle>
-              <EmptyDescription>
-                Create a key to script this project from CI or log in with the CLI.
-              </EmptyDescription>
+              <EmptyTitle>{t('apiKeys.management.empty.title')}</EmptyTitle>
+              <EmptyDescription>{t('apiKeys.management.empty.description')}</EmptyDescription>
             </EmptyHeader>
             <EmptyContent>{createManagement}</EmptyContent>
           </Empty>
@@ -192,13 +199,15 @@ function ApiKeysSettings() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Access</TableHead>
-                  <TableHead>Key</TableHead>
-                  <TableHead className="hidden md:table-cell">Created</TableHead>
-                  <TableHead className="hidden md:table-cell">Last used</TableHead>
+                  <TableHead>{t('common:labels.name')}</TableHead>
+                  <TableHead>{t('apiKeys.management.access')}</TableHead>
+                  <TableHead>{t('common:labels.key')}</TableHead>
+                  <TableHead className="hidden md:table-cell">
+                    {t('common:labels.created')}
+                  </TableHead>
+                  <TableHead className="hidden md:table-cell">{t('apiKeys.lastUsed')}</TableHead>
                   <TableHead className="w-12">
-                    <span className="sr-only">Actions</span>
+                    <span className="sr-only">{t('common:labels.actions')}</span>
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -207,10 +216,14 @@ function ApiKeysSettings() {
                   const canWrite = key.permissions?.project?.includes('write') ?? false
                   return (
                     <TableRow key={key.id}>
-                      <TableCell className="font-medium">{key.name ?? 'Untitled key'}</TableCell>
+                      <TableCell className="font-medium">
+                        {key.name ?? t('apiKeys.untitled')}
+                      </TableCell>
                       <TableCell>
                         <Badge variant={canWrite ? 'default' : 'secondary'}>
-                          {canWrite ? 'Read & write' : 'Read'}
+                          {canWrite
+                            ? t('apiKeys.management.readWrite')
+                            : t('apiKeys.management.read')}
                         </Badge>
                       </TableCell>
                       <TableCell className="font-mono text-xs">{key.start ?? ''}…</TableCell>
@@ -247,19 +260,23 @@ function ApiKeysSettings() {
       <ConfirmDialog
         open={revokeOpen}
         onOpenChange={setRevokeOpen}
-        title={`Revoke ${revoking?.name ?? 'this key'}?`}
+        title={t('apiKeys.revoke.title', {
+          name: revoking?.name ?? t('apiKeys.revoke.fallbackName'),
+        })}
         description={
           revoking?.configId === 'sdk'
-            ? 'Applications using this key stop receiving flags right away. This cannot be undone.'
-            : 'Scripts and CLI sessions using this key stop working right away. This cannot be undone.'
+            ? t('apiKeys.revoke.descriptionSdk')
+            : t('apiKeys.revoke.descriptionManagement')
         }
-        confirmLabel="Revoke key"
+        confirmLabel={t('apiKeys.revoke.confirm')}
         onConfirm={async () => {
           if (!revoking) return
           await revokeApiKey({
             data: { projectId: project.id, keyId: revoking.id, configId: revoking.configId },
           })
-          toast.success(`Key "${revoking.name ?? 'Untitled key'}" revoked`)
+          toast.success(
+            t('apiKeys.revoke.revoked', { name: revoking.name ?? t('apiKeys.untitled') }),
+          )
           await router.invalidate()
         }}
       />

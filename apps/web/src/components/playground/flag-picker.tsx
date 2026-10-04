@@ -1,6 +1,7 @@
 import type { FlagType } from '@halyard/engine'
 import { CheckIcon, ChevronsUpDownIcon, ListIcon } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { FlagTypeBadge } from '@/components/flags/flag-type-badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -34,6 +35,7 @@ export function FlagPicker({
   onChange: (flagKey: string | undefined) => void
   id?: string
 }) {
+  const { t } = useTranslation(['playground', 'common'])
   const [open, setOpen] = useState(false)
   const selected = value ? flags.find((f) => f.key === value) : undefined
 
@@ -55,7 +57,7 @@ export function FlagPicker({
               <span className="truncate font-mono text-xs">{value}</span>
             ) : (
               <>
-                <ListIcon className="text-muted-foreground" /> All flags
+                <ListIcon className="text-muted-foreground" /> {t('picker.allFlags')}
               </>
             )}
           </span>
@@ -64,23 +66,23 @@ export function FlagPicker({
       </PopoverTrigger>
       <PopoverContent align="start" className="w-(--radix-popover-trigger-width) p-0">
         <Command>
-          <CommandInput placeholder="Search flags" />
+          <CommandInput placeholder={t('picker.searchPlaceholder')} />
           <CommandList>
-            <CommandEmpty>No flags found.</CommandEmpty>
+            <CommandEmpty>{t('picker.empty')}</CommandEmpty>
             <CommandGroup>
               <CommandItem
                 value={ALL}
-                keywords={['all flags every']}
+                keywords={[t('picker.allKeywords')]}
                 onSelect={() => {
                   onChange(undefined)
                   setOpen(false)
                 }}
               >
-                <ListIcon /> All flags
+                <ListIcon /> {t('picker.allFlags')}
                 <CheckIcon className={cn('ml-auto', value ? 'opacity-0' : 'opacity-100')} />
               </CommandItem>
             </CommandGroup>
-            <CommandGroup heading="Flags">
+            <CommandGroup heading={t('common:labels.flags')}>
               {flags.map((flag) => (
                 <CommandItem
                   key={flag.key}

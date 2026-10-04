@@ -1,5 +1,6 @@
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { type FormEvent, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { EnvBadge } from '@/components/env/env-badge'
 import { RolloutBar } from '@/components/flags'
@@ -62,6 +63,7 @@ function EditForm({
   all: ScheduledChangeItem[]
   onDone: () => void
 }) {
+  const { t, i18n } = useTranslation(['schedules', 'common'])
   const { project } = projectRoute.useLoaderData()
   const router = useRouter()
   const now = useNow(15_000)
@@ -85,16 +87,22 @@ function EditForm({
   const pct = Number(percentage)
   const percentageError = step
     ? percentage.trim() === '' || !Number.isFinite(pct) || pct < 0 || pct > 100
-      ? 'Use a value from 0 to 100'
+      ? t('validation.percentageRange')
       : undefined
     : undefined
   const timeError =
     at.getTime() <= now.getTime()
-      ? 'Pick a time in the future'
+      ? t('validation.timeInFuture')
       : previous && at.getTime() <= new Date(previous.scheduledFor).getTime()
-        ? `Must be after step ${previous.stepIndex + 1} (${formatFullDateTime(previous.scheduledFor)})`
+        ? t('validation.afterStep', {
+            number: previous.stepIndex + 1,
+            time: formatFullDateTime(previous.scheduledFor, i18n.language),
+          })
         : next && at.getTime() >= new Date(next.scheduledFor).getTime()
-          ? `Must be before step ${next.stepIndex + 1} (${formatFullDateTime(next.scheduledFor)})`
+          ? t('validation.beforeStep', {
+              number: next.stepIndex + 1,
+              time: formatFullDateTime(next.scheduledFor, i18n.language),
+            })
           : undefined
 
   const preview =
@@ -117,11 +125,11 @@ function EditForm({
     setServerError(null)
     try {
       await updateScheduledChange({ data: { projectId: project.id, id: item.id, patch } })
-      toast.success('Scheduled change updated')
+      toast.success(t('edit.toastUpdated'))
       await router.invalidate()
       onDone()
     } catch (error) {
-      setServerError(errorMessage(error, 'Could not update the change'))
+      setServerError(errorMessage(error, t('edit.updateFailed')))
     } finally {
       setPending(false)
     }
@@ -130,37 +138,43 @@ function EditForm({
   return (
     <form onSubmit={onSubmit} noValidate className="contents">
       <DialogHeader>
-        <DialogTitle>Edit scheduled change</DialogTitle>
+        <DialogTitle>{t('edit.title')}</DialogTitle>
         <DialogDescription asChild>
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-mono">{item.flagKey}</span>
             {env ? <EnvBadge env={env} /> : null}
-            {item.planId ? <span>· step {item.stepIndex + 1}</span> : null}
+            {item.planId ? (
+              <span>{t('edit.stepSuffix', { number: item.stepIndex + 1 })}</span>
+            ) : null}
           </div>
         </DialogDescription>
       </DialogHeader>
       <FieldGroup>
         <Field data-invalid={timeError ? true : undefined}>
-          <FieldLabel htmlFor="edit-schedule-at">When</FieldLabel>
+          <FieldLabel htmlFor="edit-schedule-at">{t('dialog.when')}</FieldLabel>
           <DateTimePicker
             id="edit-schedule-at"
             value={at}
             onChange={setAt}
             invalid={Boolean(timeError)}
-            aria-label="Run at"
+            aria-label={t('dialog.runAt')}
           />
           {timeError ? (
             <FieldError>{timeError}</FieldError>
           ) : (
             <FieldDescription>
-              Runs {formatFullDateTime(at)} ({formatDelta(at, now)}) · {localTimeZone()}
+              {t('dialog.runsAt', {
+                time: formatFullDateTime(at, i18n.language),
+                delta: formatDelta(at, now, i18n.language),
+                timeZone: localTimeZone(t('dialog.localTime')),
+              })}
             </FieldDescription>
           )}
         </Field>
         {step ? (
           <Field data-invalid={percentageError ? true : undefined}>
             <FieldLabel htmlFor="edit-schedule-percentage">
-              Percentage for {step.variant}
+              {t('edit.percentageFor', { variant: step.variant })}
             </FieldLabel>
             <InputGroup className="w-32">
               <InputGroupInput
@@ -187,25 +201,25 @@ function EditForm({
           </Field>
         ) : null}
         <Field>
-          <FieldLabel htmlFor="edit-schedule-note">Note</FieldLabel>
+          <FieldLabel htmlFor="edit-schedule-note">{t('dialog.note')}</FieldLabel>
           <Textarea
             id="edit-schedule-note"
             rows={2}
             maxLength={1000}
             value={note}
             onChange={(event) => setNote(event.target.value)}
-            placeholder="Why is this scheduled? (optional)"
+            placeholder={t('dialog.notePlaceholder')}
           />
         </Field>
         {serverError ? <FieldError>{serverError}</FieldError> : null}
       </FieldGroup>
       <DialogFooter>
         <Button type="button" variant="ghost" onClick={onDone} disabled={pending}>
-          Cancel
+          {t('common:actions.cancel')}
         </Button>
         <Button type="submit" disabled={pending || Boolean(timeError || percentageError)}>
           {pending ? <Spinner /> : null}
-          Save changes
+          {t('edit.save')}
         </Button>
       </DialogFooter>
     </form>

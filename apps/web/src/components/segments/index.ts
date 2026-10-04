@@ -1,4 +1,5 @@
 export { DeleteSegmentDialog } from './delete-segment-dialog'
+export type { DescribeT } from './describe'
 export { describeCondition, describeConditions } from './describe'
 export type { SegmentDraft, SegmentEditorProps } from './segment-editor'
 export { EMPTY_SEGMENT_DRAFT, SegmentEditor } from './segment-editor'

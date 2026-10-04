@@ -1,4 +1,6 @@
+import type { TFunction } from 'i18next'
 import { useId, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -10,41 +12,86 @@ export interface EventTypeInfo {
   description: string
 }
 
+type SettingsT = TFunction<['settings', 'common']>
+
 interface EventGroup {
   name: string
   items: EventTypeInfo[]
 }
 
-const CATEGORY_LABELS: Record<string, string> = {
-  flag: 'Flags',
-  segment: 'Segments',
-  environment: 'Environments',
-  experiment: 'Experiments',
-  schedule: 'Scheduled changes',
-  member: 'Members',
-  api_key: 'API keys',
-  project: 'Project',
-  webhook: 'Webhooks',
-  other: 'Other',
+const CATEGORY_KEYS = {
+  flag: 'webhooks.picker.categories.flag',
+  segment: 'webhooks.picker.categories.segment',
+  environment: 'webhooks.picker.categories.environment',
+  experiment: 'webhooks.picker.categories.experiment',
+  schedule: 'webhooks.picker.categories.schedule',
+  member: 'webhooks.picker.categories.member',
+  api_key: 'webhooks.picker.categories.apiKey',
+  project: 'webhooks.picker.categories.project',
+  webhook: 'webhooks.picker.categories.webhook',
+  other: 'webhooks.picker.categories.other',
+} as const
+
+const DESCRIPTION_KEYS = {
+  '*': 'webhooks.eventDescriptions.all',
+  'flag.*': 'webhooks.eventDescriptions.flagAll',
+  'flag.created': 'webhooks.eventDescriptions.flagCreated',
+  'flag.updated': 'webhooks.eventDescriptions.flagUpdated',
+  'flag.toggled': 'webhooks.eventDescriptions.flagToggled',
+  'flag.environment_updated': 'webhooks.eventDescriptions.flagEnvironmentUpdated',
+  'flag.promoted': 'webhooks.eventDescriptions.flagPromoted',
+  'flag.archived': 'webhooks.eventDescriptions.flagArchived',
+  'flag.unarchived': 'webhooks.eventDescriptions.flagUnarchived',
+  'flag.deleted': 'webhooks.eventDescriptions.flagDeleted',
+  'segment.*': 'webhooks.eventDescriptions.segmentAll',
+  'environment.*': 'webhooks.eventDescriptions.environmentAll',
+  'experiment.*': 'webhooks.eventDescriptions.experimentAll',
+  'schedule.*': 'webhooks.eventDescriptions.scheduleAll',
+  'schedule.created': 'webhooks.eventDescriptions.scheduleCreated',
+  'schedule.staged_rollout_created': 'webhooks.eventDescriptions.scheduleStagedRolloutCreated',
+  'schedule.updated': 'webhooks.eventDescriptions.scheduleUpdated',
+  'schedule.cancelled': 'webhooks.eventDescriptions.scheduleCancelled',
+  'schedule.plan_cancelled': 'webhooks.eventDescriptions.schedulePlanCancelled',
+  'schedule.executed': 'webhooks.eventDescriptions.scheduleExecuted',
+  'schedule.failed': 'webhooks.eventDescriptions.scheduleFailed',
+  'member.*': 'webhooks.eventDescriptions.memberAll',
+  'api_key.*': 'webhooks.eventDescriptions.apiKeyAll',
+  'project.*': 'webhooks.eventDescriptions.projectAll',
+  'webhook.*': 'webhooks.eventDescriptions.webhookAll',
+} as const
+
+/** Translated description of an event type; unknown types fall back to the text the server sent. */
+function describeEvent(t: SettingsT, item: EventTypeInfo): string {
+  if (item.description === CUSTOM_EVENT) return t('webhooks.picker.customEvent')
+  return item.type in DESCRIPTION_KEYS
+    ? t(DESCRIPTION_KEYS[item.type as keyof typeof DESCRIPTION_KEYS])
+    : item.description
 }
 
-function groupEvents(types: readonly EventTypeInfo[], selected: string[]): EventGroup[] {
+/** Marker for events saved earlier that the server no longer offers. */
+const CUSTOM_EVENT = 'custom'
+
+function groupEvents(
+  types: readonly EventTypeInfo[],
+  selected: string[],
+  t: SettingsT,
+): EventGroup[] {
   const known = new Set(types.map((t) => t.type))
   const all = [
     ...types.filter((t) => t.type !== '*'),
     // Events saved earlier that are not offered in the list stay visible and removable.
     ...selected
       .filter((e) => e !== '*' && !known.has(e))
-      .map((e) => ({ type: e, description: 'Custom event type' })),
+      .map((e) => ({ type: e, description: CUSTOM_EVENT })),
   ]
-  const groups = new Map<string, EventTypeInfo[]>()
+  const groups = new Map<keyof typeof CATEGORY_KEYS, EventTypeInfo[]>()
   for (const item of all) {
     const category = item.type.split('.')[0] ?? 'other'
-    const key = category in CATEGORY_LABELS ? category : 'other'
+    const key = category in CATEGORY_KEYS ? (category as keyof typeof CATEGORY_KEYS) : 'other'
     groups.set(key, [...(groups.get(key) ?? []), item])
   }
   return [...groups.entries()].map(([key, items]) => ({
-    name: CATEGORY_LABELS[key] ?? key,
+    name: t(CATEGORY_KEYS[key]),
     // `x.*` first, then the specific events.
     items: [...items].sort((a, b) => Number(b.type.endsWith('.*')) - Number(a.type.endsWith('.*'))),
   }))
@@ -60,9 +107,10 @@ export interface EventPickerProps {
 
 /** "All events" switch plus grouped checkboxes with descriptions. */
 export function EventPicker({ value, onChange, eventTypes, disabled, invalid }: EventPickerProps) {
+  const { t } = useTranslation(['settings', 'common'])
   const baseId = useId()
   const all = value.includes('*')
-  const groups = useMemo(() => groupEvents(eventTypes, value), [eventTypes, value])
+  const groups = useMemo(() => groupEvents(eventTypes, value, t), [eventTypes, value, t])
 
   function toggle(type: string, checked: boolean) {
     onChange(checked ? [...value, type] : value.filter((e) => e !== type))
@@ -73,10 +121,10 @@ export function EventPicker({ value, onChange, eventTypes, disabled, invalid }: 
       <div className="flex items-center justify-between gap-3 rounded-lg border p-3">
         <Label htmlFor={`${baseId}-all`} className="flex flex-col items-start gap-0.5">
           <span>
-            All events <span className="font-mono text-xs">(*)</span>
+            {t('webhooks.picker.allEvents')} <span className="font-mono text-xs">(*)</span>
           </span>
           <span className="font-normal text-muted-foreground text-xs">
-            Every audit log entry, including event types added in the future.
+            {t('webhooks.picker.allEventsHint')}
           </span>
         </Label>
         <Switch
@@ -117,7 +165,7 @@ export function EventPicker({ value, onChange, eventTypes, disabled, invalid }: 
                     <Label htmlFor={id} className="flex min-w-0 flex-col items-start gap-0.5">
                       <span className="font-mono text-xs">{item.type}</span>
                       <span className="font-normal text-muted-foreground text-xs">
-                        {item.description}
+                        {describeEvent(t, item)}
                       </span>
                     </Label>
                   </div>

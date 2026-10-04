@@ -1,6 +1,8 @@
 import { Link, useNavigate } from '@tanstack/react-router'
 import { CheckIcon, ChevronsUpDownIcon, PlusIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { HalyardMark } from '@/components/brand'
+import { useRoleLabel } from '@/components/layout/role-label'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +33,8 @@ export function ProjectSwitcher({
   projects: ProjectSummary[]
   current: ProjectSummary
 }) {
+  const { t } = useTranslation(['layout', 'common'])
+  const roleLabel = useRoleLabel()
   const { isMobile } = useSidebar()
   const navigate = useNavigate()
 
@@ -41,14 +45,15 @@ export function ProjectSwitcher({
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size="lg"
+              tooltip={current.name}
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-              aria-label={`Current project: ${current.name}. Switch project`}
+              aria-label={t('projectSwitcher.ariaLabel', { name: current.name })}
             >
-              <HalyardMark className="size-8 shrink-0" />
+              <HalyardMark className="size-8! shrink-0" />
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{current.name}</span>
-                <span className="truncate text-xs text-muted-foreground capitalize">
-                  {current.role}
+                <span className="truncate text-xs text-muted-foreground">
+                  {roleLabel(current.role)}
                 </span>
               </div>
               <ChevronsUpDownIcon className="ml-auto" />
@@ -61,7 +66,7 @@ export function ProjectSwitcher({
             sideOffset={4}
           >
             <DropdownMenuLabel className="text-xs text-muted-foreground">
-              Projects
+              {t('common:labels.projects')}
             </DropdownMenuLabel>
             {projects.map((project, index) => (
               <DropdownMenuItem
@@ -85,7 +90,9 @@ export function ProjectSwitcher({
                 <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
                   <PlusIcon className="size-4" />
                 </div>
-                <div className="font-medium text-muted-foreground">New project</div>
+                <div className="font-medium text-muted-foreground">
+                  {t('projectSwitcher.newProject')}
+                </div>
               </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>

@@ -16,6 +16,7 @@ import {
   Trash2Icon,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { AuditTimeline } from '@/components/audit'
@@ -48,6 +49,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { formatDateTime, formatPercent, formatRelativeTime } from '@/lib/format'
+import { translate } from '@/lib/i18n'
 import { listAuditLog } from '@/server/functions/audit-log'
 import { getExperiment, updateExperiment } from '@/server/functions/experiments'
 
@@ -72,6 +74,18 @@ export const Route = createFileRoute('/app/$projectSlug/experiments/$experimentK
     }).catch(() => ({ items: [], nextCursor: null }))
     return { experiment, history, crumb: experiment.key }
   },
+  head: ({ match, loaderData }) => {
+    const t = translate(match.context.locale)
+    return {
+      meta: [
+        {
+          title: loaderData
+            ? t('experiments:detail.pageTitle', { name: loaderData.experiment.name })
+            : t('experiments:detail.pageTitleFallback'),
+        },
+      ],
+    }
+  },
   pendingComponent: () => (
     <div className="flex flex-col gap-4 p-6" aria-busy="true">
       <Skeleton className="h-4 w-24" />
@@ -95,6 +109,7 @@ function useNow(intervalMs: number): Date {
 }
 
 function ExperimentDetailPage() {
+  const { t, i18n } = useTranslation(['experiments', 'common'])
   const { experiment, history } = Route.useLoaderData()
   const { project } = projectRoute.useLoaderData()
   const search = Route.useSearch()
@@ -174,11 +189,11 @@ function ExperimentDetailPage() {
           },
         },
       })
-      toast.success('Experiment updated')
+      toast.success(t('detail.toastUpdated'))
       setEditing(false)
       await router.invalidate()
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : 'Could not update the experiment')
+      setSaveError(err instanceof Error ? err.message : t('detail.updateFailed'))
     } finally {
       setSaving(false)
     }
@@ -186,9 +201,11 @@ function ExperimentDetailPage() {
 
   const freshness =
     status === 'running'
-      ? `Updated ${formatRelativeTime(updatedAt, { now })}`
+      ? t('common:labels.updatedAt', {
+          time: formatRelativeTime(updatedAt, { now, locale: i18n.language }),
+        })
       : status === 'stopped' && experiment.stoppedAt
-        ? `Frozen ${formatDateTime(experiment.stoppedAt)}`
+        ? t('detail.frozen', { time: formatDateTime(experiment.stoppedAt, i18n.language) })
         : null
 
   return (
@@ -196,7 +213,7 @@ function ExperimentDetailPage() {
       <div>
         <Button asChild variant="ghost" size="sm" className="-ml-2 mb-2">
           <Link to="/app/$projectSlug/experiments" params={{ projectSlug: project.slug }}>
-            <ArrowLeftIcon /> Experiments
+            <ArrowLeftIcon /> {t('common:labels.experiments')}
           </Link>
         </Button>
         <PageHeader
@@ -222,7 +239,7 @@ function ExperimentDetailPage() {
                 <EnvBadge env={environment} />
                 {experiment.flag.archived ? (
                   <Badge variant="outline" className="text-muted-foreground">
-                    Flag archived
+                    {t('detail.flagArchived')}
                   </Badge>
                 ) : null}
               </span>
@@ -242,22 +259,22 @@ function ExperimentDetailPage() {
                   }}
                   disabledReason={
                     status === 'running'
-                      ? 'Allocation is locked while running'
+                      ? t('detail.disabled.editRunning')
                       : status === 'stopped'
-                        ? 'Allocation is locked once the experiment has run'
+                        ? t('detail.disabled.editStopped')
                         : undefined
                   }
                 >
-                  <PencilIcon /> Edit
+                  <PencilIcon /> {t('common:actions.edit')}
                 </HintedButton>
                 {status === 'draft' ? (
                   <Button onClick={() => request('start', target)}>
-                    <PlayIcon /> Start
+                    <PlayIcon /> {t('common:actions.start')}
                   </Button>
                 ) : null}
                 {status === 'running' ? (
                   <Button variant="outline" onClick={() => request('stop', target)}>
-                    <SquareIcon /> Stop
+                    <SquareIcon /> {t('common:actions.stop')}
                   </Button>
                 ) : null}
                 <HintedButton
@@ -265,10 +282,10 @@ function ExperimentDetailPage() {
                   className="text-destructive hover:text-destructive"
                   onClick={() => request('delete', target)}
                   disabledReason={
-                    status === 'running' ? 'Stop the experiment to delete it' : undefined
+                    status === 'running' ? t('detail.disabled.deleteRunning') : undefined
                   }
                 >
-                  <Trash2Icon /> Delete
+                  <Trash2Icon /> {t('common:actions.delete')}
                 </HintedButton>
               </>
             ) : null
@@ -283,19 +300,16 @@ function ExperimentDetailPage() {
         }
       >
         <TabsList>
-          <TabsTrigger value="results">Results</TabsTrigger>
-          <TabsTrigger value="history">History</TabsTrigger>
+          <TabsTrigger value="results">{t('results.title')}</TabsTrigger>
+          <TabsTrigger value="history">{t('common:labels.history')}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="results" className="mt-4 flex flex-col gap-6">
           {status === 'draft' ? (
             <Card>
               <CardHeader>
-                <CardTitle>Results</CardTitle>
-                <CardDescription>
-                  This experiment is a draft. Start it to split traffic and collect exposures;
-                  results appear here and refresh every 30 seconds.
-                </CardDescription>
+                <CardTitle>{t('results.title')}</CardTitle>
+                <CardDescription>{t('detail.draftDescription')}</CardDescription>
               </CardHeader>
             </Card>
           ) : (
@@ -307,7 +321,7 @@ function ExperimentDetailPage() {
                   {freshness ? <span aria-live="polite">{freshness}</span> : null}
                   {status === 'running' ? (
                     <IconButton
-                      label="Refresh results"
+                      label={t('detail.refreshResults')}
                       onClick={() => void router.invalidate()}
                       disabled={refreshing}
                     >
@@ -322,10 +336,8 @@ function ExperimentDetailPage() {
           <div className="grid items-start gap-6 xl:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>Allocation</CardTitle>
-                <CardDescription>
-                  Share of contexts reaching the flag's default that see each variant.
-                </CardDescription>
+                <CardTitle>{t('detail.allocation.title')}</CardTitle>
+                <CardDescription>{t('detail.allocation.description')}</CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
                 <RolloutBar
@@ -354,7 +366,7 @@ function ExperimentDetailPage() {
                           />
                           {a.variant === experiment.controlVariant ? (
                             <Badge variant="outline" className="text-muted-foreground">
-                              control
+                              {t('badges.control')}
                             </Badge>
                           ) : null}
                         </span>
@@ -364,16 +376,18 @@ function ExperimentDetailPage() {
                   })}
                 </ul>
                 <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
-                  <dt className="text-muted-foreground">Conversion event</dt>
+                  <dt className="text-muted-foreground">{t('labels.conversionEvent')}</dt>
                   <dd className="font-mono text-xs">{experiment.conversionEvent}</dd>
-                  <dt className="text-muted-foreground">Started</dt>
+                  <dt className="text-muted-foreground">{t('labels.started')}</dt>
                   <dd>
-                    {experiment.startedAt ? formatDateTime(experiment.startedAt) : 'Not started'}
+                    {experiment.startedAt
+                      ? formatDateTime(experiment.startedAt, i18n.language)
+                      : t('detail.notStarted')}
                   </dd>
                   {experiment.stoppedAt ? (
                     <>
-                      <dt className="text-muted-foreground">Stopped</dt>
-                      <dd>{formatDateTime(experiment.stoppedAt)}</dd>
+                      <dt className="text-muted-foreground">{t('labels.stopped')}</dt>
+                      <dd>{formatDateTime(experiment.stoppedAt, i18n.language)}</dd>
                     </>
                   ) : null}
                 </dl>
@@ -396,11 +410,8 @@ function ExperimentDetailPage() {
       <Sheet open={editing} onOpenChange={(open) => !saving && setEditing(open)}>
         <SheetContent className="w-full overflow-y-auto sm:max-w-xl">
           <SheetHeader>
-            <SheetTitle>Edit experiment</SheetTitle>
-            <SheetDescription>
-              Allocation, control and conversion event can only change while the experiment is a
-              draft.
-            </SheetDescription>
+            <SheetTitle>{t('detail.edit.title')}</SheetTitle>
+            <SheetDescription>{t('detail.edit.description')}</SheetDescription>
           </SheetHeader>
           <div className="px-4 pb-4">
             {editing ? (
@@ -420,11 +431,11 @@ function ExperimentDetailPage() {
                 }}
                 pending={saving}
                 error={saveError}
-                submitLabel="Save changes"
+                submitLabel={t('detail.edit.submit')}
                 onSubmit={onSave}
                 actions={
                   <Button type="button" variant="ghost" onClick={() => setEditing(false)}>
-                    Cancel
+                    {t('common:actions.cancel')}
                   </Button>
                 }
               />

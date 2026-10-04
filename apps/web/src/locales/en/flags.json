@@ -1,1 +1,320 @@
-{}
+{
+  "stale": {
+    "anEnvironment": "an environment",
+    "reasons": {
+      "neverEvaluated_one": "Never evaluated in {{count}} day",
+      "neverEvaluated_other": "Never evaluated in {{count}} days",
+      "notEvaluated_one": "Not evaluated in {{environment}} for {{count}} day",
+      "notEvaluated_other": "Not evaluated in {{environment}} for {{count}} days",
+      "singleVariant_one": "Returned \"{{variant}}\" to everyone in {{environment}} for {{count}} day",
+      "singleVariant_other": "Returned \"{{variant}}\" to everyone in {{environment}} for {{count}} days",
+      "noVariant": "nothing"
+    }
+  },
+  "iconButton": {
+    "unavailable": "{{label}} (unavailable: {{reason}})"
+  },
+  "tagInput": {
+    "placeholder": "Type a value, press Enter",
+    "remove": "Remove {{value}}"
+  },
+  "variantSelect": {
+    "placeholder": "Select a variant",
+    "missing": "{{value}} (missing)"
+  },
+  "rolloutBar": {
+    "noTraffic": "no traffic assigned"
+  },
+  "flagTypeBadge": {
+    "short": {
+      "boolean": "bool",
+      "string": "str",
+      "number": "num",
+      "json": "json"
+    }
+  },
+  "envToggle": {
+    "label": {
+      "enable": "Enable {{flagKey}} in {{environment}}",
+      "disable": "Disable {{flagKey}} in {{environment}}"
+    },
+    "confirm": {
+      "enableTitle": "Enable in production?",
+      "disableTitle": "Disable in production?",
+      "enableAction": "Enable in production",
+      "disableAction": "Disable in production",
+      "bodyOn": "<0>{{flagKey}}</0> will be turned <1>on</1> for everyone evaluating it in <2/>. The change takes effect immediately.",
+      "bodyOff": "<0>{{flagKey}}</0> will be turned <1>off</1> for everyone evaluating it in <2/>. The change takes effect immediately."
+    }
+  },
+  "envBadge": {
+    "production": "Production"
+  },
+  "serve": {
+    "modeLabel": "Serve mode",
+    "modeLabelNamed": "{{label}} mode",
+    "modes": {
+      "variant": "Variant",
+      "rollout": "Percentage rollout"
+    },
+    "variantLabel": "Variant",
+    "variantLabelNamed": "{{label}} variant",
+    "missingVariant": "{{variant}} (missing)",
+    "weightFor": "Weight for {{variant}}",
+    "balanced": "Weights add up to 100%.",
+    "unbalancedUnder": "Weights add up to {{total}}. Add {{diff}} to reach 100%.",
+    "unbalancedOver": "Weights add up to {{total}}. Remove {{diff}} to reach 100%.",
+    "splitEvenly": "Split evenly",
+    "advanced": "Advanced",
+    "bucketBy": "Bucket by",
+    "bucketByHelp": "Contexts with the same value always land in the same bucket. Defaults to the targeting key."
+  },
+  "conditions": {
+    "actionsLabel": "Condition {{n}} actions",
+    "actions": "Condition actions",
+    "switchToSegment": "Switch to segment condition",
+    "switchToAttribute": "Switch to attribute condition",
+    "remove": "Remove condition",
+    "attributePlaceholder": "Attribute",
+    "attributeLabel": "Condition {{n}} attribute",
+    "operatorLabel": "Condition {{n}} operator",
+    "noValueNeeded": "No value needed",
+    "valuesLabel": "Condition {{n}} values",
+    "valueLabel": "Condition {{n}} value",
+    "valuePlaceholder": "Value",
+    "booleanLabel": "Condition {{n}}: match as boolean",
+    "membershipLabel": "Condition {{n}} membership",
+    "segmentLabel": "Condition {{n}} segment",
+    "segmentPlaceholder": "Select a segment",
+    "missingSegment": "{{key}} (missing)",
+    "membership": {
+      "in": "is in",
+      "notIn": "is not in"
+    },
+    "operatorGroups": {
+      "equality": "Equality",
+      "lists": "Lists",
+      "strings": "Strings",
+      "numbers": "Numbers",
+      "versions": "Versions",
+      "presence": "Presence"
+    },
+    "operators": {
+      "eq": "is",
+      "neq": "is not",
+      "in": "is one of",
+      "notIn": "is not one of",
+      "contains": "contains",
+      "notContains": "does not contain",
+      "startsWith": "starts with",
+      "endsWith": "ends with",
+      "regex": "matches regex",
+      "gt": ">",
+      "gte": "≥",
+      "lt": "<",
+      "lte": "≤",
+      "semverEq": "semver =",
+      "semverGt": "semver >",
+      "semverGte": "semver ≥",
+      "semverLt": "semver <",
+      "semverLte": "semver ≤",
+      "exists": "exists",
+      "notExists": "does not exist"
+    }
+  },
+  "rule": {
+    "label": "Rule {{n}}",
+    "badge": "Rule {{n}}",
+    "descriptionPlaceholder": "Describe who this rule targets",
+    "descriptionLabel": "Rule {{n}} description",
+    "moveUpLabel": "Move rule {{n}} up",
+    "moveUp": "Move up",
+    "moveDownLabel": "Move rule {{n}} down",
+    "moveDown": "Move down",
+    "removeLabel": "Remove rule {{n}}",
+    "remove": "Remove rule",
+    "removeConfirmTitle": "Remove rule {{n}}?",
+    "removeConfirmDescription": "Contexts it matched will fall through to the next rule.",
+    "if": "If",
+    "and": "and",
+    "noConditions": "No conditions — this rule matches everyone.",
+    "addCondition": "Add condition",
+    "attributeCondition": "Attribute condition",
+    "segmentCondition": "Segment condition",
+    "serve": "Serve"
+  },
+  "targeting": {
+    "duplicateRuleId": "Another rule has the same id.",
+    "problemsTitle_one": "{{count}} problem to fix before saving",
+    "problemsTitle_other": "{{count}} problems to fix before saving",
+    "status": {
+      "title": "Status",
+      "isOn": "Flag is on in <0>{{environment}}</0>",
+      "isOff": "Flag is off in <0>{{environment}}</0>"
+    },
+    "off": {
+      "title": "When off, serve",
+      "description": "Served while the flag is off. Rules and the default below are skipped.",
+      "variantLabel": "Variant served when the flag is off"
+    },
+    "rules": {
+      "title": "Targeting rules",
+      "descriptionOn": "Evaluated top to bottom. The first rule that matches decides.",
+      "descriptionOff": "Not evaluated while the flag is off.",
+      "empty": "No targeting rules. Everyone who is not matched receives the default below.",
+      "add": "Add rule"
+    },
+    "fallthrough": {
+      "title": "Default (fallthrough)",
+      "description": "Served when the flag is on and no rule matches.",
+      "serveLabel": "Serve"
+    }
+  },
+  "variants": {
+    "nameColumn": "Name (optional)",
+    "removeReasonLocked": "Used by live configuration. Remove it from targeting first.",
+    "removeReasonMinimum_one": "A flag needs at least {{count}} variant.",
+    "removeReasonMinimum_other": "A flag needs at least {{count}} variants.",
+    "keyLabel": "Variant {{n}} key",
+    "nameLabel": "Variant {{n}} name",
+    "namePlaceholder": "Display name",
+    "removeLabel": "Remove variant {{name}}",
+    "remove": "Remove variant",
+    "booleanHint": "Boolean flags always have two variants, <0>true</0> and <1>false</1>. You can rename them.",
+    "add": "Add variant",
+    "problemsTitle_one": "{{count}} problem with variants",
+    "problemsTitle_other": "{{count}} problems with variants",
+    "valueLabel": "Variant {{n}} value",
+    "booleanValueLabel": "{{label}}: {{value}}",
+    "valuePlaceholder": "Value",
+    "invalidJson": "Invalid JSON"
+  },
+  "table": {
+    "toggleDisabledArchived": "Archived flags cannot be toggled",
+    "toggleDisabledRole": "Only editors and owners can toggle flags",
+    "noRules": "no rules",
+    "lastEvaluated": "Last evaluated {{time}}",
+    "evaluations_one": "{{count, number}} evaluation",
+    "evaluations_other": "{{count, number}} evaluations"
+  },
+  "list": {
+    "pageTitle": "Flags · Halyard",
+    "title": "Flags",
+    "description": "{{flags}} active across {{environments}}.",
+    "newFlag": "New flag",
+    "toggledOn": "{{flagKey}} is now on in {{environment}}",
+    "toggledOff": "{{flagKey}} is now off in {{environment}}",
+    "toggleFailed": "Could not update the flag",
+    "filters": {
+      "searchPlaceholder": "Search by key, name or tag",
+      "searchLabel": "Search flags",
+      "staleLabel": "Show cleanup candidates only",
+      "stale": "Cleanup candidates",
+      "staleHelp": "Flags not evaluated for {{staleDays}} days or returning one variant for {{singleVariantDays}} days",
+      "archivedLabel": "Include archived flags",
+      "button": "Filters",
+      "buttonActive_one": "Filters, {{count}} active",
+      "buttonActive_other": "Filters, {{count}} active",
+      "searchFilters": "Filter by type, tag or state…",
+      "noFilterMatches": "No matching filter",
+      "typeGroup": "Type",
+      "tagGroup": "Tags",
+      "showGroup": "Show",
+      "archived": "Include archived",
+      "removeFilter": "Remove filter {{filter}}",
+      "clearAll": "Clear all filters"
+    },
+    "empty": {
+      "title": "No flags yet",
+      "description": "Create your first flag. It starts switched off in every environment, so nothing changes until you turn it on.",
+      "create": "Create a flag"
+    },
+    "noMatches": {
+      "title": "No flags match these filters",
+      "description": "Try a different search or clear the filters."
+    }
+  },
+  "new": {
+    "pageTitle": "New flag · Halyard",
+    "title": "New flag",
+    "description": "A flag is defined once per project and configured separately in each environment. It starts switched off everywhere.",
+    "created": "Flag {{key}} created",
+    "createFailed": "Could not create the flag",
+    "definition": {
+      "title": "Definition",
+      "description": "Key and type cannot be changed after the flag is created."
+    },
+    "variants": {
+      "title": "Type and variants",
+      "description": "Variants are the values a flag can resolve to."
+    },
+    "types": {
+      "boolean": "On or off. The most common kind of flag.",
+      "string": "Pick one of several text values, for example a banner text.",
+      "number": "Pick one of several numeric values, for example a limit.",
+      "json": "Structured configuration objects."
+    },
+    "form": {
+      "namePlaceholder": "New payment flow",
+      "keyHelp": "Used in code and the API. Letters, numbers, dots, dashes and underscores. Prefixing by area (for example <0>checkout.</0>) keeps the list tidy.",
+      "descriptionPlaceholder": "What does this flag control, and when can it be removed?",
+      "tagsPlaceholder": "Add a tag and press Enter",
+      "serveWhenOff": "Serve when off",
+      "serveWhenOffHelp": "Returned while the flag is disabled.",
+      "defaultWhenOn": "Default when on",
+      "defaultWhenOnHelp": "Returned when no targeting rule matches.",
+      "submit": "Create flag"
+    }
+  },
+  "detail": {
+    "pageTitle": "{{key}} · Flags · Halyard",
+    "copyKeyLabel": "Copy flag key",
+    "copyKey": "Copy key",
+    "actionsLabel": "Flag actions",
+    "actions": {
+      "edit": "Edit details and variants",
+      "schedule": "Schedule a change…",
+      "restore": "Restore from archive",
+      "delete": "Delete flag"
+    },
+    "pendingSchedules_one": "{{count}} scheduled change pending for this flag — <0>view</0>",
+    "pendingSchedules_other": "{{count}} scheduled changes pending for this flag — <0>view</0>",
+    "tabs": {
+      "targeting": "Targeting"
+    },
+    "activity": {
+      "title": "Activity",
+      "neverEvaluated": "Never evaluated"
+    },
+    "delete": {
+      "title": "Delete {{key}}?",
+      "description": "This removes the flag and its configuration in every environment. SDKs evaluating it will receive their code default. Consider archiving instead if you want to keep the history."
+    },
+    "toasts": {
+      "restored": "Flag restored",
+      "archived": "Flag archived",
+      "deleted": "Flag {{key}} deleted",
+      "deleteFailed": "Could not delete the flag",
+      "updated": "Flag updated"
+    },
+    "targeting": {
+      "saved": "Targeting saved for {{environment}}",
+      "saveFailed": "Could not save targeting",
+      "experimentRunning": "An experiment is running on this flag in {{environment}}. Contexts that reach the default are allocated by the experiment.",
+      "unsaved": "Unsaved targeting changes",
+      "fixProblems": "fix the problems above to save",
+      "saveTo": "Save to {{environment}}",
+      "confirmSaveTitle": "Save targeting to production?",
+      "confirmSaveBody": "Rules for <0>{{flagKey}}</0> change immediately for everyone evaluating it in <1/>. You can review the change afterwards in the flag history.",
+      "confirmSaveAction": "Save to production",
+      "confirmToggleBodyOn": "<0>{{flagKey}}</0> will be turned <1>on</1> for everyone in production immediately.",
+      "confirmToggleBodyOff": "<0>{{flagKey}}</0> will be turned <1>off</1> for everyone in production immediately."
+    },
+    "edit": {
+      "title": "Edit {{key}}",
+      "description": "Variants referenced by a rule or default in any environment cannot be removed or renamed.",
+      "failed": "Could not update the flag",
+      "submit": "Save changes"
+    }
+  }
+}

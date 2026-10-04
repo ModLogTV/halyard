@@ -2,6 +2,7 @@ import type { JsonValue } from '@halyard/engine'
 import { createFileRoute, getRouteApi, Link, useNavigate } from '@tanstack/react-router'
 import { PlayIcon } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { EnvDot } from '@/components/env/env-badge'
@@ -84,6 +85,7 @@ type Run =
   | { status: 'error'; message: string }
 
 function PlaygroundPage() {
+  const { t } = useTranslation(['playground', 'common'])
   const { flags } = Route.useLoaderData()
   const { project } = projectRoute.useLoaderData()
   const search = Route.useSearch()
@@ -130,7 +132,7 @@ function PlaygroundPage() {
     async (overrides?: { flagKey?: string | null; environmentKey?: string }) => {
       if (!environment) return
       if (hasErrors) {
-        toast.error('Fix the highlighted attributes first')
+        toast.error(t('page.fixAttributes'))
         return
       }
       const key = overrides?.flagKey === undefined ? flagKey : (overrides.flagKey ?? undefined)
@@ -159,12 +161,12 @@ function PlaygroundPage() {
         setRun({ status: 'success', data, flagKey: key, id })
       } catch (error) {
         if (id !== requestId.current) return
-        const message = error instanceof Error ? error.message : 'Evaluation failed'
+        const message = error instanceof Error ? error.message : t('page.evaluationFailed')
         toast.error(message)
         setRun({ status: 'error', message })
       }
     },
-    [environment, flagKey, hasErrors, project.id, built.context],
+    [environment, flagKey, hasErrors, project.id, built.context, t],
   )
 
   // ⌘↵ / Ctrl+↵ evaluates from anywhere on the page.
@@ -205,12 +207,12 @@ function PlaygroundPage() {
   function applyPreset(preset: ContextPreset) {
     setDraft(contextToDraft(preset.context))
     setResetKey((k) => k + 1)
-    toast(`Loaded preset ${preset.name}`)
+    toast(t('page.presetLoaded', { name: preset.name }))
   }
 
   function savePreset(name: string) {
     if (hasErrors) {
-      toast.error('Fix the highlighted attributes first')
+      toast.error(t('page.fixAttributes'))
       return
     }
     const preset: ContextPreset = {
@@ -221,14 +223,14 @@ function PlaygroundPage() {
     const next = [...saved, preset]
     setSaved(next)
     savePresets(project.id, next)
-    toast.success(`Saved preset ${name}`)
+    toast.success(t('page.presetSaved', { name }))
   }
 
   function deletePreset(preset: ContextPreset) {
     const next = saved.filter((p) => p.id !== preset.id)
     setSaved(next)
     savePresets(project.id, next)
-    toast(`Deleted preset ${preset.name}`)
+    toast(t('page.presetDeleted', { name: preset.name }))
   }
 
   const shown =
@@ -243,28 +245,25 @@ function PlaygroundPage() {
   if (!environment) {
     return (
       <div className="p-6">
-        <PageHeader title="Playground" description="This project has no environments yet." />
+        <PageHeader title={t('common:labels.playground')} description={t('page.noEnvironments')} />
       </div>
     )
   }
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <PageHeader
-        title="Playground"
-        description="Evaluate a context against the live configuration. Runs use the same engine as production and are never counted in metrics or experiment exposure."
-      />
+      <PageHeader title={t('common:labels.playground')} description={t('page.description')} />
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]">
         <Card>
           <CardHeader>
-            <CardTitle>Context</CardTitle>
+            <CardTitle>{t('page.contextTitle')}</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-5">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
               <div className="flex flex-col gap-1.5">
                 <span id="pg-env-label" className="text-sm font-medium">
-                  Environment
+                  {t('common:labels.environment')}
                 </span>
                 <Select value={environment.key} onValueChange={onEnvironmentChange}>
                   <SelectTrigger className="w-full" aria-labelledby="pg-env-label">
@@ -283,7 +282,7 @@ function PlaygroundPage() {
               </div>
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="pg-flag" className="text-sm font-medium">
-                  Flag
+                  {t('common:labels.flag')}
                 </label>
                 <FlagPicker id="pg-flag" flags={flags} value={flagKey} onChange={onFlagChange} />
               </div>
@@ -295,7 +294,7 @@ function PlaygroundPage() {
 
             <div className="flex flex-wrap items-center gap-2">
               <Button type="button" onClick={() => void evaluate()} disabled={loading}>
-                {loading ? <Spinner /> : <PlayIcon />} Evaluate
+                {loading ? <Spinner /> : <PlayIcon />} {t('page.evaluate')}
                 <span
                   className="ml-1 hidden items-center gap-0.5 sm:inline-flex"
                   aria-hidden="true"
@@ -309,14 +308,18 @@ function PlaygroundPage() {
           </CardContent>
         </Card>
 
-        <section aria-label="Result" aria-live="polite" className="flex min-w-0 flex-col gap-3">
-          <h2 className="text-sm font-medium text-muted-foreground">Result</h2>
+        <section
+          aria-label={t('result.title')}
+          aria-live="polite"
+          className="flex min-w-0 flex-col gap-3"
+        >
+          <h2 className="text-sm font-medium text-muted-foreground">{t('result.title')}</h2>
           {run.status === 'idle' ? (
             <ResultEmpty>
               {flags.length === 0 ? (
                 <Button asChild variant="outline" size="sm">
                   <Link to="/app/$projectSlug/flags/new" params={{ projectSlug: project.slug }}>
-                    Create a flag
+                    {t('page.createFlag')}
                   </Link>
                 </Button>
               ) : null}

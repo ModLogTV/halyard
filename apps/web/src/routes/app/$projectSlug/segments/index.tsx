@@ -1,6 +1,7 @@
 import { createFileRoute, getRouteApi, Link, useNavigate } from '@tanstack/react-router'
 import { PlusIcon, SearchIcon, UsersIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { PageHeader } from '@/components/layout/page-header'
 import { describeConditions } from '@/components/segments/describe'
 import { Badge } from '@/components/ui/badge'
@@ -24,7 +25,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { formatDateTime, formatRelativeTime, pluralize } from '@/lib/format'
+import { formatDateTime, formatRelativeTime } from '@/lib/format'
+import { translate } from '@/lib/i18n'
 import { listSegments } from '@/server/functions/segments'
 
 const projectRoute = getRouteApi('/app/$projectSlug')
@@ -37,18 +39,21 @@ export const Route = createFileRoute('/app/$projectSlug/segments/')({
     if (!projectId) return { segments: [] }
     return { segments: await listSegments({ data: { projectId } }) }
   },
-  head: () => ({ meta: [{ title: 'Segments · Halyard' }] }),
+  head: ({ match }) => ({
+    meta: [{ title: translate(match.context.locale)('segments:list.pageTitle') }],
+  }),
   pendingComponent: SegmentsPending,
   component: SegmentsPage,
 })
 
 function SegmentsPending() {
+  const { t } = useTranslation('segments')
   return (
     <div
       className="flex flex-col gap-6 p-6"
       role="status"
       aria-busy="true"
-      aria-label="Loading segments"
+      aria-label={t('list.loading')}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-2">
@@ -71,6 +76,7 @@ function SegmentsPending() {
 function SegmentsPage() {
   const { segments } = Route.useLoaderData()
   const { project } = projectRoute.useLoaderData()
+  const { t, i18n } = useTranslation(['segments', 'flags', 'common'])
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const canEdit = project.role !== 'viewer'
@@ -91,25 +97,25 @@ function SegmentsPage() {
           <Button asChild={canEdit} disabled={!canEdit}>
             {canEdit ? (
               <Link to="/app/$projectSlug/segments/new" params={{ projectSlug: project.slug }}>
-                <PlusIcon /> New segment
+                <PlusIcon /> {t('list.newSegment')}
               </Link>
             ) : (
               <>
-                <PlusIcon /> New segment
+                <PlusIcon /> {t('list.newSegment')}
               </>
             )}
           </Button>
         </span>
       </TooltipTrigger>
-      {canEdit ? null : <TooltipContent>Viewers cannot create segments</TooltipContent>}
+      {canEdit ? null : <TooltipContent>{t('list.viewersCannotCreate')}</TooltipContent>}
     </Tooltip>
   )
 
   return (
     <div className="flex flex-col gap-6 p-6">
       <PageHeader
-        title="Segments"
-        description="Reusable groups of users you can target from any flag."
+        title={t('list.title')}
+        description={t('intro')}
         actions={segments.length > 0 ? newButton : null}
       />
 
@@ -119,11 +125,8 @@ function SegmentsPage() {
             <EmptyMedia variant="icon">
               <UsersIcon />
             </EmptyMedia>
-            <EmptyTitle>No segments yet</EmptyTitle>
-            <EmptyDescription>
-              Define a group once, for example beta testers or internal staff, and target it from
-              any flag rule.
-            </EmptyDescription>
+            <EmptyTitle>{t('list.empty.title')}</EmptyTitle>
+            <EmptyDescription>{t('list.empty.description')}</EmptyDescription>
           </EmptyHeader>
           <EmptyContent>{newButton}</EmptyContent>
         </Empty>
@@ -138,8 +141,8 @@ function SegmentsPage() {
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search by key or name"
-              aria-label="Search segments"
+              placeholder={t('list.search.placeholder')}
+              aria-label={t('list.search.ariaLabel')}
               className="pl-8"
             />
           </div>
@@ -150,12 +153,14 @@ function SegmentsPage() {
                 <EmptyMedia variant="icon">
                   <SearchIcon />
                 </EmptyMedia>
-                <EmptyTitle>No matching segments</EmptyTitle>
-                <EmptyDescription>Nothing matches "{query.trim()}".</EmptyDescription>
+                <EmptyTitle>{t('list.noMatches.title')}</EmptyTitle>
+                <EmptyDescription>
+                  {t('list.noMatches.description', { query: query.trim() })}
+                </EmptyDescription>
               </EmptyHeader>
               <EmptyContent>
                 <Button variant="outline" onClick={() => setQuery('')}>
-                  Clear search
+                  {t('list.noMatches.clear')}
                 </Button>
               </EmptyContent>
             </Empty>
@@ -164,11 +169,11 @@ function SegmentsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Key</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Conditions</TableHead>
-                    <TableHead>Used by</TableHead>
-                    <TableHead className="text-right">Updated</TableHead>
+                    <TableHead>{t('common:labels.key')}</TableHead>
+                    <TableHead>{t('common:labels.name')}</TableHead>
+                    <TableHead>{t('list.columns.conditions')}</TableHead>
+                    <TableHead>{t('list.columns.usedBy')}</TableHead>
+                    <TableHead className="text-right">{t('common:labels.updated')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -195,22 +200,24 @@ function SegmentsPage() {
                       </TableCell>
                       <TableCell>{segment.name}</TableCell>
                       <TableCell className="max-w-md truncate text-muted-foreground">
-                        <span title={describeConditions(segment.conditions, segment.match)}>
-                          {describeConditions(segment.conditions, segment.match)}
+                        <span title={describeConditions(segment.conditions, segment.match, t)}>
+                          {describeConditions(segment.conditions, segment.match, t)}
                         </span>
                       </TableCell>
                       <TableCell>
                         {segment.usageCount > 0 ? (
-                          <Badge variant="secondary">{pluralize(segment.usageCount, 'rule')}</Badge>
+                          <Badge variant="secondary">
+                            {t('common:counts.rules', { count: segment.usageCount })}
+                          </Badge>
                         ) : (
-                          <span className="text-muted-foreground text-sm">Not used</span>
+                          <span className="text-muted-foreground text-sm">{t('list.notUsed')}</span>
                         )}
                       </TableCell>
                       <TableCell
                         className="text-right text-muted-foreground"
-                        title={formatDateTime(segment.updatedAt)}
+                        title={formatDateTime(segment.updatedAt, i18n.language)}
                       >
-                        {formatRelativeTime(segment.updatedAt)}
+                        {formatRelativeTime(segment.updatedAt, { locale: i18n.language })}
                       </TableCell>
                     </TableRow>
                   ))}

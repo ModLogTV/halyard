@@ -1,6 +1,11 @@
 export type { AuditTimelineEnvironment, AuditTimelineProps } from './audit-timeline'
 export { AuditTimeline } from './audit-timeline'
-export type { AuditEntryLike, AuditSentence } from './describe'
+export type {
+  AuditActionKey,
+  AuditEntityKey,
+  AuditEntryLike,
+  AuditSentence,
+} from './describe'
 export { describeAuditAction } from './describe'
 export type { DiffEntry, DiffKind } from './json-diff'
 export { diffJson, JsonDiff } from './json-diff'

@@ -1,4 +1,5 @@
 import type { JsonValue } from '@halyard/engine'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/lib/utils'
 
 export type DiffKind = 'added' | 'removed' | 'changed'
@@ -67,10 +68,10 @@ function show(value: JsonValue | undefined): string {
   return text.length > MAX_VALUE_LENGTH ? `${text.slice(0, MAX_VALUE_LENGTH - 1)}…` : text
 }
 
-const SIGN: Record<DiffKind, { glyph: string; label: string }> = {
-  added: { glyph: '+', label: 'Added' },
-  removed: { glyph: '−', label: 'Removed' },
-  changed: { glyph: '~', label: 'Changed' },
+const GLYPHS: Record<DiffKind, string> = {
+  added: '+',
+  removed: '−',
+  changed: '~',
 }
 
 const ADDED = 'bg-on-soft'
@@ -89,9 +90,10 @@ export function JsonDiff({
   after: JsonValue | null | undefined
   className?: string
 }) {
+  const { t } = useTranslation('audit')
   const entries = diffJson(before, after)
   if (entries.length === 0) {
-    return <p className={cn('text-muted-foreground text-xs', className)}>No field changes.</p>
+    return <p className={cn('text-muted-foreground text-xs', className)}>{t('diff.noChanges')}</p>
   }
   const visible = entries.slice(0, MAX_ROWS)
   return (
@@ -109,9 +111,9 @@ export function JsonDiff({
                   entry.kind === 'changed' && 'text-muted-foreground',
                 )}
               >
-                {SIGN[entry.kind].glyph}
+                {GLYPHS[entry.kind]}
               </span>
-              <span className="sr-only">{SIGN[entry.kind].label}</span>
+              <span className="sr-only">{t(`diff.${entry.kind}`)}</span>
               <span className="min-w-0 break-all font-medium">{entry.path}</span>
             </div>
             <div className="flex flex-wrap items-center gap-1.5 pl-5">
@@ -142,7 +144,7 @@ export function JsonDiff({
       </ul>
       {entries.length > MAX_ROWS ? (
         <p className="text-muted-foreground text-xs">
-          and {entries.length - MAX_ROWS} more changed fields
+          {t('diff.moreFields', { count: entries.length - MAX_ROWS })}
         </p>
       ) : null}
     </div>

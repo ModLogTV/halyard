@@ -1,6 +1,7 @@
 import { createFileRoute, getRouteApi } from '@tanstack/react-router'
 import { FilterXIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { AuditTimeline } from '@/components/audit'
@@ -26,6 +27,7 @@ import {
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
+import { translate } from '@/lib/i18n'
 import { listAuditLog } from '@/server/functions/audit-log'
 
 const projectRoute = getRouteApi('/app/$projectSlug')
@@ -42,17 +44,18 @@ const ENTITY_TYPES = [
   'project',
 ] as const
 
-const ENTITY_LABELS: Record<(typeof ENTITY_TYPES)[number], string> = {
-  flag: 'Flags',
-  segment: 'Segments',
-  environment: 'Environments',
-  experiment: 'Experiments',
-  schedule: 'Schedules',
-  webhook: 'Webhooks',
-  api_key: 'API keys',
-  member: 'Members',
-  project: 'Project',
-}
+/** Keys of `common:labels.*` for the entity filter options. */
+const ENTITY_LABEL_KEYS = {
+  flag: 'flags',
+  segment: 'segments',
+  environment: 'environments',
+  experiment: 'experiments',
+  schedule: 'schedules',
+  webhook: 'webhooks',
+  api_key: 'apiKeys',
+  member: 'members',
+  project: 'project',
+} as const satisfies Record<(typeof ENTITY_TYPES)[number], string>
 
 const searchSchema = z.object({
   /** Environment key. */
@@ -106,18 +109,21 @@ export const Route = createFileRoute('/app/$projectSlug/audit')({
     if (!project) return { page: { items: [], nextCursor: null } }
     return { page: await listAuditLog({ data: toQuery(project, deps) }) }
   },
-  head: () => ({ meta: [{ title: 'Audit log · Halyard' }] }),
+  head: ({ match }) => ({
+    meta: [{ title: translate(match.context.locale)('audit:page.pageTitle') }],
+  }),
   pendingComponent: AuditPending,
   component: AuditPage,
 })
 
 function AuditPending() {
+  const { t } = useTranslation('audit')
   return (
     <div
       className="flex flex-col gap-6 p-6"
       role="status"
       aria-busy="true"
-      aria-label="Loading audit log"
+      aria-label={t('page.loading')}
     >
       <div className="flex flex-col gap-2">
         <Skeleton className="h-7 w-40" />
@@ -135,6 +141,7 @@ function AuditPending() {
 }
 
 function AuditPage() {
+  const { t } = useTranslation(['audit', 'common'])
   const search = Route.useSearch()
   const { page } = Route.useLoaderData()
   const { project } = projectRoute.useLoaderData()
@@ -173,19 +180,16 @@ function AuditPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <PageHeader
-        title="Audit log"
-        description="Every change to flags, segments, environments and members in this project."
-      />
+      <PageHeader title={t('page.title')} description={t('page.description')} />
 
       <form
         className="rounded-lg border p-4"
         onSubmit={(event) => event.preventDefault()}
-        aria-label="Filter audit log"
+        aria-label={t('filters.ariaLabel')}
       >
         <FieldGroup className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <Field>
-            <FieldLabel htmlFor="audit-env">Environment</FieldLabel>
+            <FieldLabel htmlFor="audit-env">{t('common:labels.environment')}</FieldLabel>
             <Select
               value={search.env ?? ALL}
               onValueChange={(value) => setSearch({ env: value === ALL ? undefined : value })}
@@ -194,7 +198,7 @@ function AuditPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={ALL}>All environments</SelectItem>
+                <SelectItem value={ALL}>{t('filters.allEnvironments')}</SelectItem>
                 {project.environments.map((env) => (
                   <SelectItem key={env.id} value={env.key}>
                     <EnvDot env={env} />
@@ -205,7 +209,7 @@ function AuditPage() {
             </Select>
           </Field>
           <Field>
-            <FieldLabel htmlFor="audit-type">Entity</FieldLabel>
+            <FieldLabel htmlFor="audit-type">{t('filters.entity')}</FieldLabel>
             <Select
               value={search.type ?? ALL}
               onValueChange={(value) =>
@@ -218,17 +222,17 @@ function AuditPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={ALL}>All entities</SelectItem>
+                <SelectItem value={ALL}>{t('filters.allEntities')}</SelectItem>
                 {ENTITY_TYPES.map((type) => (
                   <SelectItem key={type} value={type}>
-                    {ENTITY_LABELS[type]}
+                    {t(`common:labels.${ENTITY_LABEL_KEYS[type]}`)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </Field>
           <Field>
-            <FieldLabel htmlFor="audit-action">Action</FieldLabel>
+            <FieldLabel htmlFor="audit-action">{t('filters.action')}</FieldLabel>
             <Input
               id="audit-action"
               value={actionText}
@@ -238,10 +242,10 @@ function AuditPage() {
               spellCheck={false}
               autoComplete="off"
             />
-            <FieldDescription>e.g. flag.*</FieldDescription>
+            <FieldDescription>{t('filters.actionHint')}</FieldDescription>
           </Field>
           <Field data-invalid={rangeInvalid || undefined}>
-            <FieldLabel htmlFor="audit-from">From</FieldLabel>
+            <FieldLabel htmlFor="audit-from">{t('filters.from')}</FieldLabel>
             <Input
               id="audit-from"
               type="datetime-local"
@@ -252,7 +256,7 @@ function AuditPage() {
             />
           </Field>
           <Field data-invalid={rangeInvalid || undefined}>
-            <FieldLabel htmlFor="audit-to">To</FieldLabel>
+            <FieldLabel htmlFor="audit-to">{t('filters.to')}</FieldLabel>
             <Input
               id="audit-to"
               type="datetime-local"
@@ -265,13 +269,13 @@ function AuditPage() {
         </FieldGroup>
         {rangeInvalid ? (
           <p className="mt-3 text-destructive text-sm" role="alert">
-            The start of the range is after its end.
+            {t('filters.rangeInvalid')}
           </p>
         ) : null}
         {filtered ? (
           <div className="mt-3">
             <Button type="button" variant="ghost" size="sm" onClick={clearFilters}>
-              <FilterXIcon /> Clear filters
+              <FilterXIcon /> {t('common:actions.clearFilters')}
             </Button>
           </div>
         ) : null}
@@ -303,6 +307,7 @@ function AuditFeed({
   filtered: boolean
   onClear: () => void
 }) {
+  const { t } = useTranslation(['audit', 'common'])
   const [items, setItems] = useState(firstPage.items)
   const [cursor, setCursor] = useState(firstPage.nextCursor)
   const [loading, setLoading] = useState(false)
@@ -315,7 +320,7 @@ function AuditFeed({
       setItems((current) => [...current, ...next.items])
       setCursor(next.nextCursor)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Could not load more entries')
+      toast.error(err instanceof Error ? err.message : t('feed.loadMoreFailed'))
     } finally {
       setLoading(false)
     }
@@ -328,12 +333,12 @@ function AuditFeed({
           <EmptyMedia variant="icon">
             <FilterXIcon />
           </EmptyMedia>
-          <EmptyTitle>No matching entries</EmptyTitle>
-          <EmptyDescription>Nothing in the audit log matches these filters.</EmptyDescription>
+          <EmptyTitle>{t('feed.noMatches.title')}</EmptyTitle>
+          <EmptyDescription>{t('feed.noMatches.description')}</EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <Button variant="outline" onClick={onClear}>
-            Clear filters
+            {t('common:actions.clearFilters')}
           </Button>
         </EmptyContent>
       </Empty>
@@ -347,11 +352,11 @@ function AuditFeed({
         <div className="flex justify-center">
           <Button variant="outline" onClick={loadMore} disabled={loading}>
             {loading ? <Spinner /> : null}
-            Load more
+            {t('feed.loadMore')}
           </Button>
         </div>
       ) : items.length > 0 ? (
-        <p className="text-center text-muted-foreground text-xs">End of the audit log</p>
+        <p className="text-center text-muted-foreground text-xs">{t('feed.end')}</p>
       ) : null}
     </div>
   )

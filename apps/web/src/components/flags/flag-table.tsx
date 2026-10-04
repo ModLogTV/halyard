@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { createColumnHelper, tableFeatures, useTable } from '@tanstack/react-table'
 import { ArchiveIcon, BrushCleaningIcon } from 'lucide-react'
 import { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { EnvironmentLike } from '@/components/env/env-badge'
 import { EnvDot, envStyle } from '@/components/env/env-badge'
 import { EnvToggle } from '@/components/flags/env-toggle'
@@ -17,7 +18,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { formatDateTime, formatPercent, formatRelativeTime, pluralize } from '@/lib/format'
+import { formatDateTime, formatPercent, formatRelativeTime } from '@/lib/format'
 import type { StaleAssessment } from '@/lib/stale'
 import { describeStaleReason } from '@/lib/stale'
 import { cn } from '@/lib/utils'
@@ -76,9 +77,10 @@ export function FlagTable({
   canToggle: boolean
   onToggle: (flag: FlagRow, environment: FlagTableEnvironment, enabled: boolean) => Promise<void>
 }) {
+  const { t, i18n } = useTranslation(['flags', 'common'])
   const envName = useCallback(
-    (id: string) => environments.find((e) => e.id === id)?.name ?? 'an environment',
-    [environments],
+    (id: string) => environments.find((e) => e.id === id)?.name ?? t('stale.anEnvironment'),
+    [environments, t],
   )
 
   const columns = useMemo(
@@ -86,7 +88,7 @@ export function FlagTable({
       helper.columns([
         helper.accessor((row) => row.key, {
           id: 'flag',
-          header: 'Flag',
+          header: t('common:labels.flag'),
           cell: ({ row }) => {
             const flag = row.original
             return (
@@ -102,7 +104,7 @@ export function FlagTable({
                   <FlagTypeBadge type={flag.type} />
                   {flag.archivedAt ? (
                     <Badge variant="outline" className="gap-1 text-muted-foreground">
-                      <ArchiveIcon className="size-3" /> Archived
+                      <ArchiveIcon className="size-3" /> {t('common:states.archived')}
                     </Badge>
                   ) : null}
                   {flag.staleness.stale ? (
@@ -112,13 +114,13 @@ export function FlagTable({
                           variant="outline"
                           className="gap-1 border-warning/50 bg-warning-soft text-foreground"
                         >
-                          <BrushCleaningIcon className="size-3" /> Cleanup candidate
+                          <BrushCleaningIcon className="size-3" /> {t('common:states.stale')}
                         </Badge>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-xs">
                         <ul className="list-disc space-y-0.5 pl-4">
                           {flag.staleness.reasons.map((r) => {
-                            const text = describeStaleReason(r, envName)
+                            const text = describeStaleReason(r, envName, t)
                             return <li key={text}>{text}</li>
                           })}
                         </ul>
@@ -130,13 +132,13 @@ export function FlagTable({
                   <span className="truncate">{flag.name}</span>
                   {flag.tags.length > 0 ? (
                     <span className="flex gap-1">
-                      {flag.tags.slice(0, 3).map((t) => (
+                      {flag.tags.slice(0, 3).map((tag) => (
                         <Badge
-                          key={t}
+                          key={tag}
                           variant="secondary"
                           className="h-4 px-1.5 text-[10px] font-normal"
                         >
-                          {t}
+                          {tag}
                         </Badge>
                       ))}
                       {flag.tags.length > 3 ? <span>+{flag.tags.length - 3}</span> : null}
@@ -174,8 +176,8 @@ export function FlagTable({
                       disabled={!canToggle || Boolean(flag.archivedAt)}
                       disabledReason={
                         flag.archivedAt
-                          ? 'Archived flags cannot be toggled'
-                          : 'Only editors and owners can toggle flags'
+                          ? t('table.toggleDisabledArchived')
+                          : t('table.toggleDisabledRole')
                       }
                       onChange={(enabled) => onToggle(flag, environment, enabled)}
                     />
@@ -186,20 +188,30 @@ export function FlagTable({
                           !config.enabled && 'text-muted-foreground',
                         )}
                       >
-                        {config.enabled ? summariseServe(config.fallthrough) : 'off'}
+                        {config.enabled
+                          ? summariseServe(config.fallthrough)
+                          : t('common:states.off')}
                       </span>
                       <span className="truncate text-[11px] text-muted-foreground tabular">
-                        {config.ruleCount > 0 ? pluralize(config.ruleCount, 'rule') : 'no rules'}
+                        {config.ruleCount > 0
+                          ? t('common:counts.rules', { count: config.ruleCount })
+                          : t('table.noRules')}
                         {stat ? (
                           <>
                             {' · '}
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <span>{formatRelativeTime(stat.lastEvaluatedAt)}</span>
+                                <span>
+                                  {formatRelativeTime(stat.lastEvaluatedAt, {
+                                    locale: i18n.language,
+                                  })}
+                                </span>
                               </TooltipTrigger>
                               <TooltipContent>
-                                Last evaluated {formatDateTime(stat.lastEvaluatedAt)} ·{' '}
-                                {stat.evaluationCount.toLocaleString()} evaluations
+                                {t('table.lastEvaluated', {
+                                  time: formatDateTime(stat.lastEvaluatedAt, i18n.language),
+                                })}{' '}
+                                · {t('table.evaluations', { count: stat.evaluationCount })}
                               </TooltipContent>
                             </Tooltip>
                           </>
@@ -213,7 +225,7 @@ export function FlagTable({
           ),
         ),
       ]),
-    [environments, projectSlug, canToggle, onToggle, envName],
+    [environments, projectSlug, canToggle, onToggle, envName, t, i18n.language],
   )
 
   const table = useTable({ features, columns, data: flags.length ? flags : EMPTY })

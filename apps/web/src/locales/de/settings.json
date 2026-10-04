@@ -1,1 +1,493 @@
-{}
+{
+  "shared": {
+    "ownerOnly": "Nur Eigentümer können das ändern",
+    "saveChanges": "Änderungen speichern",
+    "copyFailed": "Kopieren nicht möglich. Markiere den Text und kopiere ihn manuell.",
+    "typeToConfirm": "Gib <0>{{value}}</0> zur Bestätigung ein"
+  },
+  "nav": {
+    "pageTitle": "Einstellungen · Halyard",
+    "description": "Verwalte dieses Projekt, wer es nutzen darf und wie darauf zugegriffen wird.",
+    "transfer": "Import & Export"
+  },
+  "general": {
+    "pageTitle": "Allgemeine Einstellungen · Halyard",
+    "project": {
+      "descriptionOwner": "Benenne und beschreibe das Projekt und lege fest, wann Flags als Aufräumkandidaten gelten.",
+      "descriptionReadOnly": "Nur Eigentümer können diese Einstellungen ändern.",
+      "slugLabel": "Slug",
+      "slugHint": "Wird in URLs und der CLI verwendet. Der Slug kann nicht geändert werden.",
+      "descriptionPlaceholder": "Wofür ist dieses Projekt?",
+      "discardChanges": "Änderungen verwerfen",
+      "daysError": "Gib eine ganze Zahl von Tagen zwischen 1 und 3650 ein",
+      "saved": "Projekteinstellungen gespeichert",
+      "saveFailed": "Die Einstellungen konnten nicht gespeichert werden"
+    },
+    "cleanup": {
+      "legend": "Flag-Aufräumen",
+      "description": "Flags, die diese Regeln erfüllen, werden als Aufräumkandidaten gelistet, damit sich toter Code und vergessene Rollouts nicht ansammeln.",
+      "staleAfterLabel": "Veraltet nach (Tagen)",
+      "staleAfterHint": "Ein Flag gilt als veraltet, wenn es so lange keine Änderungen hatte.",
+      "singleVariantLabel": "Einzelne Variante nach (Tagen)",
+      "singleVariantHint": "Ein Flag ist ein Aufräumkandidat, wenn es so lange nur eine Variante an alle ausgespielt hat."
+    },
+    "dangerZone": {
+      "title": "Gefahrenzone",
+      "description": "Diese Aktionen betreffen deinen Zugriff oder entfernen Daten endgültig.",
+      "leave": {
+        "action": "Projekt verlassen",
+        "description": "Du verlierst den Zugriff auf {{name}}, bis dich ein Eigentümer erneut einlädt.",
+        "soleOwner": "Du bist der einzige Eigentümer. Mache zuerst ein anderes Mitglied zum Eigentümer.",
+        "confirmTitle": "{{name}} verlassen?",
+        "confirmDescription": "Du verlierst den Zugriff auf dieses Projekt. Ein Eigentümer kann dich erneut einladen.",
+        "left": "Du hast {{name}} verlassen"
+      },
+      "delete": {
+        "action": "Projekt löschen",
+        "description": "Das Projekt mit seinen Flags, Segmenten, Umgebungen, SDK-Schlüsseln und dem Audit-Log dauerhaft löschen.",
+        "confirmTitle": "{{name}} löschen?",
+        "confirmDescription": "Alle Flags, Segmente, Umgebungen, API-Schlüssel und das Audit-Log dieses Projekts werden dauerhaft gelöscht. SDKs mit seinen Schlüsseln erhalten keine Flags mehr.",
+        "deleted": "Projekt \"{{name}}\" gelöscht"
+      }
+    }
+  },
+  "environments": {
+    "pageTitle": "Umgebungen · Halyard",
+    "description": "Umgebungen halten getrennte Flag-Konfigurationen und SDK-Schlüssel. Die Reihenfolge hier gilt in der ganzen App.",
+    "add": "Umgebung hinzufügen",
+    "empty": {
+      "title": "Keine Umgebungen",
+      "description": "Flags werden pro Umgebung konfiguriert. Füge eine hinzu, um Flags auszuwerten."
+    },
+    "moveUp": "{{name}} nach oben",
+    "moveDown": "{{name}} nach unten",
+    "edit": "{{name}} bearbeiten",
+    "deleteAria": "{{name}} löschen",
+    "alreadyFirst": "Bereits ganz oben",
+    "alreadyLast": "Bereits ganz unten",
+    "keepOne": "Ein Projekt muss mindestens eine Umgebung behalten",
+    "reorderFailed": "Die Umgebungen konnten nicht neu sortiert werden",
+    "delete": {
+      "title": "{{name}} löschen?",
+      "description": "Die Flag-Konfiguration und die SDK-Schlüssel dieser Umgebung werden entfernt. Anwendungen mit diesen Schlüsseln erhalten keine Flags mehr. Das kann nicht rückgängig gemacht werden.",
+      "confirm": "Umgebung löschen",
+      "deleted": "Umgebung \"{{name}}\" gelöscht"
+    },
+    "dialog": {
+      "editTitle": "{{name}} bearbeiten",
+      "addDescription": "Jedes Flag erhält in der neuen Umgebung eine deaktivierte Konfiguration.",
+      "editDescription": "Der Schlüssel identifiziert die Umgebung in API und CLI und kann deshalb nicht geändert werden.",
+      "preview": "Vorschau",
+      "namePlaceholder": "QA",
+      "keyPlaceholder": "qa",
+      "keyHint": "Kleinbuchstaben, Ziffern, Binde- und Unterstriche. Wird aus dem Namen erzeugt.",
+      "colorLabel": "Farbe",
+      "productionLabel": "Produktionsumgebung",
+      "productionHint": "Produktionsumgebungen fragen vor Änderungen nach Bestätigung und sind mit Warnstreifen markiert.",
+      "updated": "Umgebung \"{{name}}\" aktualisiert",
+      "created": "Umgebung \"{{name}}\" erstellt",
+      "saveFailed": "Die Umgebung konnte nicht gespeichert werden"
+    },
+    "colorField": {
+      "pick": "Farbe wählen",
+      "presets": "Voreingestellte Farben",
+      "blue": "Blau",
+      "amber": "Bernstein",
+      "red": "Rot",
+      "green": "Grün",
+      "violet": "Violett",
+      "pink": "Pink",
+      "teal": "Petrol",
+      "slate": "Schiefer"
+    }
+  },
+  "members": {
+    "pageTitle": "Mitglieder · Halyard",
+    "description_one": "{{count}} Person hat Zugriff auf {{name}}.",
+    "description_other": "{{count}} Personen haben Zugriff auf {{name}}.",
+    "invite": "Mitglied einladen",
+    "joined": "Beigetreten",
+    "you": "Du",
+    "roleDescription": {
+      "owner": "Verwaltet alles, einschließlich Einstellungen und Mitgliedern.",
+      "editor": "Ändert Flags, Segmente, Experimente und Zeitpläne.",
+      "viewer": "Liest und nutzt den Playground."
+    },
+    "roleAria": "Rolle von {{name}}",
+    "lastOwnerRole": "Ein Projekt braucht mindestens einen Eigentümer. Mache zuerst jemand anderen zum Eigentümer.",
+    "selfRemove": "Nutze „Projekt verlassen“ in den allgemeinen Einstellungen, um dich selbst zu entfernen",
+    "lastOwnerRemove": "Ein Projekt braucht mindestens einen Eigentümer",
+    "roleChanged": "{{name}} ist jetzt {{role}}",
+    "roleChangeFailed": "Die Rolle konnte nicht geändert werden",
+    "removeAria": "{{name}} entfernen",
+    "remove": {
+      "title": "{{name}} entfernen?",
+      "description": "{{name}} verliert sofort den Zugriff auf dieses Projekt. Du kannst die Person später erneut einladen.",
+      "confirm": "Mitglied entfernen",
+      "removed": "{{name}} wurde entfernt"
+    },
+    "pending": {
+      "title": "Ausstehende Einladungen",
+      "description": "Einladungen werden von der eingeladenen Person nach der Anmeldung in der App angenommen.",
+      "invited": "Eingeladen",
+      "expires": "Läuft ab",
+      "empty": {
+        "title": "Keine ausstehenden Einladungen",
+        "description": "Lade ein Teammitglied per E-Mail ein. Die Einladung erscheint nach der Anmeldung mit dieser Adresse."
+      },
+      "cancelAria": "Einladung für {{email}} zurückziehen",
+      "cancelTitle": "Die Einladung für {{email}} zurückziehen?",
+      "cancelDescription": "Die Einladung funktioniert dann nicht mehr. Du kannst jederzeit eine neue senden.",
+      "cancelConfirm": "Einladung zurückziehen",
+      "keep": "Einladung behalten",
+      "canceled": "Einladung zurückgezogen"
+    },
+    "inviteDialog": {
+      "description": "Die Einladung erscheint nach der Anmeldung mit dieser E-Mail-Adresse.",
+      "emailPlaceholder": "teammate@example.com",
+      "submit": "Einladung senden",
+      "sent": "Einladung an {{email}} gesendet",
+      "failed": "Die Einladung konnte nicht gesendet werden"
+    }
+  },
+  "apiKeys": {
+    "pageTitle": "API-Schlüssel · Halyard",
+    "lastUsed": "Zuletzt verwendet",
+    "untitled": "Unbenannter Schlüssel",
+    "unknownEnvironment": "Unbekannte Umgebung",
+    "addEnvironmentFirst": "Füge zuerst eine Umgebung hinzu",
+    "revokeAria": "{{name}} widerrufen",
+    "revokeFallbackName": "Schlüssel",
+    "sdk": {
+      "title": "SDK-Schlüssel",
+      "description": "Umgebungsgebundene Schlüssel für OpenFeature-SDKs und alles, was OFREP spricht. Diese Schlüssel können Flags nur lesen.",
+      "create": "SDK-Schlüssel erstellen",
+      "empty": {
+        "title": "Keine SDK-Schlüssel",
+        "description": "Erstelle einen Schlüssel, um Flags aus deiner Anwendung auszuwerten. Jeder Schlüssel gehört zu genau einer Umgebung."
+      }
+    },
+    "management": {
+      "title": "Management-Schlüssel",
+      "description": "Projektgebundene Schlüssel für die Halyard-CLI und die REST-API.",
+      "create": "Management-Schlüssel erstellen",
+      "access": "Zugriff",
+      "read": "Lesen",
+      "readWrite": "Lesen & Schreiben",
+      "empty": {
+        "title": "Keine Management-Schlüssel",
+        "description": "Erstelle einen Schlüssel, um dieses Projekt aus der CI zu skripten oder dich mit der CLI anzumelden."
+      }
+    },
+    "revoke": {
+      "title": "{{name}} widerrufen?",
+      "fallbackName": "diesen Schlüssel",
+      "descriptionSdk": "Anwendungen mit diesem Schlüssel erhalten sofort keine Flags mehr. Das kann nicht rückgängig gemacht werden.",
+      "descriptionManagement": "Skripte und CLI-Sitzungen mit diesem Schlüssel funktionieren sofort nicht mehr. Das kann nicht rückgängig gemacht werden.",
+      "confirm": "Schlüssel widerrufen",
+      "revoked": "Schlüssel \"{{name}}\" widerrufen"
+    },
+    "create": {
+      "sdkTitle": "SDK-Schlüssel erstellen",
+      "managementTitle": "Management-Schlüssel erstellen",
+      "sdkDescription": "SDK-Schlüssel werten Flags für eine einzelne Umgebung aus. Verwende einen pro Service, damit du sie unabhängig widerrufen kannst.",
+      "managementDescription": "Management-Schlüssel wirken über CLI und REST-API auf das ganze Projekt.",
+      "sdkNamePlaceholder": "Checkout-Service",
+      "managementNamePlaceholder": "CI-Pipeline",
+      "environmentPlaceholder": "Umgebung wählen",
+      "environmentRequired": "Wähle eine Umgebung",
+      "environmentHint": "Der Schlüssel kann nur Flags dieser Umgebung lesen.",
+      "accessLegend": "Zugriff",
+      "readTitle": "Lesen",
+      "readDescription": "Flags, Segmente und Einstellungen auflisten und exportieren.",
+      "writeTitle": "Lesen und Schreiben",
+      "writeDescription": "Zusätzlich Flags ändern und Konfiguration importieren.",
+      "submit": "Schlüssel erstellen",
+      "failed": "Der Schlüssel konnte nicht erstellt werden"
+    },
+    "reveal": {
+      "title": "Kopiere deinen neuen Schlüssel",
+      "readySdk": "SDK-Schlüssel \"{{name}}\" ist bereit.",
+      "readyManagement": "Management-Schlüssel \"{{name}}\" ist bereit.",
+      "notShownTitle": "Dieser Schlüssel wird nicht noch einmal angezeigt",
+      "notShownDescription": "Lege ihn jetzt in deinem Secrets-Manager ab. Falls du ihn verlierst, widerrufe ihn und erstelle einen neuen.",
+      "curlLabel": "curl-Befehl",
+      "curlCopy": "curl-Befehl kopieren",
+      "nodeLabel": "Node-Snippet",
+      "nodeCopy": "Node-Snippet kopieren",
+      "cliHeading": "Mit der CLI anmelden",
+      "cliLabel": "CLI-Befehl",
+      "cliCopy": "CLI-Befehl kopieren",
+      "done": "Ich habe den Schlüssel kopiert"
+    }
+  },
+  "transfer": {
+    "pageTitle": "Import & Export · Halyard",
+    "export": {
+      "title": "Export",
+      "description": "Nimm Umgebungen, Segmente und Flags dieses Projekts samt Targeting aus Halyard mit. Exporte enthalten keine Schlüssel, Statistiken oder Mitglieder.",
+      "json": {
+        "title": "Halyard-JSON",
+        "description": "Das vollständige Dokument. Importiere es in ein anderes Projekt oder bewahre es als Backup auf.",
+        "download": "JSON herunterladen",
+        "downloaded": "Export heruntergeladen",
+        "failed": "Das Projekt konnte nicht exportiert werden"
+      },
+      "flagd": {
+        "title": "Export für flagd",
+        "description": "Eine Umgebung als flagd-Flag-Definitionsdatei. Alles, was flagd nicht exakt abbilden kann, ist unten aufgeführt.",
+        "environmentPlaceholder": "Umgebung wählen",
+        "environmentHint": "flagd-Definitionen beschreiben eine Umgebung.",
+        "preparing": "flagd-Datei wird vorbereitet",
+        "notes_one": "{{count}} Hinweis zum flagd-Export",
+        "notes_other": "{{count}} Hinweise zum flagd-Export",
+        "flagsExported_one": "{{count}} Flag exportiert",
+        "flagsExported_other": "{{count}} Flags exportiert",
+        "copy": "flagd-JSON kopieren",
+        "previewLabel": "Vorschau des flagd-JSON",
+        "failed": "Export für flagd nicht möglich"
+      }
+    },
+    "import": {
+      "title": "Import",
+      "description": "Wende einen Halyard-Export auf dieses Projekt an. Objekte werden über ihren Schlüssel zugeordnet; die Vorschau zeigt genau, was sich ändern würde, bevor etwas geschrieben wird.",
+      "fileLabel": "Exportdatei",
+      "fileHint": "Wähle eine .json-Datei oder füge das Dokument unten ein.",
+      "documentLabel": "Dokument",
+      "pruneLabel": "Flags, Segmente und Umgebungen entfernen, die in der Datei fehlen",
+      "pruneOnHint": "Alles, was nicht in der Datei steht, wird gelöscht, einschließlich des Targeting-Verlaufs und der SDK-Schlüssel entfernter Umgebungen. Das kann nicht rückgängig gemacht werden.",
+      "pruneOffHint": "Aus: der Import fügt nur hinzu und aktualisiert; nichts wird gelöscht.",
+      "preview": "Änderungen anzeigen",
+      "viewerTitle": "Importieren erfordert die Rolle Bearbeiter oder Eigentümer",
+      "viewerDescription": "Betrachter können dieses Projekt exportieren, aber nicht ändern. Bitte einen Eigentümer um eine höhere Rolle.",
+      "invalidJson": "Das ist kein gültiges JSON. Füge eine Halyard-Exportdatei ein oder lade sie hoch.",
+      "readFailed": "Die Datei konnte nicht gelesen werden",
+      "previewFailed": "Die Vorschau des Imports ist nicht möglich",
+      "applyFailed": "Der Import wurde nicht angewendet",
+      "nothingToChange": "Nichts zu ändern",
+      "applied_one": "Import angewendet: {{count}} Änderung",
+      "applied_other": "Import angewendet: {{count}} Änderungen",
+      "problems_one": "{{count}} Problem im Dokument, nichts kann angewendet werden",
+      "problems_other": "{{count}} Probleme im Dokument, nichts kann angewendet werden",
+      "notes_one": "{{count}} Hinweis",
+      "notes_other": "{{count}} Hinweise",
+      "noChanges": "Nichts zu ändern. Dieses Projekt entspricht dem Dokument bereits.",
+      "apply": "Import anwenden",
+      "willBeWritten_one": "{{count}} Änderung wird in einem Schritt geschrieben.",
+      "willBeWritten_other": "{{count}} Änderungen werden in einem Schritt geschrieben.",
+      "confirm": {
+        "titleProduction": "Import auf die Produktion anwenden?",
+        "title": "Diesen Import anwenden?",
+        "description_one": "{{count}} Änderung wird in einem Schritt in dieses Projekt geschrieben und gilt sofort.",
+        "description_other": "{{count}} Änderungen werden in einem Schritt in dieses Projekt geschrieben und gelten sofort.",
+        "productionAffected": "Betroffene Produktionsumgebungen:",
+        "deletions_one": "{{count}} Eintrag wird gelöscht. Das kann nicht rückgängig gemacht werden.",
+        "deletions_other": "{{count}} Einträge werden gelöscht. Das kann nicht rückgängig gemacht werden.",
+        "applyProduction": "Auf die Produktion anwenden"
+      }
+    },
+    "diff": {
+      "kind": {
+        "created": "Erstellt",
+        "updated": "Aktualisiert",
+        "deleted": "Gelöscht"
+      },
+      "count": {
+        "created": "{{count}} erstellt",
+        "updated": "{{count}} aktualisiert",
+        "deleted": "{{count}} gelöscht",
+        "unchanged": "{{count}} unverändert"
+      },
+      "details": "Details",
+      "detailsFor": "für {{key}}",
+      "environmentConfigs_one": "{{count}} Umgebungskonfiguration",
+      "environmentConfigs_other": "{{count}} Umgebungskonfigurationen",
+      "conditions_one": "{{count}} Bedingung",
+      "conditions_other": "{{count}} Bedingungen",
+      "flagSummary_one": "{{type}}, {{count}} Variante",
+      "flagSummary_other": "{{type}}, {{count}} Varianten"
+    }
+  },
+  "webhooks": {
+    "pageTitle": "Webhooks · Halyard",
+    "detailPageTitle": "{{name}} · Webhooks · Halyard",
+    "description": "Sende eine signierte HTTP-Anfrage an deinen eigenen Server, wenn sich in diesem Projekt etwas ändert.",
+    "add": "Webhook hinzufügen",
+    "loadFailedTitle": "Webhooks konnten nicht geladen werden",
+    "testQueued": "Testereignis eingereiht",
+    "testQueuedDescription": "Es wird in wenigen Sekunden gesendet.",
+    "testFailed": "Das Testereignis konnte nicht gesendet werden",
+    "sendTest": "Testereignis senden",
+    "enableBeforeTest": "Aktiviere den Webhook, bevor du ein Testereignis sendest",
+    "empty": {
+      "title": "Noch keine Webhooks",
+      "description": "Ein Webhook sendet eine signierte HTTP-Anfrage an deinen Server, sobald sich in diesem Projekt etwas ändert: ein Flag wird umgeschaltet, eine geplante Änderung läuft, ein Segment wird bearbeitet. Nutze ihn, um in einen Chat zu posten, einen Deploy-Check auszulösen oder ein anderes System synchron zu halten."
+    },
+    "list": {
+      "allEvents": "alle Ereignisse",
+      "enableAria": "{{name}} aktivieren",
+      "actionsAria": "Aktionen für {{name}}",
+      "deliveries": "Zustellungen",
+      "rotateSecret": "Secret rotieren",
+      "viewDeliveries": "Zustellungen anzeigen",
+      "enabledToast": "{{name}} aktiviert",
+      "disabledToast": "{{name}} deaktiviert",
+      "updateFailed": "Der Webhook konnte nicht aktualisiert werden",
+      "lastDelivery": "Letzte Zustellung: <0>{{event}}</0>, {{status}}, {{when}}",
+      "lastDeliveryWithCode": "Letzte Zustellung: <0>{{event}}</0>, {{status}} (HTTP {{code}}), {{when}}",
+      "rotate": {
+        "title": "Das Secret von {{name}} rotieren?",
+        "fallbackName": "dieser Webhook",
+        "description": "Halyard erzeugt ein neues Signatur-Secret und zeigt es einmal an. Anfragen werden sofort mit dem neuen Secret signiert, dein Endpunkt lehnt sie also ab, bis du ihn aktualisierst.",
+        "confirm": "Secret rotieren"
+      },
+      "delete": {
+        "title": "{{name}} löschen?",
+        "description": "Er erhält keine Ereignisse mehr und sein Zustellungsverlauf wird gelöscht. Das kann nicht rückgängig gemacht werden.",
+        "confirm": "Webhook löschen",
+        "deleted": "Webhook \"{{name}}\" gelöscht"
+      }
+    },
+    "form": {
+      "editTitle": "{{name}} bearbeiten",
+      "description": "Halyard sendet eine signierte POST-Anfrage an die URL, sobald eines der gewählten Ereignisse eintritt.",
+      "namePlaceholder": "Deploy-Bot",
+      "nameRequired": "Gib einen Namen ein",
+      "urlHint": "Muss mit http:// oder https:// beginnen.",
+      "eventsRequired": "Wähle mindestens ein Ereignis",
+      "secretLabel": "Signatur-Secret",
+      "secretPlaceholder": "Leer lassen, um eines zu erzeugen",
+      "secretHint": "Halyard erzeugt ein sicheres Zufalls-Secret und zeigt es nach dem Erstellen des Webhooks einmal an. Setze nur ein eigenes, wenn dein Empfänger bereits eines hat (mindestens 16 Zeichen).",
+      "updated": "Webhook aktualisiert",
+      "saveFailed": "Der Webhook konnte nicht gespeichert werden"
+    },
+    "picker": {
+      "allEvents": "Alle Ereignisse",
+      "allEventsHint": "Jeder Audit-Log-Eintrag, auch künftig hinzukommende Ereignistypen.",
+      "customEvent": "Eigener Ereignistyp",
+      "categories": {
+        "flag": "Flags",
+        "segment": "Segmente",
+        "environment": "Umgebungen",
+        "experiment": "Experimente",
+        "schedule": "Geplante Änderungen",
+        "member": "Mitglieder",
+        "apiKey": "API-Schlüssel",
+        "project": "Projekt",
+        "webhook": "Webhooks",
+        "other": "Sonstiges"
+      }
+    },
+    "eventDescriptions": {
+      "all": "Jedes Ereignis",
+      "flagAll": "Jedes Flag-Ereignis",
+      "flagCreated": "Ein Flag wurde erstellt",
+      "flagUpdated": "Name, Beschreibung, Tags oder Varianten eines Flags haben sich geändert",
+      "flagToggled": "Ein Flag wurde in einer Umgebung ein- oder ausgeschaltet",
+      "flagEnvironmentUpdated": "Targeting, Regeln oder Fallthrough eines Flags haben sich in einer Umgebung geändert",
+      "flagPromoted": "Eine Konfiguration wurde zwischen Umgebungen kopiert",
+      "flagArchived": "Ein Flag wurde archiviert",
+      "flagUnarchived": "Ein Flag wurde aus dem Archiv wiederhergestellt",
+      "flagDeleted": "Ein Flag wurde gelöscht",
+      "segmentAll": "Ein Segment wurde erstellt, aktualisiert oder gelöscht",
+      "environmentAll": "Eine Umgebung wurde erstellt, aktualisiert oder gelöscht",
+      "experimentAll": "Jedes Experiment-Ereignis",
+      "scheduleAll": "Jedes Ereignis zu geplanten Änderungen",
+      "scheduleCreated": "Eine Änderung wurde geplant",
+      "scheduleStagedRolloutCreated": "Ein gestufter Rollout wurde geplant",
+      "scheduleUpdated": "Eine geplante Änderung wurde bearbeitet",
+      "scheduleCancelled": "Eine geplante Änderung wurde abgebrochen",
+      "schedulePlanCancelled": "Ein gestufter Rollout wurde abgebrochen",
+      "scheduleExecuted": "Eine geplante Änderung wurde angewendet",
+      "scheduleFailed": "Eine geplante Änderung konnte nicht angewendet werden",
+      "memberAll": "Mitglieder wurden eingeladen, sind beigetreten, haben verlassen, wurden entfernt oder haben die Rolle gewechselt",
+      "apiKeyAll": "Ein API-Schlüssel wurde erstellt oder gelöscht",
+      "projectAll": "Projekteinstellungen haben sich geändert",
+      "webhookAll": "Webhooks wurden erstellt, aktualisiert, gelöscht oder rotiert"
+    },
+    "reveal": {
+      "createdTitle": "Webhook erstellt",
+      "rotatedTitle": "Secret rotiert",
+      "createdDescription": "{{name}} ist aktiviert und erhält die gewählten Ereignisse.",
+      "rotatedDescription": "Das vorherige Secret von {{name}} funktioniert nicht mehr. Aktualisiere deinen Endpunkt.",
+      "copyNowTitle": "Kopiere das Signatur-Secret jetzt",
+      "copyNowDescription": "Es wird nur einmal angezeigt. Falls du es verlierst, rotiere das Secret, um ein neues zu erhalten.",
+      "secretSr": "Signatur-Secret:",
+      "copySecret": "Secret kopieren",
+      "headersTitle": "Anfrage-Header",
+      "verifyTitle": "Signatur prüfen (Node.js)",
+      "signatureIs": "Die Signatur ist <0>{{formula}}</0>. Lehne Anfragen ab, die älter als 5 Minuten sind.",
+      "done": "Ich habe das Secret gespeichert"
+    },
+    "guide": {
+      "title": "Signaturen prüfen",
+      "description": "Prüfe, dass eine Anfrage wirklich von Halyard kommt, bevor du ihr vertraust.",
+      "intro": "Jede Anfrage trägt <0>{{header}}</0>. Die Signatur ist der hexadezimale HMAC-SHA256 über <1>{{payload}}</1>, geschlüsselt mit dem Webhook-Secret.",
+      "verifyBody": "Prüfe die exakten Bytes des Bodys, bevor du das JSON parst.",
+      "tolerance": "Lehne Anfragen ab, deren Zeitstempel mehr als 5 Minuten von deiner Uhr abweicht, damit eine abgefangene Anfrage später nicht wiederholt werden kann.",
+      "dedupe": "Nutze <0>X-Halyard-Delivery</0> zur Deduplizierung: Zustellung erfolgt mindestens einmal, und die ID bleibt über Wiederholungen gleich.",
+      "headersTitle": "Anfrage-Header",
+      "nodeTitle": "Node.js-Beispiel",
+      "copySnippet": "Snippet kopieren",
+      "columns": {
+        "header": "Header",
+        "example": "Beispiel",
+        "meaning": "Bedeutung"
+      },
+      "headers": {
+        "contentType": "Der Body ist JSON.",
+        "userAgent": "Identifiziert Halyard.",
+        "event": "Der Ereignistyp.",
+        "delivery": "Eine Zustellung eines Ereignisses an diesen Webhook. Bleibt über Wiederholungen gleich, nutze sie also zur Deduplizierung.",
+        "timestamp": "Unix-Zeit in Sekunden, zu der die Anfrage signiert wurde.",
+        "signature": "Zeitstempel und HMAC-SHA256-Signatur. Kann mehr als einen v1-Wert tragen."
+      }
+    },
+    "deliveries": {
+      "title": "Zustellungen",
+      "status": {
+        "pending": "Ausstehend",
+        "success": "Zugestellt",
+        "failed": "Fehlgeschlagen"
+      },
+      "statusInline": {
+        "pending": "ausstehend",
+        "success": "zugestellt",
+        "failed": "fehlgeschlagen"
+      },
+      "lastDeliveryStatus": "Letzte Zustellung {{status}}",
+      "empty": {
+        "title": "Noch keine Zustellungen",
+        "description": "Zustellungen erscheinen hier, sobald ein Ereignis zu diesem Webhook passt. Sende ein Testereignis, um es auszuprobieren."
+      },
+      "refreshing": "Wird alle 15 Sekunden aktualisiert, solange Zustellungen ausstehen.",
+      "settled": "Alle Zustellungen sind abgeschlossen.",
+      "refreshFailed": "Zustellungen konnten nicht aktualisiert werden",
+      "loadMore": "Mehr laden",
+      "loadMoreFailed": "Weitere Zustellungen konnten nicht geladen werden",
+      "details": "Details",
+      "attempts": "Versuche",
+      "http": "HTTP",
+      "nextAttempt": "Nächster Versuch",
+      "showDetails": "Details zu {{event}} anzeigen",
+      "hideDetails": "Details zu {{event}} ausblenden",
+      "resend": "{{event}} erneut senden",
+      "resent": "Zustellung erneut eingereiht",
+      "resendFailed": "Die Zustellung konnte nicht erneut gesendet werden",
+      "enableBeforeResend": "Aktiviere den Webhook, bevor du erneut sendest",
+      "requestPayload": "Anfrage-Payload",
+      "latestResponse": "Letzte Antwort",
+      "notAttempted": "Noch nicht versucht.",
+      "noBody": "Es wurde kein Antwort-Body gespeichert.",
+      "ownersOnly": "Antwort-Bodys sind nur für Eigentümer sichtbar.",
+      "deliveredAt": "Zugestellt {{time}}"
+    },
+    "detail": {
+      "notFoundTitle": "Webhook nicht gefunden",
+      "notFoundDescription": "Er wurde möglicherweise gelöscht.",
+      "back": "Zurück zu den Webhooks",
+      "loadFailedTitle": "Zustellungen konnten nicht geladen werden",
+      "secretLine": "Secret <0>{{preview}}</0> · erstellt {{time}}"
+    }
+  }
+}

@@ -1,5 +1,6 @@
 import { useRouter } from '@tanstack/react-router'
 import { type FormEvent, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
@@ -28,7 +29,7 @@ import type { ProjectRole } from '@/lib/permissions'
 import { inviteMember } from '@/server/functions/members'
 import { inviteMemberSchema } from '@/server/schemas/members'
 import { errorMessage, firstError } from './form-utils'
-import { ROLE_INFO, ROLE_ORDER } from './roles'
+import { ROLE_ORDER } from './roles'
 
 export function InviteMemberDialog({
   projectId,
@@ -49,6 +50,7 @@ export function InviteMemberDialog({
 }
 
 function InviteForm({ projectId, onDone }: { projectId: string; onDone: () => void }) {
+  const { t } = useTranslation(['settings', 'common'])
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<ProjectRole>('editor')
@@ -67,11 +69,11 @@ function InviteForm({ projectId, onDone }: { projectId: string; onDone: () => vo
     setServerError(null)
     try {
       const invitation = await inviteMember({ data: { projectId, email, role } })
-      toast.success(`Invitation sent to ${invitation.email}`)
+      toast.success(t('members.inviteDialog.sent', { email: invitation.email }))
       await router.invalidate()
       onDone()
     } catch (error) {
-      setServerError(errorMessage(error, 'Could not send the invitation'))
+      setServerError(errorMessage(error, t('members.inviteDialog.failed')))
     } finally {
       setPending(false)
     }
@@ -80,36 +82,34 @@ function InviteForm({ projectId, onDone }: { projectId: string; onDone: () => vo
   return (
     <form onSubmit={onSubmit} noValidate className="contents">
       <DialogHeader>
-        <DialogTitle>Invite member</DialogTitle>
-        <DialogDescription>
-          They will see the invitation after signing in with this email.
-        </DialogDescription>
+        <DialogTitle>{t('members.invite')}</DialogTitle>
+        <DialogDescription>{t('members.inviteDialog.description')}</DialogDescription>
       </DialogHeader>
       <FieldGroup className="gap-5">
         <Field data-invalid={showEmail ? true : undefined}>
-          <FieldLabel htmlFor="invite-email">Email</FieldLabel>
+          <FieldLabel htmlFor="invite-email">{t('common:labels.email')}</FieldLabel>
           <Input
             id="invite-email"
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            placeholder="teammate@example.com"
+            placeholder={t('members.inviteDialog.emailPlaceholder')}
             autoComplete="off"
             aria-invalid={showEmail ? true : undefined}
             autoFocus
           />
-          <FieldError>{showEmail ? 'Enter a valid email address' : undefined}</FieldError>
+          <FieldError>{showEmail ? t('common:validation.invalidEmail') : undefined}</FieldError>
         </Field>
 
         <FieldSet>
-          <FieldLegend variant="label">Role</FieldLegend>
+          <FieldLegend variant="label">{t('common:labels.role')}</FieldLegend>
           <RadioGroup value={role} onValueChange={(next) => setRole(next as ProjectRole)}>
             {ROLE_ORDER.map((value) => (
               <FieldLabel key={value} htmlFor={`invite-role-${value}`}>
                 <Field orientation="horizontal">
                   <FieldContent>
-                    <FieldTitle>{ROLE_INFO[value].label}</FieldTitle>
-                    <FieldDescription>{ROLE_INFO[value].description}</FieldDescription>
+                    <FieldTitle>{t(`common:roles.${value}`)}</FieldTitle>
+                    <FieldDescription>{t(`members.roleDescription.${value}`)}</FieldDescription>
                   </FieldContent>
                   <RadioGroupItem value={value} id={`invite-role-${value}`} />
                 </Field>
@@ -122,11 +122,11 @@ function InviteForm({ projectId, onDone }: { projectId: string; onDone: () => vo
       </FieldGroup>
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onDone} disabled={pending}>
-          Cancel
+          {t('common:actions.cancel')}
         </Button>
         <Button type="submit" disabled={pending}>
           {pending ? <Spinner /> : null}
-          Send invitation
+          {t('members.inviteDialog.submit')}
         </Button>
       </DialogFooter>
     </form>

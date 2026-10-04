@@ -1,5 +1,6 @@
 import type { RolloutVariation } from '@halyard/engine'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { evenSplit, RolloutBar, VariantValue } from '@/components/flags'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -31,6 +32,7 @@ export function AllocationEditor({
   disabled,
   control,
 }: AllocationEditorProps) {
+  const { t } = useTranslation(['experiments', 'common'])
   // Raw text while typing, so "33." and "" survive a render.
   const [drafts, setDrafts] = useState<Record<string, string>>({})
   const total = allocationTotal(value)
@@ -71,7 +73,7 @@ export function AllocationEditor({
                 />
                 {control === variant.key ? (
                   <span className="rounded-sm bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-                    control
+                    {t('badges.control')}
                   </span>
                 ) : null}
               </label>
@@ -90,7 +92,7 @@ export function AllocationEditor({
                       return rest
                     })
                   }
-                  aria-label={`Weight of ${variant.key} in percent`}
+                  aria-label={t('allocation.weightAriaLabel', { variant: variant.key })}
                 />
                 <span
                   aria-hidden="true"
@@ -105,16 +107,18 @@ export function AllocationEditor({
       </ul>
       <div className="flex items-center justify-between gap-2">
         <Button type="button" variant="outline" size="sm" onClick={splitEvenly} disabled={disabled}>
-          Split evenly
+          {t('allocation.splitEvenly')}
         </Button>
         <p
           className={cn('tabular text-sm', complete ? 'text-muted-foreground' : 'text-destructive')}
           role={complete ? undefined : 'alert'}
         >
-          Total {formatPercent(total)}
           {complete
-            ? ''
-            : ` (must be 100%, ${total < 100 ? 'add' : 'remove'} ${formatPercent(Math.abs(100 - total))})`}
+            ? t('allocation.total', { value: formatPercent(total) })
+            : t(total < 100 ? 'allocation.totalAdd' : 'allocation.totalRemove', {
+                value: formatPercent(total),
+                delta: formatPercent(Math.abs(100 - total)),
+              })}
         </p>
       </div>
     </div>

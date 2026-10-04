@@ -1,5 +1,6 @@
 import { TriangleAlertIcon } from 'lucide-react'
 import type { CSSProperties } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
@@ -33,6 +34,7 @@ export function EnvDot({
 
 /** Compact environment label. Production environments carry the hazard stripe. */
 export function EnvBadge({ env, className }: { env: EnvironmentLike; className?: string }) {
+  const { t } = useTranslation('flags')
   return (
     <Badge
       variant="outline"
@@ -46,7 +48,7 @@ export function EnvBadge({ env, className }: { env: EnvironmentLike; className?:
       <EnvDot env={env} />
       {env.name}
       {env.isProduction ? (
-        <TriangleAlertIcon className="size-3 opacity-70" aria-label="Production" />
+        <TriangleAlertIcon className="size-3 opacity-70" aria-label={t('envBadge.production')} />
       ) : null}
     </Badge>
   )

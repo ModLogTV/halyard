@@ -1,5 +1,6 @@
 import { PlusIcon, Trash2Icon } from 'lucide-react'
 import { useId, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { IconButton } from '@/components/flags/icon-button'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -18,17 +19,13 @@ import {
   type AttributeType,
   type BuiltContext,
   type ContextDraft,
+  type ContextErrorCode,
   draftToContext,
   newRow,
   parseContextJson,
 } from './context'
 
-const TYPE_LABELS: Record<AttributeType, string> = {
-  string: 'String',
-  number: 'Number',
-  boolean: 'Boolean',
-  json: 'JSON',
-}
+const ATTRIBUTE_TYPES: AttributeType[] = ['string', 'number', 'boolean', 'json']
 
 function defaultValueFor(type: AttributeType): string {
   if (type === 'boolean') return 'true'
@@ -44,20 +41,21 @@ function AttributeRowEditor({
   onRemove,
 }: {
   row: AttributeRow
-  error?: string
+  error?: ContextErrorCode
   onChange: (row: AttributeRow) => void
   onRemove: () => void
 }) {
+  const { t } = useTranslation(['playground', 'common'])
   const errorId = useId()
-  const label = row.key || 'attribute'
+  const label = row.key || t('editor.attributes.fallback')
   return (
     <li className="flex flex-col gap-1">
       <div className="flex items-center gap-1.5">
         <Input
           value={row.key}
           onChange={(e) => onChange({ ...row, key: e.target.value })}
-          placeholder="name"
-          aria-label="Attribute name"
+          placeholder={t('editor.attributes.namePlaceholder')}
+          aria-label={t('editor.attributes.nameLabel')}
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? errorId : undefined}
           className="h-8 w-28 shrink-0 font-mono text-xs"
@@ -74,14 +72,14 @@ function AttributeRowEditor({
           <SelectTrigger
             size="sm"
             className="w-24 shrink-0 text-xs"
-            aria-label={`Type of ${label}`}
+            aria-label={t('editor.attributes.typeOf', { name: label })}
           >
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {Object.entries(TYPE_LABELS).map(([value, text]) => (
+            {ATTRIBUTE_TYPES.map((value) => (
               <SelectItem key={value} value={value}>
-                {text}
+                {t(`common:flagTypes.${value}`)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -91,7 +89,7 @@ function AttributeRowEditor({
             <SelectTrigger
               size="sm"
               className="min-w-0 flex-1 font-mono text-xs"
-              aria-label={`Value of ${label}`}
+              aria-label={t('editor.attributes.valueOf', { name: label })}
             >
               <SelectValue />
             </SelectTrigger>
@@ -104,8 +102,8 @@ function AttributeRowEditor({
           <Input
             value={row.value}
             onChange={(e) => onChange({ ...row, value: e.target.value })}
-            placeholder={row.type === 'json' ? '{"a": 1}' : 'value'}
-            aria-label={`Value of ${label}`}
+            placeholder={row.type === 'json' ? '{"a": 1}' : t('editor.attributes.valuePlaceholder')}
+            aria-label={t('editor.attributes.valueOf', { name: label })}
             aria-invalid={error ? true : undefined}
             aria-describedby={error ? errorId : undefined}
             inputMode={row.type === 'number' ? 'decimal' : undefined}
@@ -114,13 +112,13 @@ function AttributeRowEditor({
             autoComplete="off"
           />
         )}
-        <IconButton label={`Remove ${label}`} onClick={onRemove}>
+        <IconButton label={t('editor.attributes.remove', { name: label })} onClick={onRemove}>
           <Trash2Icon />
         </IconButton>
       </div>
       {error ? (
         <p id={errorId} className="text-xs text-destructive">
-          {error}
+          {t(`editor.errors.${error}`)}
         </p>
       ) : null}
     </li>
@@ -134,6 +132,7 @@ function JsonEditor({
   draft: ContextDraft
   onChange: (draft: ContextDraft) => void
 }) {
+  const { t } = useTranslation('playground')
   const errorId = useId()
   const [text, setText] = useState(() => JSON.stringify(draftToContext(draft).context, null, 2))
   const [error, setError] = useState<string | null>(null)
@@ -144,13 +143,14 @@ function JsonEditor({
         onChange={(e) => {
           setText(e.target.value)
           const parsed = parseContextJson(e.target.value)
-          if ('error' in parsed) setError(parsed.error)
-          else {
+          if ('error' in parsed) {
+            setError(parsed.detail ?? t(`editor.json.errors.${parsed.error}`))
+          } else {
             setError(null)
             onChange(parsed.draft)
           }
         }}
-        aria-label="Evaluation context as JSON"
+        aria-label={t('editor.json.ariaLabel')}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : undefined}
         spellCheck={false}
@@ -159,12 +159,10 @@ function JsonEditor({
       />
       {error ? (
         <p id={errorId} className="text-xs text-destructive">
-          {error}. Evaluation uses the last valid context.
+          {t('editor.json.errorWithFallback', { error })}
         </p>
       ) : (
-        <p className="text-xs text-muted-foreground">
-          Edits apply to the form tab too. Values must be JSON.
-        </p>
+        <p className="text-xs text-muted-foreground">{t('editor.json.hint')}</p>
       )}
     </div>
   )
@@ -180,6 +178,7 @@ export interface ContextEditorProps {
 
 /** Targeting key, typed attribute rows and a two-way synced JSON tab. */
 export function ContextEditor({ draft, onChange, resetKey, built }: ContextEditorProps) {
+  const { t } = useTranslation('playground')
   const [tab, setTab] = useState('form')
   const keyId = useId()
 
@@ -189,13 +188,13 @@ export function ContextEditor({ draft, onChange, resetKey, built }: ContextEdito
   return (
     <Tabs value={tab} onValueChange={setTab}>
       <TabsList className="w-full">
-        <TabsTrigger value="form">Form</TabsTrigger>
+        <TabsTrigger value="form">{t('editor.tabs.form')}</TabsTrigger>
         <TabsTrigger value="json">JSON</TabsTrigger>
       </TabsList>
       <TabsContent value="form" className="flex flex-col gap-4 pt-1">
         <div className="flex flex-col gap-1.5">
           <label htmlFor={keyId} className="text-sm font-medium">
-            Targeting key
+            {t('editor.targetingKey.label')}
           </label>
           <Input
             id={keyId}
@@ -206,25 +205,23 @@ export function ContextEditor({ draft, onChange, resetKey, built }: ContextEdito
             spellCheck={false}
             autoComplete="off"
           />
-          <p className="text-xs text-muted-foreground">
-            Identifies the user. Percentage rollouts stay sticky per targeting key.
-          </p>
+          <p className="text-xs text-muted-foreground">{t('editor.targetingKey.hint')}</p>
         </div>
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">Attributes</span>
+            <span className="text-sm font-medium">{t('editor.attributes.title')}</span>
             <Button
               type="button"
               variant="ghost"
               size="sm"
               onClick={() => onChange({ ...draft, rows: [...draft.rows, newRow()] })}
             >
-              <PlusIcon /> Add attribute
+              <PlusIcon /> {t('editor.attributes.add')}
             </Button>
           </div>
           {draft.rows.length === 0 ? (
             <p className="rounded-md border border-dashed px-3 py-4 text-center text-xs text-muted-foreground">
-              No attributes. Add some such as country or plan to match targeting rules.
+              {t('editor.attributes.empty')}
             </p>
           ) : (
             <ul className="flex flex-col gap-2">

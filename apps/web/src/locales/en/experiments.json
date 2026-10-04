@@ -1,1 +1,192 @@
-{}
+{
+  "labels": {
+    "exposures": "Exposures",
+    "conversions": "Conversions",
+    "conversionEvent": "Conversion event",
+    "started": "Started",
+    "stopped": "Stopped"
+  },
+  "status": {
+    "stopped": "Stopped"
+  },
+  "badges": {
+    "control": "control"
+  },
+  "list": {
+    "pageTitle": "Experiments · Halyard",
+    "title": "Experiments",
+    "description": "Split traffic between flag variants and measure which one converts better.",
+    "newButton": "New experiment",
+    "loadFailedTitle": "Could not load experiments",
+    "empty": {
+      "title": "No experiments yet",
+      "description": "An experiment splits the users who reach a flag's default across its variants, counts who converts afterwards, and tells you whether the difference is real."
+    },
+    "noFiltered": {
+      "all": "No experiments",
+      "running": "No running experiments",
+      "draft": "No draft experiments",
+      "stopped": "No stopped experiments",
+      "description": "Pick another filter to see the rest."
+    },
+    "showAll": "Show all",
+    "actionsAriaLabel": "Actions for {{key}}"
+  },
+  "new": {
+    "pageTitle": "New experiment · Halyard",
+    "title": "New experiment",
+    "description": "The experiment is created as a draft. Nothing is served until you start it.",
+    "needFlag": {
+      "title": "You need a flag first",
+      "description": "Experiments split the variants of a flag. Create a flag with at least two variants.",
+      "action": "Create a flag"
+    },
+    "design": {
+      "title": "Design",
+      "description": "Flag, environment and key cannot be changed once the experiment exists."
+    },
+    "submit": "Create draft",
+    "toastCreated": "Experiment {{key}} created as a draft",
+    "createFailed": "Could not create the experiment",
+    "howItWorks": {
+      "title": "How it works",
+      "split": "Contexts that reach the flag's default, meaning no targeting rule matched, are split across the variants by the allocation. The same user always sees the same variant.",
+      "exposure": "An exposure is recorded the first time a user is evaluated. Conversions are sent with the tracking endpoint using the conversion event name.",
+      "results": "Results compare each variant with the control using a two-proportion z-test and need a minimum sample before they can be called.",
+      "docs": "The method and its limits are described in <0>{{path}}</0> in the repository."
+    }
+  },
+  "detail": {
+    "pageTitle": "{{name}} · Halyard",
+    "pageTitleFallback": "Experiment · Halyard",
+    "flagArchived": "Flag archived",
+    "frozen": "Frozen {{time}}",
+    "refreshResults": "Refresh results",
+    "draftDescription": "This experiment is a draft. Start it to split traffic and collect exposures; results appear here and refresh every 30 seconds.",
+    "notStarted": "Not started",
+    "toastUpdated": "Experiment updated",
+    "updateFailed": "Could not update the experiment",
+    "disabled": {
+      "editRunning": "Allocation is locked while running",
+      "editStopped": "Allocation is locked once the experiment has run",
+      "deleteRunning": "Stop the experiment to delete it"
+    },
+    "allocation": {
+      "title": "Allocation",
+      "description": "Share of contexts reaching the flag's default that see each variant."
+    },
+    "edit": {
+      "title": "Edit experiment",
+      "description": "Allocation, control and conversion event can only change while the experiment is a draft.",
+      "submit": "Save changes"
+    }
+  },
+  "form": {
+    "chooseFlag": "Choose a flag",
+    "flagHelp": "The experiment splits contexts that reach this flag's default.",
+    "chooseEnvironment": "Choose an environment",
+    "productionTitle": "Experiments in production affect real users.",
+    "productionBody": "Nothing changes until you start it, and you will be asked to confirm.",
+    "namePlaceholder": "New payment flow",
+    "keyHelp": "Unique in the project. Cannot be changed later.",
+    "hypothesis": {
+      "label": "Hypothesis",
+      "placeholder": "If we show the new payment flow, checkout conversion increases because…"
+    },
+    "allocation": {
+      "label": "Allocation",
+      "chooseFlag": "Choose a flag to split its variants.",
+      "help": "Percent of contexts that see each variant. The weights must add up to 100."
+    },
+    "control": {
+      "label": "Control variant",
+      "placeholder": "Select the control",
+      "help": "Every other variant is compared with this one."
+    },
+    "conversionEventHelp": "The <0>event</0> name your app sends to the tracking endpoint when a user converts.",
+    "problems": {
+      "needTwoVariants": "Give at least two variants a weight above 0.",
+      "controlNeedsWeight": "The control variant needs a weight above 0."
+    }
+  },
+  "allocation": {
+    "weightAriaLabel": "Weight of {{variant}} in percent",
+    "splitEvenly": "Split evenly",
+    "total": "Total {{value}}",
+    "totalAdd": "Total {{value}} (must be 100%, add {{delta}})",
+    "totalRemove": "Total {{value}} (must be 100%, remove {{delta}})"
+  },
+  "actions": {
+    "startTitle": "Start this experiment in production?",
+    "stopTitle": "Stop {{key}}?",
+    "deleteTitle": "Delete {{key}}?",
+    "startBody": "<0>{{key}}</0> starts splitting real users in <1></1> right away. Experiments in production affect real users. Allocation, control and conversion event are locked once it runs.",
+    "stopBody": "Stopping freezes the results and removes the allocation from evaluation. A stopped experiment cannot be restarted.",
+    "deleteBody": "This removes <0>{{key}}</0> with all its exposures and conversions. This cannot be undone.",
+    "confirm": {
+      "start": "Start experiment",
+      "stop": "Stop experiment",
+      "delete": "Delete experiment"
+    },
+    "toast": {
+      "start": "Experiment {{key}} started",
+      "stop": "Experiment {{key}} stopped",
+      "delete": "Experiment {{key}} deleted"
+    },
+    "failed": {
+      "start": "Could not start the experiment",
+      "stop": "Could not stop the experiment",
+      "delete": "Could not delete the experiment"
+    }
+  },
+  "snippet": {
+    "title": "Send conversions",
+    "description": "Call the tracking endpoint when a user converts. Use the same <0>targetingKey</0> as in the flag evaluation.",
+    "curlLabel": "cURL snippet",
+    "javascriptLabel": "JavaScript snippet",
+    "copy": "Copy {{label}}",
+    "footer": "Replace the placeholder with an SDK key of the {{environment}} environment (see <0>API keys</0>). To batch, send an array of up to 100 events in one request. Only the first conversion per subject counts."
+  },
+  "verdict": {
+    "winner": "Winner",
+    "loser": "Loser",
+    "noDifference": "No difference",
+    "insufficientData": "Insufficient data",
+    "minimumSample": "A result needs at least {{exposures}} exposures and {{conversions}} conversions in both the variant and the control.",
+    "insufficientTooltip": "{{rule}} Significance is tested at p < {{level}}."
+  },
+  "results": {
+    "title": "Results",
+    "description": "Each variant is compared with the control using a two-proportion z-test. Conversions count once per subject.",
+    "columns": {
+      "rate": "Conversion rate (95% interval)",
+      "lift": "Lift vs control",
+      "pValue": "p-value",
+      "verdict": "Verdict"
+    },
+    "baseline": "baseline",
+    "points": "{{value}} pp",
+    "noExposures": "No exposures yet. They appear once contexts reaching the flag's default are evaluated while the experiment is running.",
+    "progress": {
+      "title": "Progress toward the minimum sample",
+      "exposuresAria": "{{variant}} exposures toward the minimum sample",
+      "conversionsAria": "{{variant}} conversions toward the minimum sample"
+    },
+    "chart": {
+      "rateLabel": "Conversion rate",
+      "interval": "({{low}}–{{high}}, 95% interval)",
+      "converted": "{{conversions}} of {{exposures}} converted",
+      "ariaLabel": "Conversion rate per variant: {{summary}}"
+    },
+    "summary": {
+      "needMoreExposures": "Not enough data yet: {{current}} of {{minimum}} minimum exposures per variant.",
+      "needMoreConversions": "Not enough data yet: {{current}} of {{minimum}} minimum conversions per variant.",
+      "variantNotEnough": "{{variant}}: not enough data yet ({{exposures}} exposures, {{conversions}} conversions).",
+      "pLessThan": "p < {{value}}",
+      "pEquals": "p = {{value}}",
+      "noDifference": "{{variant}} shows no significant difference from {{control}} ({{p}}).",
+      "better": "{{variant}} converts {{points}} pp better than {{control}}, {{p}} — significant.",
+      "worse": "{{variant}} converts {{points}} pp worse than {{control}}, {{p}} — significant."
+    }
+  }
+}

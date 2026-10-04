@@ -1,1 +1,165 @@
-{}
+{
+  "list": {
+    "pageTitle": "Geplante Änderungen · Halyard",
+    "title": "Geplante Änderungen",
+    "description": "Änderungen, die automatisch zu einem Zeitpunkt ausgeführt werden. Sie laufen genau einmal, auch mit mehreren Replikas.",
+    "scheduleButton": "Änderung planen",
+    "viewersCannotSchedule": "Betrachter können keine Änderungen planen",
+    "loadFailedTitle": "Geplante Änderungen konnten nicht geladen werden",
+    "searchFlags": "Flags durchsuchen",
+    "allEnvironments": "Alle Umgebungen",
+    "filters": {
+      "upcoming": "Anstehend",
+      "past": "Vergangen",
+      "all": "Alle"
+    },
+    "empty": {
+      "title": "Nichts geplant",
+      "description": "Plane, ein Flag zu einem Zeitpunkt deiner Wahl ein- oder auszuschalten oder seinen Standard zu ändern. Ein gestufter Rollout erhöht eine Variante schrittweise, zum Beispiel 10 % morgen früh, dann 25 %, 50 % und 100 % über die nächsten Tage."
+    },
+    "noMatch": {
+      "title": "Keine passenden geplanten Änderungen",
+      "description": "Versuche eine andere Umgebung oder einen anderen Suchbegriff."
+    },
+    "noUpcoming": {
+      "title": "Nichts anstehend",
+      "description": "Alles Geplante ist gelaufen. Plane die nächste Änderung oder sieh dir die vergangenen an."
+    },
+    "noPast": {
+      "title": "Noch keine vergangenen Änderungen",
+      "description": "Abgeschlossene, fehlgeschlagene und abgebrochene Änderungen erscheinen hier."
+    }
+  },
+  "dayHeading": {
+    "today": "Heute, {{date}}",
+    "tomorrow": "Morgen, {{date}}",
+    "yesterday": "Gestern, {{date}}"
+  },
+  "summary": {
+    "turnOn": "Einschalten",
+    "turnOff": "Ausschalten",
+    "defaultVariant": "Standard → {{variant}}",
+    "rollout": "Rollout → {{rollout}}",
+    "removeAllRules": "Alle Regeln entfernen",
+    "replaceRules_one": "{{count}} Regel ersetzen",
+    "replaceRules_other": "{{count}} Regeln ersetzen"
+  },
+  "validation": {
+    "enterPercentage": "Gib einen Prozentwert ein",
+    "percentageRange": "Verwende einen Wert von 0 bis 100",
+    "timeInFuture": "Wähle einen Zeitpunkt in der Zukunft",
+    "afterPreviousStep": "Muss nach dem vorherigen Schritt liegen",
+    "afterStep": "Muss nach Schritt {{number}} ({{time}}) liegen",
+    "beforeStep": "Muss vor Schritt {{number}} ({{time}}) liegen"
+  },
+  "picker": {
+    "pickDate": "Datum wählen",
+    "dateAriaLabel": "{{label}}, Datum",
+    "timeAriaLabel": "{{label}}, Uhrzeit"
+  },
+  "steps": {
+    "listAriaLabel": "Rollout-Schritte",
+    "stepLabel": "Schritt {{number}}",
+    "percentageAriaLabel": "Prozentwert für Schritt {{number}}",
+    "removeAriaLabel": "Schritt {{number}} entfernen",
+    "remove": "Schritt entfernen",
+    "addStep": "Schritt hinzufügen"
+  },
+  "row": {
+    "stepOf": "Schritt {{number}} von {{total}}",
+    "scheduledBy": "Geplant von {{name}}",
+    "deletedUser": "einem gelöschten Benutzer",
+    "actionsAriaLabel": "Aktionen für {{flag}} um {{time}}"
+  },
+  "cancel": {
+    "title": "Diese geplante Änderung abbrechen?",
+    "body": "Die für {{time}} geplante Änderung an <0>{{flag}}</0> wird nicht ausgeführt.",
+    "planNote": "Die anderen Schritte des gestuften Rollouts bleiben geplant.",
+    "confirm": "Änderung abbrechen",
+    "keep": "Behalten",
+    "toast": "Geplante Änderung abgebrochen",
+    "menuItem": "Änderung abbrechen"
+  },
+  "cancelPlan": {
+    "title": "Den gestuften Rollout abbrechen?",
+    "body_one": "Der {{count}} ausstehende Schritt des Rollouts von <0>{{flag}}</0> wird nicht ausgeführt. Bereits gelaufene Schritte bleiben erhalten, das Flag bleibt also beim aktuellen Prozentwert.",
+    "body_other": "Die {{count}} ausstehenden Schritte des Rollouts von <0>{{flag}}</0> werden nicht ausgeführt. Bereits gelaufene Schritte bleiben erhalten, das Flag bleibt also beim aktuellen Prozentwert.",
+    "confirm": "Plan abbrechen",
+    "toast_one": "{{count}} Schritt abgebrochen",
+    "toast_other": "{{count}} Schritte abgebrochen",
+    "menuItem_one": "Plan abbrechen ({{count}} Schritt)",
+    "menuItem_other": "Plan abbrechen ({{count}} Schritte)"
+  },
+  "retry": {
+    "title": "Diese Änderung wiederholen?",
+    "body": "Dieselbe Änderung an <0>{{flag}}</0> in {{environment}} wird erneut geplant und läuft in etwa einer Minute.",
+    "productionNote": "Das ist die Produktion.",
+    "confirm": "Änderung wiederholen",
+    "toast": "Änderung erneut geplant"
+  },
+  "edit": {
+    "title": "Geplante Änderung bearbeiten",
+    "stepSuffix": "· Schritt {{number}}",
+    "percentageFor": "Prozentwert für {{variant}}",
+    "save": "Änderungen speichern",
+    "toastUpdated": "Geplante Änderung aktualisiert",
+    "updateFailed": "Die Änderung konnte nicht aktualisiert werden"
+  },
+  "dialog": {
+    "title": "Änderung planen",
+    "description": "Sie läuft einmal zum gewählten Zeitpunkt, auch wenn mehrere Replikas laufen.",
+    "modeSingle": "Einzelne Änderung",
+    "modeStaged": "Gestufter Rollout",
+    "chooseFlag": "Flag wählen",
+    "chooseEnvironment": "Umgebung wählen",
+    "chooseFlagError": "Wähle ein Flag",
+    "chooseEnvironmentError": "Wähle eine Umgebung",
+    "chooseVariant": "Variante wählen",
+    "chooseVariantError": "Wähle eine Variante",
+    "chooseFlagFirst": "Wähle zuerst ein Flag",
+    "loadFlagsFailed": "Flags konnten nicht geladen werden",
+    "productionTitle": "Das läuft in der Produktion",
+    "productionBody": "Niemand sitzt an der Tastatur, wenn es läuft, also prüfe Änderung und Zeitpunkt genau. Bis dahin kannst du es abbrechen.",
+    "whatChanges": "Was sich ändern soll",
+    "action": {
+      "on": {
+        "title": "Einschalten",
+        "hint": "Das Flag aktivieren"
+      },
+      "off": {
+        "title": "Ausschalten",
+        "hint": "Die Aus-Variante ausspielen"
+      },
+      "serve": {
+        "title": "Standard ändern",
+        "hint": "Festlegen, was alle anderen bekommen"
+      }
+    },
+    "defaultForEveryone": "Standard für alle anderen",
+    "weightsError": "Die Gewichtungen müssen zusammen 100 % ergeben",
+    "when": "Wann",
+    "runAt": "Ausführen um",
+    "runsAt": "Läuft {{time}} ({{delta}}) · {{timeZone}}",
+    "startsAt": "Beginnt {{time}} ({{delta}}) · {{timeZone}}",
+    "localTime": "Ortszeit",
+    "rampVariant": "Hochzufahrende Variante",
+    "rampHelp": "Jeder Schritt schaltet das Flag ein und gibt dieser Variante den Prozentwert; die anderen Varianten teilen sich den Rest. Wer sie schon hat, behält sie, während sie wächst.",
+    "rampNeedsVariants": "Ein gestufter Rollout braucht ein Flag mit zwei oder mehr Varianten",
+    "rampChooseVariant": "Wähle die hochzufahrende Variante",
+    "steps": "Schritte",
+    "addAtLeastOneStep": "Füge mindestens einen Schritt hinzu.",
+    "note": "Notiz",
+    "notePlaceholder": "Warum ist das geplant? (optional)",
+    "submitSingle": "Änderung planen",
+    "submitStaged": "Rollout planen",
+    "toastScheduled": "Änderung für {{time}} geplant",
+    "toastStagedScheduled_one": "Gestufter Rollout in {{count}} Schritt geplant",
+    "toastStagedScheduled_other": "Gestufter Rollout in {{count}} Schritten geplant",
+    "scheduleFailed": "Die Änderung konnte nicht geplant werden",
+    "confirmTitle": "In der Produktion planen?",
+    "confirmBodySingle": "Diese Änderung an <0>{{flag}}</0> ändert ab {{delta}}, was alle bekommen, die es in <1></1> auswerten.",
+    "confirmBodyStaged_one": "Dieser Rollout von <0>{{flag}}</0> mit {{count}} Schritt ändert ab {{delta}}, was alle bekommen, die es in <1></1> auswerten.",
+    "confirmBodyStaged_other": "Dieser Rollout von <0>{{flag}}</0> mit {{count}} Schritten ändert ab {{delta}}, was alle bekommen, die es in <1></1> auswerten.",
+    "confirmAction": "In der Produktion planen"
+  }
+}

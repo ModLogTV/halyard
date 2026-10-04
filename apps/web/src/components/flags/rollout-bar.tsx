@@ -1,4 +1,5 @@
 import type { FlagType, RolloutVariation, Variant } from '@halyard/engine'
+import { useTranslation } from 'react-i18next'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { formatPercent, formatVariantValue } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -31,6 +32,7 @@ export function RolloutBar({
   type = 'string',
   className,
 }: RolloutBarProps) {
+  const { t } = useTranslation('flags')
   const barHeight = height ?? (showLabels ? 20 : 8)
   const segments = variations
     .map((variation) => ({
@@ -43,7 +45,7 @@ export function RolloutBar({
 
   const summary = segments.length
     ? segments.map((s) => `${s.variant} ${formatPercent(s.weight)}`).join(', ')
-    : 'no traffic assigned'
+    : t('rolloutBar.noTraffic')
 
   return (
     <TooltipProvider delayDuration={100}>

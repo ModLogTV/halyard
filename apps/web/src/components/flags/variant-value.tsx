@@ -1,4 +1,5 @@
 import type { FlagType, JsonValue, Variant } from '@halyard/engine'
+import { useTranslation } from 'react-i18next'
 import {
   Select,
   SelectContent,
@@ -97,16 +98,17 @@ export function VariantSelect({
   value,
   onValueChange,
   disabled,
-  placeholder = 'Select a variant',
+  placeholder,
   id,
   className,
   ...aria
 }: VariantSelectProps) {
+  const { t } = useTranslation('flags')
   const known = variants.some((variant) => variant.key === value)
   return (
     <Select value={value ?? ''} onValueChange={onValueChange} disabled={disabled}>
       <SelectTrigger id={id} size="sm" className={cn('w-full min-w-0', className)} {...aria}>
-        <SelectValue placeholder={placeholder} />
+        <SelectValue placeholder={placeholder ?? t('variantSelect.placeholder')} />
       </SelectTrigger>
       <SelectContent position="popper">
         {variants.map((variant, index) => (
@@ -121,7 +123,9 @@ export function VariantSelect({
         ))}
         {value && !known ? (
           <SelectItem value={value} disabled>
-            <span className="font-mono text-xs text-destructive">{value} (missing)</span>
+            <span className="font-mono text-xs text-destructive">
+              {t('variantSelect.missing', { value })}
+            </span>
           </SelectItem>
         ) : null}
       </SelectContent>

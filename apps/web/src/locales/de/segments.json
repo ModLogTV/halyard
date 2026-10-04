@@ -1,1 +1,100 @@
-{}
+{
+  "intro": "Wiederverwendbare Nutzergruppen, die du aus jedem Flag heraus ansprechen kannst.",
+  "backToList": "Alle Segmente",
+  "readOnly": {
+    "title": "Nur Lesezugriff",
+    "create": "Betrachter können keine Segmente erstellen. Frage einen Bearbeiter oder Eigentümer.",
+    "edit": "Betrachter können Segmente ansehen, aber nicht ändern. Frage einen Bearbeiter oder Eigentümer."
+  },
+  "list": {
+    "pageTitle": "Segmente · Halyard",
+    "title": "Segmente",
+    "loading": "Segmente werden geladen",
+    "newSegment": "Neues Segment",
+    "viewersCannotCreate": "Betrachter können keine Segmente erstellen",
+    "empty": {
+      "title": "Noch keine Segmente",
+      "description": "Definiere eine Gruppe einmal, zum Beispiel Beta-Tester oder interne Mitarbeitende, und sprich sie aus jeder Flag-Regel an."
+    },
+    "search": {
+      "placeholder": "Nach Schlüssel oder Name suchen",
+      "ariaLabel": "Segmente durchsuchen"
+    },
+    "noMatches": {
+      "title": "Keine passenden Segmente",
+      "description": "Nichts passt zu „{{query}}“.",
+      "clear": "Suche zurücksetzen"
+    },
+    "columns": {
+      "conditions": "Bedingungen",
+      "usedBy": "Verwendet von"
+    },
+    "notUsed": "Nicht verwendet"
+  },
+  "new": {
+    "pageTitle": "Neues Segment · Halyard",
+    "title": "Neues Segment",
+    "submit": "Segment erstellen",
+    "created": "Segment „{{key}}“ erstellt",
+    "createFailed": "Das Segment konnte nicht erstellt werden"
+  },
+  "detail": {
+    "pageTitle": "{{key}} · Segmente · Halyard",
+    "updatedMeta": "aktualisiert {{time}}",
+    "unsavedChanges": "Ungespeicherte Änderungen",
+    "saveChanges": "Änderungen speichern",
+    "saved": "Segment gespeichert",
+    "saveFailed": "Das Segment konnte nicht gespeichert werden",
+    "deleted": "Segment „{{key}}“ gelöscht",
+    "deleteFailed": "Das Segment konnte nicht gelöscht werden",
+    "actions": "Segmentaktionen",
+    "deleteSegment": "Segment löschen"
+  },
+  "editor": {
+    "key": {
+      "placeholder": "beta-tester",
+      "hintEdit": "Flag-Regeln verweisen auf den Schlüssel; er kann nicht geändert werden.",
+      "hintCreate": "Buchstaben, Ziffern, \".\", \"_\" und \"-\". Flag-Regeln verweisen über diesen Schlüssel auf das Segment."
+    },
+    "name": {
+      "placeholder": "Beta-Tester"
+    },
+    "description": {
+      "placeholder": "Optional"
+    },
+    "membership": {
+      "legend": "Zugehörigkeit",
+      "description": "Ein Nutzer gehört zu diesem Segment, wenn er die Bedingungen unten erfüllt.",
+      "matchMode": "Übereinstimmungsmodus",
+      "all": "Alle Bedingungen",
+      "any": "Eine beliebige Bedingung"
+    },
+    "conditions": {
+      "empty": "Noch keine Bedingungen. Ein Segment ohne Bedingungen trifft auf niemanden zu.",
+      "and": "und",
+      "or": "oder",
+      "add": "Bedingung hinzufügen"
+    }
+  },
+  "deleteDialog": {
+    "inUseTitle": "Segment „{{key}}“ wird noch verwendet",
+    "title": "Segment „{{key}}“ löschen?",
+    "inUseDescription_one": "{{count}} Flag-Regel verweist auf dieses Segment. Entferne zuerst die Segmentbedingung aus dieser Regel und lösche es dann.",
+    "inUseDescription_other": "{{count}} Flag-Regeln verweisen auf dieses Segment. Entferne zuerst die Segmentbedingung aus diesen Regeln und lösche es dann.",
+    "description": "Das kann nicht rückgängig gemacht werden. Keine Flag-Regel verweist auf dieses Segment.",
+    "confirm": "Segment löschen"
+  },
+  "usages": {
+    "title": "Verwendet von",
+    "empty": "Noch keine Flag-Regel verweist auf dieses Segment.",
+    "summary": "{{flags}}, {{rules}}. Änderungen hier gelten für jede davon.",
+    "rule": "Regel {{number}}"
+  },
+  "describe": {
+    "noConditions": "Keine Bedingungen",
+    "attributeFallback": "Attribut",
+    "moreItems": "+{{count}} weitere",
+    "joinAll": " · ",
+    "joinAny": " oder "
+  }
+}

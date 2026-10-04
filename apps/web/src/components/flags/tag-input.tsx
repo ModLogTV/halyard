@@ -1,5 +1,6 @@
 import { XIcon } from 'lucide-react'
 import { type ClipboardEvent, type KeyboardEvent, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
@@ -22,12 +23,13 @@ const SEPARATOR = /[,\n\r]+/
 export function TagInput({
   values,
   onChange,
-  placeholder = 'Type a value, press Enter',
+  placeholder,
   disabled,
   invalid,
   className,
   'aria-label': ariaLabel,
 }: TagInputProps) {
+  const { t } = useTranslation('flags')
   const [text, setText] = useState('')
 
   function add(candidates: string[]) {
@@ -80,7 +82,7 @@ export function TagInput({
           <span className="max-w-48 truncate">{value}</span>
           <button
             type="button"
-            aria-label={`Remove ${value}`}
+            aria-label={t('tagInput.remove', { value })}
             disabled={disabled}
             className="inline-flex size-4 items-center justify-center rounded-sm text-muted-foreground outline-none hover:bg-foreground/10 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
             onClick={() => onChange(values.filter((v) => v !== value))}
@@ -94,7 +96,7 @@ export function TagInput({
         aria-label={ariaLabel}
         aria-invalid={invalid || undefined}
         disabled={disabled}
-        placeholder={values.length === 0 ? placeholder : undefined}
+        placeholder={values.length === 0 ? (placeholder ?? t('tagInput.placeholder')) : undefined}
         spellCheck={false}
         autoComplete="off"
         className="h-5 min-w-24 flex-1 bg-transparent px-1 font-mono text-xs outline-none placeholder:text-muted-foreground"

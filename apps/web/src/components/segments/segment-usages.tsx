@@ -1,9 +1,9 @@
 import { Link } from '@tanstack/react-router'
 import { FlagIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { EnvBadge, type EnvironmentLike } from '@/components/env/env-badge'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { pluralize } from '@/lib/format'
 
 export interface SegmentUsageItem {
   flagKey: string
@@ -58,6 +58,7 @@ export function UsageList({
   projectSlug: string
   environments: EnvironmentLike[]
 }) {
+  const { t } = useTranslation('segments')
   const groups = groupUsages(usages)
   return (
     <ul className="flex flex-col divide-y">
@@ -88,7 +89,7 @@ export function UsageList({
                   .sort((a, b) => a - b)
                   .map((index) => (
                     <Badge key={index} variant="secondary" className="font-mono">
-                      Rule {index + 1}
+                      {t('usages.rule', { number: index + 1 })}
                     </Badge>
                   ))}
               </li>
@@ -109,15 +110,19 @@ export function SegmentUsagesCard({
   projectSlug: string
   environments: EnvironmentLike[]
 }) {
+  const { t } = useTranslation(['segments', 'common'])
   const flagCount = new Set(usages.map((usage) => usage.flagKey)).size
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Used by</CardTitle>
+        <CardTitle>{t('usages.title')}</CardTitle>
         <CardDescription>
           {usages.length === 0
-            ? 'No flag rules reference this segment yet.'
-            : `${pluralize(flagCount, 'flag')}, ${pluralize(usages.length, 'rule')}. Changes here apply to every one of them.`}
+            ? t('usages.empty')
+            : t('usages.summary', {
+                flags: t('common:counts.flags', { count: flagCount }),
+                rules: t('common:counts.rules', { count: usages.length }),
+              })}
         </CardDescription>
       </CardHeader>
       {usages.length > 0 ? (

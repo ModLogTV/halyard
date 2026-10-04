@@ -1,1 +1,139 @@
-{}
+{
+  "page": {
+    "noEnvironments": "This project has no environments yet.",
+    "description": "Evaluate a context against the live configuration. Runs use the same engine as production and are never counted in metrics or experiment exposure.",
+    "contextTitle": "Context",
+    "evaluate": "Evaluate",
+    "fixAttributes": "Fix the highlighted attributes first",
+    "evaluationFailed": "Evaluation failed",
+    "presetLoaded": "Loaded preset {{name}}",
+    "presetSaved": "Saved preset {{name}}",
+    "presetDeleted": "Deleted preset {{name}}",
+    "createFlag": "Create a flag"
+  },
+  "picker": {
+    "allFlags": "All flags",
+    "allKeywords": "all flags every",
+    "searchPlaceholder": "Search flags",
+    "empty": "No flags found."
+  },
+  "editor": {
+    "tabs": {
+      "form": "Form"
+    },
+    "targetingKey": {
+      "label": "Targeting key",
+      "hint": "Identifies the user. Percentage rollouts stay sticky per targeting key."
+    },
+    "attributes": {
+      "title": "Attributes",
+      "add": "Add attribute",
+      "empty": "No attributes. Add some such as country or plan to match targeting rules.",
+      "fallback": "attribute",
+      "namePlaceholder": "name",
+      "nameLabel": "Attribute name",
+      "valuePlaceholder": "value",
+      "typeOf": "Type of {{name}}",
+      "valueOf": "Value of {{name}}",
+      "remove": "Remove {{name}}"
+    },
+    "errors": {
+      "invalidNumber": "Enter a valid number",
+      "invalidJson": "Enter valid JSON",
+      "nameRequired": "Name the attribute",
+      "useTargetingKeyField": "Use the targeting key field",
+      "duplicate": "Duplicate attribute"
+    },
+    "json": {
+      "ariaLabel": "Evaluation context as JSON",
+      "hint": "Edits apply to the form tab too. Values must be JSON.",
+      "errorWithFallback": "{{error}}. Evaluation uses the last valid context.",
+      "errors": {
+        "invalidJson": "Invalid JSON",
+        "notObject": "The context must be a JSON object",
+        "targetingKeyNotString": "targetingKey must be a string"
+      }
+    }
+  },
+  "presets": {
+    "title": "Presets",
+    "savedHint": "Saved presets stay in this browser, per project.",
+    "fallbackDescription": "Fill in the saved context “{{name}}”",
+    "deleteLabel": "Delete preset {{name}}",
+    "delete": "Delete preset",
+    "save": "Save as preset",
+    "nameLabel": "Preset name",
+    "namePlaceholder": "Enterprise admin",
+    "submit": "Save preset",
+    "builtin": {
+      "beta": {
+        "name": "Beta tester",
+        "description": "Signed-in user in the beta programme"
+      },
+      "eu": {
+        "name": "EU customer",
+        "description": "Customer based in Germany"
+      },
+      "free": {
+        "name": "Free plan",
+        "description": "Free plan user in the US"
+      },
+      "anonymous": {
+        "name": "Anonymous",
+        "description": "No targeting key, as for a logged-out visitor"
+      }
+    }
+  },
+  "result": {
+    "title": "Result",
+    "backToAll": "All flags",
+    "noVariant": "no variant",
+    "matchedSegments": "Matched segments",
+    "empty": {
+      "title": "No result yet",
+      "description": "Fill in a context and choose Evaluate. Playground runs never count towards metrics or experiment exposure.",
+      "shortcut": "Shortcut"
+    },
+    "error": {
+      "title": "Could not evaluate"
+    }
+  },
+  "reasons": {
+    "disabled": "Disabled",
+    "targetingMatch": "Targeting match",
+    "split": "Split",
+    "static": "Static",
+    "error": "Error"
+  },
+  "explain": {
+    "rule": "Rule {{number}}",
+    "ruleWithDescription": "Rule {{number}}: {{description}}",
+    "noConditions": "This rule has no conditions, so it matches every context.",
+    "when": "When",
+    "and": "and",
+    "inSegment": "in segment",
+    "notInSegment": "not in segment",
+    "disabled": "The flag is off in <0>{{environment}}</0>; the off variant was served.",
+    "targetingMatch": "<0>Rule {{number}}</0> matched.",
+    "targetingMatchDescribed": "<0>Rule {{number}}</0> matched: {{description}}",
+    "splitRule": "<0>{{label}}</0> matched and serves a rollout.",
+    "splitExperiment": "Allocated by experiment <0>{{key}}</0>.",
+    "splitBucket": "Rollout: this context lands in bucket <0>{{bucket}}</0> (sticky per <1>{{bucketBy}}</1>).",
+    "static": "No rule matched; the default was served.",
+    "targetingKeyMissing": "Add a targeting key in the context. Rollouts and per-user rules need one to decide who gets what.",
+    "flagNotFound": "The flag is archived or does not exist in this environment."
+  },
+  "all": {
+    "empty": {
+      "title": "No flags in this environment",
+      "description": "Archived flags are not evaluated."
+    },
+    "summary": "{{flags}} evaluated. Select a row for details.",
+    "summaryWithErrors": "{{flags}} evaluated, {{errors}}. Select a row for details.",
+    "errors_one": "{{count}} error",
+    "errors_other": "{{count}} errors",
+    "columns": {
+      "matchedRule": "Matched rule"
+    }
+  }
+}

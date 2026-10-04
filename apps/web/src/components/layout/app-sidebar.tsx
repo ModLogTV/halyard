@@ -11,6 +11,7 @@ import {
   UsersRoundIcon,
 } from 'lucide-react'
 import type { ComponentProps } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useCommandPalette } from '@/components/command-palette'
 import { NavUser } from '@/components/layout/nav-user'
 import { type ProjectSummary, ProjectSwitcher } from '@/components/layout/project-switcher'
@@ -29,23 +30,43 @@ import {
 } from '@/components/ui/sidebar'
 
 const projectNav = [
-  { title: 'Flags', to: '/app/$projectSlug/flags', icon: FlagIcon, shortcut: 'F' },
-  { title: 'Segments', to: '/app/$projectSlug/segments', icon: UsersRoundIcon, shortcut: 'S' },
-  { title: 'Compare', to: '/app/$projectSlug/compare', icon: ColumnsIcon, shortcut: 'C' },
+  { titleKey: 'common:labels.flags', to: '/app/$projectSlug/flags', icon: FlagIcon, shortcut: 'F' },
   {
-    title: 'Experiments',
+    titleKey: 'common:labels.segments',
+    to: '/app/$projectSlug/segments',
+    icon: UsersRoundIcon,
+    shortcut: 'S',
+  },
+  {
+    titleKey: 'sidebar.compare',
+    to: '/app/$projectSlug/compare',
+    icon: ColumnsIcon,
+    shortcut: 'C',
+  },
+  {
+    titleKey: 'common:labels.experiments',
     to: '/app/$projectSlug/experiments',
     icon: FlaskConicalIcon,
     shortcut: 'E',
   },
-  { title: 'Schedules', to: '/app/$projectSlug/schedules', icon: CalendarClockIcon, shortcut: 'H' },
   {
-    title: 'Playground',
+    titleKey: 'common:labels.schedules',
+    to: '/app/$projectSlug/schedules',
+    icon: CalendarClockIcon,
+    shortcut: 'H',
+  },
+  {
+    titleKey: 'common:labels.playground',
     to: '/app/$projectSlug/playground',
     icon: TerminalSquareIcon,
     shortcut: 'P',
   },
-  { title: 'Audit log', to: '/app/$projectSlug/audit', icon: HistoryIcon, shortcut: 'A' },
+  {
+    titleKey: 'common:labels.auditLog',
+    to: '/app/$projectSlug/audit',
+    icon: HistoryIcon,
+    shortcut: 'A',
+  },
 ] as const
 
 export function AppSidebar({
@@ -58,6 +79,7 @@ export function AppSidebar({
   current: ProjectSummary
   user: { name: string; email: string; isAdmin: boolean }
 } & ComponentProps<typeof Sidebar>) {
+  const { t } = useTranslation(['layout', 'common'])
   const palette = useCommandPalette()
   const matchRoute = useMatchRoute()
   const isActive = (to: string) =>
@@ -71,9 +93,12 @@ export function AppSidebar({
         <SidebarGroup>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton tooltip="Search (⌘K)" onClick={() => palette.setOpen(true)}>
+              <SidebarMenuButton
+                tooltip={t('sidebar.searchTooltip')}
+                onClick={() => palette.setOpen(true)}
+              >
                 <SearchIcon />
-                <span className="flex-1">Search</span>
+                <span className="flex-1">{t('sidebar.search')}</span>
                 <KbdGroup className="group-data-[collapsible=icon]:hidden">
                   <Kbd>⌘</Kbd>
                   <Kbd>K</Kbd>
@@ -83,14 +108,14 @@ export function AppSidebar({
           </SidebarMenu>
         </SidebarGroup>
         <SidebarGroup>
-          <SidebarGroupLabel>Project</SidebarGroupLabel>
+          <SidebarGroupLabel>{t('sidebar.projectGroup')}</SidebarGroupLabel>
           <SidebarMenu>
             {projectNav.map((item) => (
-              <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton asChild tooltip={item.title} isActive={isActive(item.to)}>
+              <SidebarMenuItem key={item.to}>
+                <SidebarMenuButton asChild tooltip={t(item.titleKey)} isActive={isActive(item.to)}>
                   <Link to={item.to} params={{ projectSlug: current.slug }}>
                     <item.icon />
-                    <span>{item.title}</span>
+                    <span>{t(item.titleKey)}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -102,12 +127,12 @@ export function AppSidebar({
             <SidebarMenuItem>
               <SidebarMenuButton
                 asChild
-                tooltip="Settings"
+                tooltip={t('common:labels.settings')}
                 isActive={isActive('/app/$projectSlug/settings')}
               >
                 <Link to="/app/$projectSlug/settings" params={{ projectSlug: current.slug }}>
                   <SettingsIcon />
-                  <span>Settings</span>
+                  <span>{t('common:labels.settings')}</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -117,7 +142,7 @@ export function AppSidebar({
       <SidebarFooter>
         <NavUser user={user} />
       </SidebarFooter>
-      <SidebarRail />
+      <SidebarRail label={t('sidebar.toggle')} />
     </Sidebar>
   )
 }

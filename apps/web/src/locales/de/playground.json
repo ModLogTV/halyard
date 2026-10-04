@@ -1,1 +1,139 @@
-{}
+{
+  "page": {
+    "noEnvironments": "Dieses Projekt hat noch keine Umgebungen.",
+    "description": "Werte einen Kontext gegen die Live-Konfiguration aus. Läufe nutzen dieselbe Engine wie die Produktion und zählen nie in Metriken oder Experiment-Exposures.",
+    "contextTitle": "Kontext",
+    "evaluate": "Auswerten",
+    "fixAttributes": "Korrigiere zuerst die markierten Attribute",
+    "evaluationFailed": "Auswertung fehlgeschlagen",
+    "presetLoaded": "Vorlage {{name}} geladen",
+    "presetSaved": "Vorlage {{name}} gespeichert",
+    "presetDeleted": "Vorlage {{name}} gelöscht",
+    "createFlag": "Flag erstellen"
+  },
+  "picker": {
+    "allFlags": "Alle Flags",
+    "allKeywords": "alle flags jedes",
+    "searchPlaceholder": "Flags durchsuchen",
+    "empty": "Keine Flags gefunden."
+  },
+  "editor": {
+    "tabs": {
+      "form": "Formular"
+    },
+    "targetingKey": {
+      "label": "Targeting-Schlüssel",
+      "hint": "Identifiziert den Nutzer. Prozentuale Rollouts bleiben pro Targeting-Schlüssel stabil."
+    },
+    "attributes": {
+      "title": "Attribute",
+      "add": "Attribut hinzufügen",
+      "empty": "Keine Attribute. Füge welche wie country oder plan hinzu, um Targeting-Regeln zu treffen.",
+      "fallback": "Attribut",
+      "namePlaceholder": "Name",
+      "nameLabel": "Attributname",
+      "valuePlaceholder": "Wert",
+      "typeOf": "Typ von {{name}}",
+      "valueOf": "Wert von {{name}}",
+      "remove": "{{name}} entfernen"
+    },
+    "errors": {
+      "invalidNumber": "Gib eine gültige Zahl ein",
+      "invalidJson": "Gib gültiges JSON ein",
+      "nameRequired": "Benenne das Attribut",
+      "useTargetingKeyField": "Verwende das Feld Targeting-Schlüssel",
+      "duplicate": "Doppeltes Attribut"
+    },
+    "json": {
+      "ariaLabel": "Auswertungskontext als JSON",
+      "hint": "Änderungen gelten auch im Formular-Tab. Werte müssen JSON sein.",
+      "errorWithFallback": "{{error}}. Die Auswertung nutzt den letzten gültigen Kontext.",
+      "errors": {
+        "invalidJson": "Ungültiges JSON",
+        "notObject": "Der Kontext muss ein JSON-Objekt sein",
+        "targetingKeyNotString": "targetingKey muss eine Zeichenkette sein"
+      }
+    }
+  },
+  "presets": {
+    "title": "Vorlagen",
+    "savedHint": "Gespeicherte Vorlagen bleiben in diesem Browser, pro Projekt.",
+    "fallbackDescription": "Den gespeicherten Kontext „{{name}}“ einsetzen",
+    "deleteLabel": "Vorlage {{name}} löschen",
+    "delete": "Vorlage löschen",
+    "save": "Als Vorlage speichern",
+    "nameLabel": "Name der Vorlage",
+    "namePlaceholder": "Enterprise-Admin",
+    "submit": "Vorlage speichern",
+    "builtin": {
+      "beta": {
+        "name": "Beta-Tester",
+        "description": "Angemeldeter Nutzer im Beta-Programm"
+      },
+      "eu": {
+        "name": "EU-Kunde",
+        "description": "Kunde mit Sitz in Deutschland"
+      },
+      "free": {
+        "name": "Free-Tarif",
+        "description": "Nutzer im Free-Tarif in den USA"
+      },
+      "anonymous": {
+        "name": "Anonym",
+        "description": "Kein Targeting-Schlüssel, wie bei einem ausgeloggten Besucher"
+      }
+    }
+  },
+  "result": {
+    "title": "Ergebnis",
+    "backToAll": "Alle Flags",
+    "noVariant": "keine Variante",
+    "matchedSegments": "Zutreffende Segmente",
+    "empty": {
+      "title": "Noch kein Ergebnis",
+      "description": "Fülle einen Kontext aus und wähle Auswerten. Playground-Läufe zählen nie in Metriken oder Experiment-Exposures.",
+      "shortcut": "Tastenkürzel"
+    },
+    "error": {
+      "title": "Auswertung nicht möglich"
+    }
+  },
+  "reasons": {
+    "disabled": "Deaktiviert",
+    "targetingMatch": "Targeting-Treffer",
+    "split": "Aufteilung",
+    "static": "Statisch",
+    "error": "Fehler"
+  },
+  "explain": {
+    "rule": "Regel {{number}}",
+    "ruleWithDescription": "Regel {{number}}: {{description}}",
+    "noConditions": "Diese Regel hat keine Bedingungen und trifft deshalb auf jeden Kontext zu.",
+    "when": "Wenn",
+    "and": "und",
+    "inSegment": "in Segment",
+    "notInSegment": "nicht in Segment",
+    "disabled": "Das Flag ist in <0>{{environment}}</0> aus; die Aus-Variante wurde ausgespielt.",
+    "targetingMatch": "<0>Regel {{number}}</0> hat getroffen.",
+    "targetingMatchDescribed": "<0>Regel {{number}}</0> hat getroffen: {{description}}",
+    "splitRule": "<0>{{label}}</0> hat getroffen und spielt einen Rollout aus.",
+    "splitExperiment": "Vom Experiment <0>{{key}}</0> zugeteilt.",
+    "splitBucket": "Rollout: dieser Kontext landet in Bucket <0>{{bucket}}</0> (stabil pro <1>{{bucketBy}}</1>).",
+    "static": "Keine Regel hat getroffen; der Standard wurde ausgespielt.",
+    "targetingKeyMissing": "Füge dem Kontext einen Targeting-Schlüssel hinzu. Rollouts und nutzerbezogene Regeln brauchen ihn, um zu entscheiden, wer was bekommt.",
+    "flagNotFound": "Das Flag ist archiviert oder existiert in dieser Umgebung nicht."
+  },
+  "all": {
+    "empty": {
+      "title": "Keine Flags in dieser Umgebung",
+      "description": "Archivierte Flags werden nicht ausgewertet."
+    },
+    "summary": "{{flags}} ausgewertet. Wähle eine Zeile für Details.",
+    "summaryWithErrors": "{{flags}} ausgewertet, {{errors}}. Wähle eine Zeile für Details.",
+    "errors_one": "{{count}} Fehler",
+    "errors_other": "{{count}} Fehler",
+    "columns": {
+      "matchedRule": "Getroffene Regel"
+    }
+  }
+}

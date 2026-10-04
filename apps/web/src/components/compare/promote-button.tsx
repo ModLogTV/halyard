@@ -1,4 +1,5 @@
 import { ArrowUpFromLineIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
@@ -16,6 +17,7 @@ export function PromoteButton({
   label: string
   className?: string
 }) {
+  const { t } = useTranslation('compare')
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -23,7 +25,11 @@ export function PromoteButton({
           type="button"
           variant="outline"
           size="xs"
-          aria-label={disabledReason ? `${label} (unavailable: ${disabledReason})` : label}
+          aria-label={
+            disabledReason
+              ? t('promote.unavailableLabel', { label, reason: disabledReason })
+              : label
+          }
           aria-disabled={disabledReason ? true : undefined}
           className={cn(disabledReason && 'opacity-50', className)}
           onClick={(event) => {
@@ -31,7 +37,7 @@ export function PromoteButton({
             if (!disabledReason) onClick()
           }}
         >
-          <ArrowUpFromLineIcon /> Promote
+          <ArrowUpFromLineIcon /> {t('promote.button')}
         </Button>
       </TooltipTrigger>
       <TooltipContent>{disabledReason ?? label}</TooltipContent>

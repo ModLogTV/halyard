@@ -7,6 +7,7 @@ import {
   UserCheckIcon,
 } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import {
   AlertDialog,
@@ -74,6 +75,7 @@ export function UsersTable({
   currentUserId: string
   onChanged: () => void | Promise<void>
 }) {
+  const { t, i18n } = useTranslation(['projects', 'common'])
   const [pending, setPending] = useState<Pending>(null)
   const [busyId, setBusyId] = useState<string | null>(null)
 
@@ -84,7 +86,7 @@ export function UsersTable({
       toast.success(success)
       await onChanged()
     } catch (error) {
-      toast.error(message(error, 'Something went wrong'))
+      toast.error(message(error, t('common:errors.errorTitle')))
     } finally {
       setBusyId(null)
     }
@@ -96,13 +98,13 @@ export function UsersTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Created</TableHead>
+              <TableHead>{t('common:labels.name')}</TableHead>
+              <TableHead>{t('common:labels.email')}</TableHead>
+              <TableHead>{t('common:labels.role')}</TableHead>
+              <TableHead>{t('common:labels.status')}</TableHead>
+              <TableHead className="text-right">{t('common:labels.created')}</TableHead>
               <TableHead className="w-10">
-                <span className="sr-only">Actions</span>
+                <span className="sr-only">{t('common:labels.actions')}</span>
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -115,13 +117,15 @@ export function UsersTable({
                   <TableCell className="font-medium">
                     {user.name}
                     {self ? (
-                      <span className="ml-2 font-normal text-muted-foreground text-xs">you</span>
+                      <span className="ml-2 font-normal text-muted-foreground text-xs">
+                        {t('admin.table.you')}
+                      </span>
                     ) : null}
                   </TableCell>
                   <TableCell className="text-muted-foreground">{user.email}</TableCell>
                   <TableCell>
                     <Badge variant={admin ? 'default' : 'secondary'}>
-                      {admin ? 'Admin' : 'User'}
+                      {admin ? t('common:roles.admin') : t('common:roles.user')}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -129,20 +133,24 @@ export function UsersTable({
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Badge variant="destructive" tabIndex={0}>
-                            Banned
+                            {t('admin.table.banned')}
                           </Badge>
                         </TooltipTrigger>
-                        <TooltipContent>{user.banReason || 'No reason given'}</TooltipContent>
+                        <TooltipContent>
+                          {user.banReason || t('admin.table.noReason')}
+                        </TooltipContent>
                       </Tooltip>
                     ) : (
-                      <span className="text-muted-foreground text-sm">Active</span>
+                      <span className="text-muted-foreground text-sm">
+                        {t('common:states.active')}
+                      </span>
                     )}
                   </TableCell>
                   <TableCell
                     className="text-right text-muted-foreground"
-                    title={formatDateTime(user.createdAt)}
+                    title={formatDateTime(user.createdAt, i18n.language)}
                   >
-                    {formatRelativeTime(user.createdAt)}
+                    {formatRelativeTime(user.createdAt, { locale: i18n.language })}
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -152,7 +160,7 @@ export function UsersTable({
                             <Button
                               variant="ghost"
                               size="icon-sm"
-                              aria-label={`Actions for ${user.name}`}
+                              aria-label={t('admin.table.actionsFor', { name: user.name })}
                               disabled={busyId === user.id}
                             >
                               {busyId === user.id ? (
@@ -163,11 +171,11 @@ export function UsersTable({
                             </Button>
                           </DropdownMenuTrigger>
                         </TooltipTrigger>
-                        <TooltipContent>User actions</TooltipContent>
+                        <TooltipContent>{t('admin.table.userActions')}</TooltipContent>
                       </Tooltip>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel className="font-normal text-muted-foreground text-xs">
-                          {self ? 'This is your account' : user.email}
+                          {self ? t('admin.table.ownAccount') : user.email}
                         </DropdownMenuLabel>
                         <DropdownMenuItem
                           disabled={self && admin}
@@ -179,8 +187,8 @@ export function UsersTable({
                                   data: { userId: user.id, role: admin ? 'user' : 'admin' },
                                 }),
                               admin
-                                ? `${user.name} is no longer an admin`
-                                : `${user.name} is now an admin`,
+                                ? t('admin.table.noLongerAdmin', { name: user.name })
+                                : t('admin.table.nowAdmin', { name: user.name }),
                             )
                           }
                         >
@@ -189,7 +197,7 @@ export function UsersTable({
                           ) : (
                             <ShieldCheckIcon aria-hidden="true" />
                           )}
-                          {admin ? 'Remove admin' : 'Make admin'}
+                          {admin ? t('admin.table.removeAdmin') : t('admin.table.makeAdmin')}
                         </DropdownMenuItem>
                         {user.banned ? (
                           <DropdownMenuItem
@@ -197,12 +205,12 @@ export function UsersTable({
                               run(
                                 user.id,
                                 () => unbanUser({ data: { userId: user.id } }),
-                                `${user.name} was unbanned`,
+                                t('admin.table.unbanned', { name: user.name }),
                               )
                             }
                           >
                             <UserCheckIcon aria-hidden="true" />
-                            Unban
+                            {t('admin.table.unban')}
                           </DropdownMenuItem>
                         ) : (
                           <DropdownMenuItem
@@ -210,7 +218,7 @@ export function UsersTable({
                             onSelect={() => setPending({ kind: 'ban', user })}
                           >
                             <BanIcon aria-hidden="true" />
-                            Ban…
+                            {t('admin.table.ban')}
                           </DropdownMenuItem>
                         )}
                         <DropdownMenuSeparator />
@@ -220,7 +228,7 @@ export function UsersTable({
                           onSelect={() => setPending({ kind: 'delete', user })}
                         >
                           <Trash2Icon aria-hidden="true" />
-                          Delete user…
+                          {t('admin.table.delete')}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -255,6 +263,7 @@ function BanDialog({
   onClose: () => void
   onChanged: () => void | Promise<void>
 }) {
+  const { t } = useTranslation(['projects', 'common'])
   const [reason, setReason] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -272,11 +281,11 @@ function BanDialog({
     setError(null)
     try {
       await banUser({ data: { userId: user.id, reason: reason.trim() || undefined } })
-      toast.success(`${user.name} was banned`)
+      toast.success(t('admin.banDialog.banned', { name: user.name }))
       close()
       await onChanged()
     } catch (err) {
-      setError(message(err, 'Could not ban the user'))
+      setError(message(err, t('admin.banDialog.failed')))
     } finally {
       setBusy(false)
     }
@@ -287,24 +296,21 @@ function BanDialog({
       <DialogContent>
         <form onSubmit={submit} className="flex flex-col gap-4">
           <DialogHeader>
-            <DialogTitle>Ban {user?.name}?</DialogTitle>
-            <DialogDescription>
-              They are signed out immediately and cannot sign in again until unbanned. Their
-              projects and data are kept.
-            </DialogDescription>
+            <DialogTitle>{t('admin.banDialog.title', { name: user?.name })}</DialogTitle>
+            <DialogDescription>{t('admin.banDialog.description')}</DialogDescription>
           </DialogHeader>
           <Field>
-            <FieldLabel htmlFor="ban-reason">Reason</FieldLabel>
+            <FieldLabel htmlFor="ban-reason">{t('common:labels.reason')}</FieldLabel>
             <Textarea
               id="ban-reason"
               value={reason}
               onChange={(event) => setReason(event.target.value)}
               rows={3}
               maxLength={500}
-              placeholder="Optional"
+              placeholder={t('newProject.form.optionalPlaceholder')}
               autoFocus
             />
-            <FieldDescription>Shown only to instance admins.</FieldDescription>
+            <FieldDescription>{t('admin.banDialog.reasonHint')}</FieldDescription>
           </Field>
           {error ? (
             <p className="text-destructive text-sm" role="alert">
@@ -313,11 +319,11 @@ function BanDialog({
           ) : null}
           <DialogFooter>
             <Button type="button" variant="outline" onClick={close} disabled={busy}>
-              Cancel
+              {t('common:actions.cancel')}
             </Button>
             <Button type="submit" variant="destructive" disabled={busy}>
               {busy ? <Spinner /> : null}
-              Ban user
+              {t('admin.banDialog.submit')}
             </Button>
           </DialogFooter>
         </form>
@@ -335,6 +341,7 @@ function DeleteUserDialog({
   onClose: () => void
   onChanged: () => void | Promise<void>
 }) {
+  const { t } = useTranslation(['projects', 'common'])
   const [busy, setBusy] = useState(false)
 
   return (
@@ -344,14 +351,13 @@ function DeleteUserDialog({
     >
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete {user?.name}?</AlertDialogTitle>
+          <AlertDialogTitle>{t('admin.deleteDialog.title', { name: user?.name })}</AlertDialogTitle>
           <AlertDialogDescription>
-            This permanently deletes the account for {user?.email}, including their sessions and
-            project memberships. It cannot be undone.
+            {t('admin.deleteDialog.description', { email: user?.email })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={busy}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={busy}>{t('common:actions.cancel')}</AlertDialogCancel>
           <AlertDialogAction
             variant="destructive"
             disabled={busy}
@@ -361,18 +367,18 @@ function DeleteUserDialog({
               setBusy(true)
               try {
                 await removeUser({ data: { userId: user.id } })
-                toast.success(`${user.name} was deleted`)
+                toast.success(t('admin.deleteDialog.deleted', { name: user.name }))
                 onClose()
                 await onChanged()
               } catch (err) {
-                toast.error(message(err, 'Could not delete the user'))
+                toast.error(message(err, t('admin.deleteDialog.failed')))
               } finally {
                 setBusy(false)
               }
             }}
           >
             {busy ? <Spinner /> : null}
-            Delete user
+            {t('admin.deleteDialog.submit')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

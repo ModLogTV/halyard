@@ -101,6 +101,9 @@ bun run lint         # Biome
 - **Multiple replicas** are supported out of the box: cache invalidation via `LISTEN`/`NOTIFY`,
   scheduled changes and webhook deliveries claimed with `FOR UPDATE SKIP LOCKED`, migrations
   guarded by an advisory lock.
+- **Languages.** The UI ships in English and German. The language follows a `halyard_locale`
+  cookie, then the browser's `Accept-Language`, and can be switched from the account menu.
+  Translations live in `apps/web/src/locales`; see its README to add a language.
 
 See [docs/architecture.md](docs/architecture.md) for details.
 
@@ -130,6 +133,7 @@ Configuration is documented in [`.env.example`](.env.example) and [docs/deployme
 - [Import, export and flagd](docs/import-export.md)
 - [REST API](docs/rest-api.md)
 - [CLI](docs/cli.md)
+- [UI translations](apps/web/src/locales/README.md)
 - [Contributing](CONTRIBUTING.md)
 
 ## License

@@ -8,9 +8,11 @@ import {
   XCircleIcon,
 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { JsonDiff } from '@/components/audit'
 import { EnvBadge, EnvDot, envStyle } from '@/components/env/env-badge'
+import { HazardBand } from '@/components/env/hazard-band'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
@@ -33,7 +35,6 @@ import {
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
-import { pluralize } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { copyFlagEnvironment, getFlag } from '@/server/functions/flags'
 import { configOf, type FlagDetailData } from './flag-detail'
@@ -41,6 +42,7 @@ import {
   applyFields,
   COPY_FIELDS,
   type CompareEnvironment,
+  type CompareT,
   type CopyField,
   defaultFields,
   describeChanges,
@@ -122,33 +124,54 @@ function EnvSelect({
 }
 
 function OutcomeIcon({ outcome }: { outcome: Outcome }) {
+  const { t } = useTranslation('compare')
   switch (outcome.status) {
     case 'running':
       return <Spinner className="size-4" />
     case 'changed':
-      return <CheckCircle2Icon className="size-4 text-on" aria-label="Promoted" />
+      return (
+        <CheckCircle2Icon
+          className="size-4 text-on"
+          aria-label={t('dialog.outcome.promotedLabel')}
+        />
+      )
     case 'unchanged':
     case 'skipped':
-      return <MinusCircleIcon className="size-4 text-muted-foreground" aria-label="No changes" />
+      return (
+        <MinusCircleIcon
+          className="size-4 text-muted-foreground"
+          aria-label={t('dialog.outcome.noChangesLabel')}
+        />
+      )
     case 'error':
-      return <XCircleIcon className="size-4 text-destructive" aria-label="Failed" />
+      return (
+        <XCircleIcon
+          className="size-4 text-destructive"
+          aria-label={t('dialog.outcome.failedLabel')}
+        />
+      )
     default:
-      return <CircleDashedIcon className="size-4 text-muted-foreground" aria-label="Waiting" />
+      return (
+        <CircleDashedIcon
+          className="size-4 text-muted-foreground"
+          aria-label={t('dialog.outcome.waitingLabel')}
+        />
+      )
   }
 }
 
-function outcomeText(outcome: Outcome): string {
+function outcomeText(outcome: Outcome, t: CompareT): string {
   switch (outcome.status) {
     case 'pending':
-      return 'Waiting'
+      return t('dialog.outcome.pending')
     case 'running':
-      return 'Promoting'
+      return t('dialog.outcome.running')
     case 'changed':
-      return `Promoted, now version ${outcome.version}`
+      return t('dialog.outcome.changed', { version: outcome.version })
     case 'unchanged':
-      return 'Already matched, nothing changed'
+      return t('dialog.outcome.unchanged')
     case 'skipped':
-      return 'No changes to promote'
+      return t('dialog.outcome.skipped')
     case 'error':
       return outcome.message
   }
@@ -173,6 +196,7 @@ function FlagPreview({
   showDiff: boolean
   single: boolean
 }) {
+  const { t } = useTranslation(['compare', 'common'])
   const [diffOpen, setDiffOpen] = useState(single)
   const model = useMemo(() => {
     if (preview.status !== 'ready') return undefined
@@ -181,11 +205,11 @@ function FlagPreview({
     if (!source || !target) return { missing: true as const }
     return {
       missing: false as const,
-      lines: describeChanges(source, target, fields),
+      lines: describeChanges(source, target, fields, t),
       before: diffable(target),
       after: diffable(applyFields(source, target, fields)),
     }
-  }, [preview, from, to, fields])
+  }, [preview, from, to, fields, t])
 
   return (
     <li className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0">
@@ -199,7 +223,7 @@ function FlagPreview({
               outcome.status === 'error' ? 'text-destructive' : 'text-muted-foreground',
             )}
           >
-            {outcomeText(outcome)}
+            {outcomeText(outcome, t)}
           </span>
         ) : null}
       </div>
@@ -208,14 +232,12 @@ function FlagPreview({
       ) : preview.status === 'error' ? (
         <p className="text-sm text-destructive">{preview.message}</p>
       ) : !model || model.missing ? (
-        <p className="text-sm text-destructive">
-          This flag has no configuration in one of the environments.
-        </p>
+        <p className="text-sm text-destructive">{t('dialog.missingConfig')}</p>
       ) : (
         <>
           {model.lines.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              No changes. {to.name} already matches {from.name} for the selected fields.
+              {t('dialog.noChanges', { to: to.name, from: from.name })}
             </p>
           ) : (
             <ul className="flex flex-col gap-1 text-sm">
@@ -233,7 +255,7 @@ function FlagPreview({
             <Collapsible open={diffOpen} onOpenChange={setDiffOpen}>
               <CollapsibleTrigger className="group/diff flex items-center gap-1 rounded-sm text-xs text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                 <ChevronRightIcon className="size-3 transition-transform group-data-[state=open]/diff:rotate-90" />
-                Raw diff
+                {t('dialog.rawDiff')}
               </CollapsibleTrigger>
               <CollapsibleContent className="pt-2">
                 <JsonDiff before={model.before} after={model.after} />
@@ -261,6 +283,7 @@ export function PromoteDialog({
   initialTo,
   onDone,
 }: PromoteDialogProps) {
+  const { t } = useTranslation(['compare', 'common'])
   const [fromKey, setFromKey] = useState(initialFrom)
   const [toKey, setToKey] = useState(initialTo)
   const from = environments.find((e) => e.key === fromKey) ?? environments[0]
@@ -291,7 +314,7 @@ export function PromoteDialog({
         } catch (error) {
           next = {
             status: 'error',
-            message: error instanceof Error ? error.message : 'Could not load the flag',
+            message: error instanceof Error ? error.message : t('detail.loadFailed'),
           }
         }
         if (cancelled) return
@@ -312,10 +335,10 @@ export function PromoteDialog({
       if (preview?.status !== 'ready') continue
       const source = configOf(preview.data, from)
       const target = configOf(preview.data, to)
-      if (source && target) counts[flag.key] = describeChanges(source, target, fields).length
+      if (source && target) counts[flag.key] = describeChanges(source, target, fields, t).length
     }
     return counts
-  }, [flags, previews, from, to, fields])
+  }, [flags, previews, from, to, fields, t])
 
   if (!from || !to) return null
   const sameEnv = from.key === to.key
@@ -379,7 +402,7 @@ export function PromoteDialog({
         failed += 1
         outcome = {
           status: 'error',
-          message: error instanceof Error ? error.message : 'Promotion failed',
+          message: error instanceof Error ? error.message : t('dialog.promotionFailed'),
         }
       }
       setOutcomes((current) => ({ ...current, [flag.key]: outcome }))
@@ -390,14 +413,20 @@ export function PromoteDialog({
       toast.success(
         single
           ? changed > 0
-            ? `Promoted ${flags[0]?.key} from ${from.name} to ${to.name}`
-            : `${flags[0]?.key} already matched in ${to.name}`
-          : `Promoted ${pluralize(changed, 'flag')} from ${from.name} to ${to.name}`,
+            ? t('dialog.toast.promotedSingle', {
+                flag: flags[0]?.key,
+                from: from.name,
+                to: to.name,
+              })
+            : t('dialog.toast.alreadyMatched', { flag: flags[0]?.key, to: to.name })
+          : t('dialog.toast.promotedMany', { count: changed, from: from.name, to: to.name }),
       )
       if (single) onOpenChange(false)
     } else {
       toast.error(
-        `${pluralize(failed, 'flag')} could not be promoted${changed > 0 ? `, ${changed} succeeded` : ''}`,
+        changed > 0
+          ? t('dialog.toast.failedPartial', { count: failed, succeeded: changed })
+          : t('dialog.toast.failed', { count: failed }),
       )
     }
   }
@@ -417,29 +446,27 @@ export function PromoteDialog({
         onInteractOutside={(e) => busy && e.preventDefault()}
         onEscapeKeyDown={(e) => busy && e.preventDefault()}
       >
-        {needsConfirmation ? (
-          <div className="hazard-stripes -mx-6 -mt-6 mb-2 h-2 rounded-t-lg" aria-hidden="true" />
-        ) : null}
+        {needsConfirmation ? <HazardBand /> : null}
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {needsConfirmation ? <TriangleAlertIcon className="size-5 text-(--env-color)" /> : null}
             {single ? (
-              <>
-                Promote <span className="font-mono text-base">{flags[0]?.key}</span>
-              </>
+              <Trans
+                t={t}
+                i18nKey="dialog.titleSingle"
+                values={{ flag: flags[0]?.key }}
+                components={[<span key="flag" className="font-mono text-base" />]}
+              />
             ) : (
-              `Promote ${pluralize(flags.length, 'flag')}`
+              t('dialog.titleMany', { count: flags.length })
             )}
           </DialogTitle>
-          <DialogDescription>
-            Copy configuration from one environment over another. Everything not selected below
-            stays as it is.
-          </DialogDescription>
+          <DialogDescription>{t('dialog.description')}</DialogDescription>
         </DialogHeader>
 
         <div className="flex items-end gap-2">
           <EnvSelect
-            label="From"
+            label={t('dialog.from')}
             value={from.key}
             onChange={setFromKey}
             environments={environments}
@@ -451,7 +478,7 @@ export function PromoteDialog({
             aria-hidden="true"
           />
           <EnvSelect
-            label="To"
+            label={t('dialog.to')}
             value={to.key}
             onChange={setTo}
             environments={environments}
@@ -461,7 +488,7 @@ export function PromoteDialog({
         </div>
 
         <fieldset className="flex flex-col gap-2" disabled={phase !== 'review'}>
-          <legend className="mb-1 text-sm font-medium">Fields to copy</legend>
+          <legend className="mb-1 text-sm font-medium">{t('dialog.fieldsLegend')}</legend>
           <div className="grid gap-2 sm:grid-cols-2">
             {COPY_FIELDS.map((field) => {
               const id = `promote-field-${field.key}`
@@ -478,39 +505,38 @@ export function PromoteDialog({
                     className="mt-0.5"
                   />
                   <span className="flex flex-col">
-                    <span className="font-medium">{field.label}</span>
-                    <span className="text-xs text-muted-foreground">{field.hint}</span>
+                    <span className="font-medium">{t(`copyFields.${field.key}.label`)}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {t(`copyFields.${field.key}.hint`)}
+                    </span>
                   </span>
                 </label>
               )
             })}
           </div>
           {to.isProduction && !fields.includes('enabled') ? (
-            <p className="text-xs text-muted-foreground">
-              Enabled is left out by default for production, so promoting never switches a flag on
-              by surprise.
-            </p>
+            <p className="text-xs text-muted-foreground">{t('dialog.productionHint')}</p>
           ) : null}
         </fieldset>
 
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">
-              {phase === 'review' ? 'Preview' : 'Progress'}
+              {phase === 'review' ? t('dialog.preview') : t('dialog.progress')}
             </span>
             {!single ? (
               <span className="tabular text-xs text-muted-foreground">
-                {promotable.length} of {flags.length} with changes
+                {t('dialog.withChanges', { promotable: promotable.length, total: flags.length })}
               </span>
             ) : null}
           </div>
           {phase !== 'review' ? (
-            <Progress value={progress} aria-label="Promotion progress" />
+            <Progress value={progress} aria-label={t('dialog.progressAriaLabel')} />
           ) : null}
           {sameEnv ? (
-            <p className="text-sm text-muted-foreground">Choose two different environments.</p>
+            <p className="text-sm text-muted-foreground">{t('dialog.chooseDifferent')}</p>
           ) : fields.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Select at least one field to copy.</p>
+            <p className="text-sm text-muted-foreground">{t('dialog.selectAtLeastOne')}</p>
           ) : (
             <ul className="max-h-72 divide-y overflow-y-auto rounded-md border p-3">
               {flags.map((flag) => (
@@ -533,8 +559,15 @@ export function PromoteDialog({
         {needsConfirmation && phase === 'review' ? (
           <div className="flex flex-col gap-1.5 rounded-md border border-(--env-color)/40 bg-(--env-color)/5 p-3">
             <label htmlFor="promote-confirm" className="text-sm">
-              This changes live behaviour in <EnvBadge env={to} className="align-middle" />. Type{' '}
-              <span className="font-mono font-semibold">{to.key}</span> to confirm.
+              <Trans
+                t={t}
+                i18nKey="dialog.confirmPrompt"
+                values={{ key: to.key }}
+                components={[
+                  <EnvBadge key="env" env={to} className="align-middle" />,
+                  <span key="key" className="font-mono font-semibold" />,
+                ]}
+              />
             </label>
             <Input
               id="promote-confirm"
@@ -551,7 +584,7 @@ export function PromoteDialog({
         <DialogFooter>
           {phase === 'done' ? (
             <Button type="button" onClick={() => onOpenChange(false)}>
-              Close
+              {t('common:actions.close')}
             </Button>
           ) : (
             <>
@@ -561,7 +594,7 @@ export function PromoteDialog({
                 disabled={busy}
                 onClick={() => onOpenChange(false)}
               >
-                Cancel
+                {t('common:actions.cancel')}
               </Button>
               <Button
                 type="button"
@@ -571,10 +604,10 @@ export function PromoteDialog({
               >
                 {busy ? <Spinner /> : null}
                 {busy
-                  ? `Promoting ${finished + 1} of ${promotable.length}`
+                  ? t('dialog.promoting', { current: finished + 1, total: promotable.length })
                   : single
-                    ? `Promote to ${to.name}`
-                    : `Promote ${pluralize(promotable.length, 'flag')} to ${to.name}`}
+                    ? t('dialog.submitSingle', { environment: to.name })
+                    : t('dialog.submitMany', { count: promotable.length, environment: to.name })}
               </Button>
             </>
           )}

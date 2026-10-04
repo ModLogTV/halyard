@@ -25,6 +25,7 @@ import {
   useMemo,
   useState,
 } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import type { EnvironmentLike } from '@/components/env/env-badge'
 import { EnvDot } from '@/components/env/env-badge'
@@ -41,6 +42,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import {
+  Command,
   CommandDialog,
   CommandEmpty,
   CommandGroup,
@@ -105,6 +107,7 @@ export function CommandPaletteProvider({
   children: ReactNode
   projects: { id: string; name: string; slug: string }[]
 }) {
+  const { t } = useTranslation(['layout', 'common'])
   const [open, setOpen] = useState(false)
   const [project, setProject] = useState<PaletteProject | null>(null)
   const [selectedFlag, setSelectedFlag] = useState<FlagEntry | null>(null)
@@ -170,10 +173,15 @@ export function CommandPaletteProvider({
       await toggleFlag({
         data: { projectId: project.id, flagKey: flag.key, environmentKey: env.key, enabled },
       })
-      toast.success(`${flag.key} is now ${enabled ? 'on' : 'off'} in ${env.name}`)
+      toast.success(
+        t(enabled ? 'commandPalette.toasts.turnedOn' : 'commandPalette.toasts.turnedOff', {
+          key: flag.key,
+          environment: env.name,
+        }),
+      )
       await Promise.all([router.invalidate(), data.refetch()])
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Could not update the flag')
+      toast.error(error instanceof Error ? error.message : t('commandPalette.toasts.updateFailed'))
     }
   }
 
@@ -183,215 +191,235 @@ export function CommandPaletteProvider({
       <CommandDialog
         open={open}
         onOpenChange={(next) => (next ? setOpen(true) : close())}
-        title="Command palette"
-        description="Search flags, segments and pages"
+        title={t('commandPalette.title')}
+        description={t('commandPalette.description')}
       >
-        {selectedFlag && project ? (
-          <>
-            <CommandInput placeholder={`Actions for ${selectedFlag.key}`} />
-            <CommandList>
-              <CommandEmpty>No actions.</CommandEmpty>
-              <CommandGroup heading={selectedFlag.name}>
-                <CommandItem
-                  onSelect={() =>
-                    go('/app/$projectSlug/flags/$flagKey', {
-                      projectSlug: project.slug,
-                      flagKey: selectedFlag.key,
-                    })
-                  }
-                >
-                  <FlagIcon /> Open flag
-                </CommandItem>
-                {canToggle
-                  ? project.environments.map((env) => {
-                      const state = selectedFlag.environments.find(
-                        (e) => e.environmentId === env.id,
-                      )
-                      if (!state) return null
-                      const next = !state.enabled
-                      return (
+        <Command>
+          {selectedFlag && project ? (
+            <>
+              <CommandInput
+                placeholder={t('commandPalette.flagActionsPlaceholder', { key: selectedFlag.key })}
+              />
+              <CommandList>
+                <CommandEmpty>{t('commandPalette.noActions')}</CommandEmpty>
+                <CommandGroup heading={selectedFlag.name}>
+                  <CommandItem
+                    onSelect={() =>
+                      go('/app/$projectSlug/flags/$flagKey', {
+                        projectSlug: project.slug,
+                        flagKey: selectedFlag.key,
+                      })
+                    }
+                  >
+                    <FlagIcon /> {t('commandPalette.openFlag')}
+                  </CommandItem>
+                  {canToggle
+                    ? project.environments.map((env) => {
+                        const state = selectedFlag.environments.find(
+                          (e) => e.environmentId === env.id,
+                        )
+                        if (!state) return null
+                        const next = !state.enabled
+                        return (
+                          <CommandItem
+                            key={env.id}
+                            value={`toggle ${env.name} ${next ? 'on' : 'off'}`}
+                            onSelect={() => {
+                              if (env.isProduction) setConfirmToggle({ env, enabled: next })
+                              else void applyToggle(selectedFlag, env, next)
+                            }}
+                          >
+                            {next ? (
+                              <PowerIcon className="text-on" />
+                            ) : (
+                              <PowerOffIcon className="text-muted-foreground" />
+                            )}
+                            {next ? t('commandPalette.turnOnIn') : t('commandPalette.turnOffIn')}
+                            <span className="inline-flex items-center gap-1.5">
+                              <EnvDot env={env} /> {env.name}
+                            </span>
+                            {env.isProduction ? (
+                              <CommandShortcut className="font-sans normal-case">
+                                {t('common:states.production')}
+                              </CommandShortcut>
+                            ) : null}
+                          </CommandItem>
+                        )
+                      })
+                    : null}
+                </CommandGroup>
+                <CommandSeparator />
+                <CommandGroup>
+                  <CommandItem onSelect={() => setSelectedFlag(null)}>
+                    {t('commandPalette.backToSearch')}
+                  </CommandItem>
+                </CommandGroup>
+              </CommandList>
+            </>
+          ) : (
+            <>
+              <CommandInput placeholder={t('commandPalette.searchPlaceholder')} />
+              <CommandList>
+                <CommandEmpty>
+                  {data.isLoading ? t('common:states.loading') : t('commandPalette.noResults')}
+                </CommandEmpty>
+                {slug && data.data && data.data.flags.length > 0 ? (
+                  <CommandGroup heading={t('commandPalette.groups.flags')}>
+                    {data.data.flags
+                      .filter((f) => !f.archivedAt)
+                      .slice(0, 50)
+                      .map((flag) => (
                         <CommandItem
-                          key={env.id}
-                          value={`toggle ${env.name} ${next ? 'on' : 'off'}`}
-                          onSelect={() => {
-                            if (env.isProduction) setConfirmToggle({ env, enabled: next })
-                            else void applyToggle(selectedFlag, env, next)
-                          }}
+                          key={flag.key}
+                          value={`flag ${flag.key} ${flag.name}`}
+                          onSelect={() => setSelectedFlag(flag)}
                         >
-                          {next ? (
-                            <PowerIcon className="text-on" />
-                          ) : (
-                            <PowerOffIcon className="text-muted-foreground" />
-                          )}
-                          Turn {next ? 'on' : 'off'} in
-                          <span className="inline-flex items-center gap-1.5">
-                            <EnvDot env={env} /> {env.name}
-                          </span>
-                          {env.isProduction ? (
-                            <CommandShortcut className="font-sans normal-case">
-                              production
-                            </CommandShortcut>
-                          ) : null}
+                          <FlagIcon />
+                          <span className="font-mono text-xs">{flag.key}</span>
+                          <span className="truncate text-muted-foreground">{flag.name}</span>
+                          <CommandShortcut>
+                            <FlagTypeBadge type={flag.type} />
+                          </CommandShortcut>
                         </CommandItem>
-                      )
-                    })
-                  : null}
-              </CommandGroup>
-              <CommandSeparator />
-              <CommandGroup>
-                <CommandItem onSelect={() => setSelectedFlag(null)}>Back to search</CommandItem>
-              </CommandGroup>
-            </CommandList>
-          </>
-        ) : (
-          <>
-            <CommandInput placeholder="Type a flag key, segment, page or command…" />
-            <CommandList>
-              <CommandEmpty>{data.isLoading ? 'Loading…' : 'No results found.'}</CommandEmpty>
-              {slug && data.data && data.data.flags.length > 0 ? (
-                <CommandGroup heading="Flags">
-                  {data.data.flags
-                    .filter((f) => !f.archivedAt)
-                    .slice(0, 50)
-                    .map((flag) => (
+                      ))}
+                  </CommandGroup>
+                ) : null}
+                {slug && data.data && data.data.segments.length > 0 ? (
+                  <CommandGroup heading={t('commandPalette.groups.segments')}>
+                    {data.data.segments.slice(0, 20).map((segment) => (
                       <CommandItem
-                        key={flag.key}
-                        value={`flag ${flag.key} ${flag.name}`}
-                        onSelect={() => setSelectedFlag(flag)}
+                        key={segment.key}
+                        value={`segment ${segment.key} ${segment.name}`}
+                        onSelect={() =>
+                          go('/app/$projectSlug/segments/$segmentKey', {
+                            projectSlug: slug,
+                            segmentKey: segment.key,
+                          })
+                        }
                       >
-                        <FlagIcon />
-                        <span className="font-mono text-xs">{flag.key}</span>
-                        <span className="truncate text-muted-foreground">{flag.name}</span>
-                        <CommandShortcut>
-                          <FlagTypeBadge type={flag.type} />
-                        </CommandShortcut>
+                        <UsersRoundIcon />
+                        <span className="font-mono text-xs">{segment.key}</span>
+                        <span className="truncate text-muted-foreground">{segment.name}</span>
                       </CommandItem>
                     ))}
-                </CommandGroup>
-              ) : null}
-              {slug && data.data && data.data.segments.length > 0 ? (
-                <CommandGroup heading="Segments">
-                  {data.data.segments.slice(0, 20).map((segment) => (
+                  </CommandGroup>
+                ) : null}
+                {slug ? (
+                  <CommandGroup heading={t('commandPalette.groups.goTo')}>
                     <CommandItem
-                      key={segment.key}
-                      value={`segment ${segment.key} ${segment.name}`}
-                      onSelect={() =>
-                        go('/app/$projectSlug/segments/$segmentKey', {
-                          projectSlug: slug,
-                          segmentKey: segment.key,
-                        })
-                      }
+                      onSelect={() => go('/app/$projectSlug/flags', { projectSlug: slug })}
                     >
-                      <UsersRoundIcon />
-                      <span className="font-mono text-xs">{segment.key}</span>
-                      <span className="truncate text-muted-foreground">{segment.name}</span>
+                      <FlagIcon /> {t('common:labels.flags')}
+                    </CommandItem>
+                    {canToggle ? (
+                      <CommandItem
+                        onSelect={() => go('/app/$projectSlug/flags/new', { projectSlug: slug })}
+                      >
+                        <PlusIcon /> {t('commandPalette.items.newFlag')}
+                      </CommandItem>
+                    ) : null}
+                    <CommandItem
+                      onSelect={() => go('/app/$projectSlug/segments', { projectSlug: slug })}
+                    >
+                      <UsersRoundIcon /> {t('common:labels.segments')}
+                    </CommandItem>
+                    <CommandItem
+                      onSelect={() => go('/app/$projectSlug/compare', { projectSlug: slug })}
+                    >
+                      <ColumnsIcon /> {t('commandPalette.items.compareEnvironments')}
+                    </CommandItem>
+                    <CommandItem
+                      onSelect={() => go('/app/$projectSlug/experiments', { projectSlug: slug })}
+                    >
+                      <FlaskConicalIcon /> {t('common:labels.experiments')}
+                    </CommandItem>
+                    <CommandItem
+                      onSelect={() => go('/app/$projectSlug/schedules', { projectSlug: slug })}
+                    >
+                      <CalendarClockIcon /> {t('crumbs.schedules')}
+                    </CommandItem>
+                    <CommandItem
+                      onSelect={() => go('/app/$projectSlug/playground', { projectSlug: slug })}
+                    >
+                      <TerminalSquareIcon /> {t('common:labels.playground')}
+                    </CommandItem>
+                    <CommandItem
+                      onSelect={() => go('/app/$projectSlug/audit', { projectSlug: slug })}
+                    >
+                      <HistoryIcon /> {t('common:labels.auditLog')}
+                    </CommandItem>
+                    <CommandItem
+                      onSelect={() => go('/app/$projectSlug/settings', { projectSlug: slug })}
+                    >
+                      <SettingsIcon /> {t('common:labels.settings')}
+                    </CommandItem>
+                  </CommandGroup>
+                ) : null}
+                <CommandGroup heading={t('commandPalette.groups.projects')}>
+                  {projects.map((p) => (
+                    <CommandItem
+                      key={p.id}
+                      value={`project ${p.name} ${p.slug}`}
+                      onSelect={() => go('/app/$projectSlug', { projectSlug: p.slug })}
+                    >
+                      <FolderIcon /> {p.name}
                     </CommandItem>
                   ))}
-                </CommandGroup>
-              ) : null}
-              {slug ? (
-                <CommandGroup heading="Go to">
-                  <CommandItem
-                    onSelect={() => go('/app/$projectSlug/flags', { projectSlug: slug })}
-                  >
-                    <FlagIcon /> Flags
-                  </CommandItem>
-                  {canToggle ? (
-                    <CommandItem
-                      onSelect={() => go('/app/$projectSlug/flags/new', { projectSlug: slug })}
-                    >
-                      <PlusIcon /> New flag
-                    </CommandItem>
-                  ) : null}
-                  <CommandItem
-                    onSelect={() => go('/app/$projectSlug/segments', { projectSlug: slug })}
-                  >
-                    <UsersRoundIcon /> Segments
-                  </CommandItem>
-                  <CommandItem
-                    onSelect={() => go('/app/$projectSlug/compare', { projectSlug: slug })}
-                  >
-                    <ColumnsIcon /> Compare environments
-                  </CommandItem>
-                  <CommandItem
-                    onSelect={() => go('/app/$projectSlug/experiments', { projectSlug: slug })}
-                  >
-                    <FlaskConicalIcon /> Experiments
-                  </CommandItem>
-                  <CommandItem
-                    onSelect={() => go('/app/$projectSlug/schedules', { projectSlug: slug })}
-                  >
-                    <CalendarClockIcon /> Scheduled changes
-                  </CommandItem>
-                  <CommandItem
-                    onSelect={() => go('/app/$projectSlug/playground', { projectSlug: slug })}
-                  >
-                    <TerminalSquareIcon /> Playground
-                  </CommandItem>
-                  <CommandItem
-                    onSelect={() => go('/app/$projectSlug/audit', { projectSlug: slug })}
-                  >
-                    <HistoryIcon /> Audit log
-                  </CommandItem>
-                  <CommandItem
-                    onSelect={() => go('/app/$projectSlug/settings', { projectSlug: slug })}
-                  >
-                    <SettingsIcon /> Settings
+                  <CommandItem onSelect={() => go('/app/new')}>
+                    <PlusIcon /> {t('commandPalette.items.newProject')}
                   </CommandItem>
                 </CommandGroup>
-              ) : null}
-              <CommandGroup heading="Projects">
-                {projects.map((p) => (
+                <CommandSeparator />
+                <CommandGroup heading={t('commandPalette.groups.appearance')}>
                   <CommandItem
-                    key={p.id}
-                    value={`project ${p.name} ${p.slug}`}
-                    onSelect={() => go('/app/$projectSlug', { projectSlug: p.slug })}
+                    onSelect={() => {
+                      setTheme('light')
+                      close()
+                    }}
                   >
-                    <FolderIcon /> {p.name}
+                    <SunIcon /> {t('commandPalette.items.lightTheme')}
                   </CommandItem>
-                ))}
-                <CommandItem onSelect={() => go('/app/new')}>
-                  <PlusIcon /> New project
-                </CommandItem>
-              </CommandGroup>
-              <CommandSeparator />
-              <CommandGroup heading="Appearance">
-                <CommandItem
-                  onSelect={() => {
-                    setTheme('light')
-                    close()
-                  }}
-                >
-                  <SunIcon /> Light theme
-                </CommandItem>
-                <CommandItem
-                  onSelect={() => {
-                    setTheme('dark')
-                    close()
-                  }}
-                >
-                  <MoonIcon /> Dark theme
-                </CommandItem>
-              </CommandGroup>
-            </CommandList>
-          </>
-        )}
+                  <CommandItem
+                    onSelect={() => {
+                      setTheme('dark')
+                      close()
+                    }}
+                  >
+                    <MoonIcon /> {t('commandPalette.items.darkTheme')}
+                  </CommandItem>
+                </CommandGroup>
+              </CommandList>
+            </>
+          )}
+        </Command>
       </CommandDialog>
 
       <AlertDialog open={confirmToggle !== null} onOpenChange={(o) => !o && setConfirmToggle(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {confirmToggle?.enabled ? 'Enable' : 'Disable'} in production?
+              {confirmToggle?.enabled
+                ? t('commandPalette.confirm.enableTitle')
+                : t('commandPalette.confirm.disableTitle')}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              <span className="font-mono text-foreground">{selectedFlag?.key}</span> will be turned{' '}
-              <strong>{confirmToggle?.enabled ? 'on' : 'off'}</strong> for everyone in{' '}
-              {confirmToggle?.env.name} immediately.
+              <Trans
+                t={t}
+                i18nKey={
+                  confirmToggle?.enabled
+                    ? 'commandPalette.confirm.enableDescription'
+                    : 'commandPalette.confirm.disableDescription'
+                }
+                values={{ key: selectedFlag?.key, environment: confirmToggle?.env.name }}
+                components={[
+                  <span key="key" className="font-mono text-foreground" />,
+                  <strong key="state" />,
+                ]}
+              />
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('common:actions.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 const pending = confirmToggle
@@ -400,7 +428,9 @@ export function CommandPaletteProvider({
                   void applyToggle(selectedFlag, pending.env, pending.enabled)
               }}
             >
-              {confirmToggle?.enabled ? 'Enable in production' : 'Disable in production'}
+              {confirmToggle?.enabled
+                ? t('commandPalette.confirm.enableAction')
+                : t('commandPalette.confirm.disableAction')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

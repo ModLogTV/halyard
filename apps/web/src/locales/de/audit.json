@@ -1,1 +1,84 @@
-{}
+{
+  "page": {
+    "pageTitle": "Audit-Log · Halyard",
+    "title": "Audit-Log",
+    "description": "Jede Änderung an Flags, Segmenten, Umgebungen und Mitgliedern in diesem Projekt.",
+    "loading": "Audit-Log wird geladen"
+  },
+  "filters": {
+    "ariaLabel": "Audit-Log filtern",
+    "allEnvironments": "Alle Umgebungen",
+    "entity": "Objekt",
+    "allEntities": "Alle Objekte",
+    "action": "Aktion",
+    "actionHint": "z. B. flag.*",
+    "from": "Von",
+    "to": "Bis",
+    "rangeInvalid": "Der Beginn des Zeitraums liegt nach seinem Ende."
+  },
+  "feed": {
+    "noMatches": {
+      "title": "Keine passenden Einträge",
+      "description": "Nichts im Audit-Log passt zu diesen Filtern."
+    },
+    "loadMore": "Mehr laden",
+    "loadMoreFailed": "Weitere Einträge konnten nicht geladen werden",
+    "end": "Ende des Audit-Logs"
+  },
+  "timeline": {
+    "empty": {
+      "title": "Keine Aktivität",
+      "description": "Änderungen erscheinen hier, sobald sie passieren."
+    },
+    "today": "Heute",
+    "yesterday": "Gestern",
+    "system": "System",
+    "preposition": {
+      "in": "in",
+      "to": "zu"
+    },
+    "entities": {
+      "project": "Projekt",
+      "environment": "Umgebung",
+      "flag": "Flag",
+      "segment": "Segment",
+      "experiment": "Experiment",
+      "schedule": "Zeitplan",
+      "webhook": "Webhook",
+      "apiKey": "API-Schlüssel",
+      "member": "Mitglied"
+    },
+    "actions": {
+      "created": "<0/> hat {{entity}} <1/> erstellt <2/>",
+      "updated": "<0/> hat {{entity}} <1/> aktualisiert <2/>",
+      "deleted": "<0/> hat {{entity}} <1/> gelöscht <2/>",
+      "archived": "<0/> hat {{entity}} <1/> archiviert <2/>",
+      "unarchived": "<0/> hat {{entity}} <1/> wiederhergestellt <2/>",
+      "promoted": "<0/> hat {{entity}} <1/> übertragen <2/>",
+      "invited": "<0/> hat {{entity}} <1/> eingeladen <2/>",
+      "invitationCanceled": "<0/> hat die Einladung für {{entity}} <1/> zurückgezogen <2/>",
+      "roleChanged": "<0/> hat die Rolle von {{entity}} <1/> geändert <2/>",
+      "removed": "<0/> hat {{entity}} <1/> entfernt <2/>",
+      "environmentUpdated": "<0/> hat das Targeting von {{entity}} <1/> aktualisiert <2/>",
+      "started": "<0/> hat {{entity}} <1/> gestartet <2/>",
+      "stopped": "<0/> hat {{entity}} <1/> gestoppt <2/>",
+      "completed": "<0/> hat {{entity}} <1/> abgeschlossen <2/>",
+      "rotated": "<0/> hat {{entity}} <1/> rotiert <2/>",
+      "revoked": "<0/> hat {{entity}} <1/> widerrufen <2/>",
+      "toggled": "<0/> hat {{entity}} <1/> umgeschaltet <2/>",
+      "enabled": "<0/> hat {{entity}} <1/> aktiviert <2/>",
+      "disabled": "<0/> hat {{entity}} <1/> deaktiviert <2/>",
+      "memberJoined": "<0/> ist dem Projekt beigetreten",
+      "memberLeft": "<0/> hat das Projekt verlassen",
+      "raw": "<0/> hat <3/> ausgeführt <1/> <2/>"
+    }
+  },
+  "diff": {
+    "added": "Hinzugefügt",
+    "removed": "Entfernt",
+    "changed": "Geändert",
+    "noChanges": "Keine Feldänderungen.",
+    "moreFields_one": "und {{count}} weiteres geändertes Feld",
+    "moreFields_other": "und {{count}} weitere geänderte Felder"
+  }
+}

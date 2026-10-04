@@ -2,19 +2,23 @@ import { validateSegment } from '@halyard/engine'
 import { createFileRoute, getRouteApi, Link, useNavigate, useRouter } from '@tanstack/react-router'
 import { ArrowLeftIcon } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { PageHeader } from '@/components/layout/page-header'
 import { EMPTY_SEGMENT_DRAFT, type SegmentDraft, SegmentEditor } from '@/components/segments'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
+import { translate } from '@/lib/i18n'
 import { createSegment } from '@/server/functions/segments'
 
 const projectRoute = getRouteApi('/app/$projectSlug')
 
 export const Route = createFileRoute('/app/$projectSlug/segments/new')({
   staticData: { crumbKey: 'newSegment' },
-  head: () => ({ meta: [{ title: 'New segment · Halyard' }] }),
+  head: ({ match }) => ({
+    meta: [{ title: translate(match.context.locale)('segments:new.pageTitle') }],
+  }),
   component: NewSegmentPage,
 })
 
@@ -29,6 +33,7 @@ function keyFromName(name: string): string {
 }
 
 function NewSegmentPage() {
+  const { t } = useTranslation(['segments', 'common'])
   const { project } = projectRoute.useLoaderData()
   const navigate = useNavigate()
   const router = useRouter()
@@ -66,14 +71,14 @@ function NewSegmentPage() {
           conditions: draft.conditions,
         },
       })
-      toast.success(`Segment "${segment.key}" created`)
+      toast.success(t('new.created', { key: segment.key }))
       await router.invalidate()
       await navigate({
         to: '/app/$projectSlug/segments/$segmentKey',
         params: { projectSlug: project.slug, segmentKey: segment.key },
       })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not create the segment')
+      setError(err instanceof Error ? err.message : t('new.createFailed'))
     } finally {
       setPending(false)
     }
@@ -84,21 +89,16 @@ function NewSegmentPage() {
       <div>
         <Button asChild variant="ghost" size="sm" className="-ml-2 mb-2">
           <Link to="/app/$projectSlug/segments" params={{ projectSlug: project.slug }}>
-            <ArrowLeftIcon /> All segments
+            <ArrowLeftIcon /> {t('backToList')}
           </Link>
         </Button>
-        <PageHeader
-          title="New segment"
-          description="Reusable groups of users you can target from any flag."
-        />
+        <PageHeader title={t('new.title')} description={t('intro')} />
       </div>
 
       {canEdit ? null : (
         <Alert>
-          <AlertTitle>Read-only access</AlertTitle>
-          <AlertDescription>
-            Viewers cannot create segments. Ask an editor or owner.
-          </AlertDescription>
+          <AlertTitle>{t('readOnly.title')}</AlertTitle>
+          <AlertDescription>{t('readOnly.create')}</AlertDescription>
         </Alert>
       )}
 
@@ -130,12 +130,12 @@ function NewSegmentPage() {
         <div className="flex justify-end gap-2">
           <Button asChild variant="ghost">
             <Link to="/app/$projectSlug/segments" params={{ projectSlug: project.slug }}>
-              Cancel
+              {t('common:actions.cancel')}
             </Link>
           </Button>
           <Button type="submit" disabled={!canEdit || !valid || pending}>
             {pending ? <Spinner /> : null}
-            Create segment
+            {t('new.submit')}
           </Button>
         </div>
       </form>

@@ -1,5 +1,6 @@
 import { createFileRoute, Link, redirect, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { AuthShell } from '@/components/auth/auth-shell'
 import { Button } from '@/components/ui/button'
@@ -7,6 +8,7 @@ import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/c
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { authClient } from '@/lib/auth-client'
+import { translate } from '@/lib/i18n'
 import { getSession } from '@/server/functions/session'
 
 export const Route = createFileRoute('/signup')({
@@ -14,11 +16,14 @@ export const Route = createFileRoute('/signup')({
     const session = await getSession()
     if (session) throw redirect({ to: '/app' })
   },
-  head: () => ({ meta: [{ title: 'Create account · Halyard' }] }),
+  head: ({ match }) => ({
+    meta: [{ title: translate(match.context.locale)('auth:signUp.pageTitle') }],
+  }),
   component: SignupPage,
 })
 
 function SignupPage() {
+  const { t } = useTranslation(['auth', 'common'])
   const navigate = useNavigate()
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -28,7 +33,7 @@ function SignupPage() {
     const form = new FormData(event.currentTarget)
     const password = String(form.get('password'))
     if (password.length < 8) {
-      setError('Password must be at least 8 characters.')
+      setError(t('signUp.passwordTooShort'))
       return
     }
     setPending(true)
@@ -40,33 +45,31 @@ function SignupPage() {
     })
     setPending(false)
     if (error) {
-      setError(error.message ?? 'Sign up failed')
+      setError(error.message ?? t('signUp.failed'))
       return
     }
-    toast.success('Account created')
+    toast.success(t('signUp.success'))
     await navigate({ to: '/app' })
   }
 
   return (
     <AuthShell>
       <div className="mb-6">
-        <h2 className="text-2xl font-semibold tracking-tight">Create your account</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          You can create a project right after signing up.
-        </p>
+        <h2 className="text-2xl font-semibold tracking-tight">{t('signUp.title')}</h2>
+        <p className="mt-1 text-sm text-muted-foreground">{t('signUp.description')}</p>
       </div>
       <form onSubmit={onSubmit} noValidate>
         <FieldGroup>
           <Field>
-            <FieldLabel htmlFor="name">Name</FieldLabel>
+            <FieldLabel htmlFor="name">{t('common:labels.name')}</FieldLabel>
             <Input id="name" name="name" autoComplete="name" required autoFocus />
           </Field>
           <Field>
-            <FieldLabel htmlFor="email">Email</FieldLabel>
+            <FieldLabel htmlFor="email">{t('common:labels.email')}</FieldLabel>
             <Input id="email" name="email" type="email" autoComplete="email" required />
           </Field>
           <Field>
-            <FieldLabel htmlFor="password">Password</FieldLabel>
+            <FieldLabel htmlFor="password">{t('common:labels.password')}</FieldLabel>
             <Input
               id="password"
               name="password"
@@ -75,19 +78,22 @@ function SignupPage() {
               required
               minLength={8}
             />
-            <FieldDescription>At least 8 characters.</FieldDescription>
+            <FieldDescription>{t('signUp.passwordHint')}</FieldDescription>
           </Field>
           {error ? <FieldError>{error}</FieldError> : null}
           <Field>
             <Button type="submit" disabled={pending} className="w-full">
               {pending ? <Spinner /> : null}
-              Create account
+              {t('common:actions.signUp')}
             </Button>
             <FieldDescription className="text-center">
-              Already have an account?{' '}
-              <Link to="/login" className="underline underline-offset-4">
-                Sign in
-              </Link>
+              <Trans
+                t={t}
+                i18nKey="signUp.haveAccount"
+                components={[
+                  <Link key="login" to="/login" className="underline underline-offset-4" />,
+                ]}
+              />
             </FieldDescription>
           </Field>
         </FieldGroup>

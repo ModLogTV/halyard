@@ -1,10 +1,10 @@
 import { ChevronRightIcon, RefreshCwIcon, RotateCcwIcon } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { formatDelta } from '@/components/schedules/utils'
 import { errorMessage } from '@/components/settings/form-utils'
 import { IconButton } from '@/components/settings/hinted-button'
-import { OWNER_ONLY_MESSAGE } from '@/components/settings/use-settings-context'
 import { Button } from '@/components/ui/button'
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
 import { Spinner } from '@/components/ui/spinner'
@@ -64,6 +64,7 @@ export function DeliveryTable({
   webhookEnabled,
   refreshKey = 0,
 }: DeliveryTableProps) {
+  const { t } = useTranslation(['settings', 'common'])
   const [items, setItems] = useState(initial.items)
   const [nextCursor, setNextCursor] = useState(initial.nextCursor)
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
@@ -89,12 +90,12 @@ export function DeliveryTable({
         })
         setNow(new Date())
       } catch (error) {
-        if (!silent) toast.error(errorMessage(error, 'Could not refresh deliveries'))
+        if (!silent) toast.error(errorMessage(error, t('webhooks.deliveries.refreshFailed')))
       } finally {
         setRefreshing(false)
       }
     },
-    [projectId, webhookId],
+    [projectId, webhookId, t],
   )
 
   // Reflect a fresh route load (for example after router.invalidate()).
@@ -131,7 +132,7 @@ export function DeliveryTable({
       })
       setNextCursor(page.nextCursor)
     } catch (error) {
-      toast.error(errorMessage(error, 'Could not load more deliveries'))
+      toast.error(errorMessage(error, t('webhooks.deliveries.loadMoreFailed')))
     } finally {
       setLoadingMore(false)
     }
@@ -141,10 +142,10 @@ export function DeliveryTable({
     setResending((prev) => new Set(prev).add(delivery.id))
     try {
       await redeliverWebhook({ data: { projectId, deliveryId: delivery.id } })
-      toast.success('Delivery queued again')
+      toast.success(t('webhooks.deliveries.resent'))
       await refresh()
     } catch (error) {
-      toast.error(errorMessage(error, 'Could not resend the delivery'))
+      toast.error(errorMessage(error, t('webhooks.deliveries.resendFailed')))
     } finally {
       setResending((prev) => {
         const next = new Set(prev)
@@ -170,32 +171,27 @@ export function DeliveryTable({
           <EmptyMedia variant="icon">
             <RefreshCwIcon />
           </EmptyMedia>
-          <EmptyTitle>No deliveries yet</EmptyTitle>
-          <EmptyDescription>
-            Deliveries appear here as soon as an event matches this webhook. Send a test event to
-            try it out.
-          </EmptyDescription>
+          <EmptyTitle>{t('webhooks.deliveries.empty.title')}</EmptyTitle>
+          <EmptyDescription>{t('webhooks.deliveries.empty.description')}</EmptyDescription>
         </EmptyHeader>
       </Empty>
     )
   }
 
   const resendReason = !canManage
-    ? OWNER_ONLY_MESSAGE
+    ? t('shared.ownerOnly')
     : webhookEnabled
       ? undefined
-      : 'Enable the webhook before resending'
+      : t('webhooks.deliveries.enableBeforeResend')
 
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2 text-muted-foreground text-xs">
         <span aria-live="polite">
-          {hasPending
-            ? 'Refreshing every 15 seconds while deliveries are pending.'
-            : 'All deliveries are settled.'}
+          {hasPending ? t('webhooks.deliveries.refreshing') : t('webhooks.deliveries.settled')}
         </span>
         <Button variant="ghost" size="xs" onClick={() => void refresh(false)} disabled={refreshing}>
-          {refreshing ? <Spinner /> : <RefreshCwIcon />} Refresh
+          {refreshing ? <Spinner /> : <RefreshCwIcon />} {t('common:actions.refresh')}
         </Button>
       </div>
       <div className="overflow-x-auto rounded-md border">
@@ -203,16 +199,16 @@ export function DeliveryTable({
           <TableHeader>
             <TableRow>
               <TableHead className="w-10">
-                <span className="sr-only">Details</span>
+                <span className="sr-only">{t('webhooks.deliveries.details')}</span>
               </TableHead>
-              <TableHead>Time</TableHead>
-              <TableHead>Event</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Attempts</TableHead>
-              <TableHead>HTTP</TableHead>
-              <TableHead>Next attempt</TableHead>
+              <TableHead>{t('common:labels.time')}</TableHead>
+              <TableHead>{t('common:labels.event')}</TableHead>
+              <TableHead>{t('common:labels.status')}</TableHead>
+              <TableHead className="text-right">{t('webhooks.deliveries.attempts')}</TableHead>
+              <TableHead>{t('webhooks.deliveries.http')}</TableHead>
+              <TableHead>{t('webhooks.deliveries.nextAttempt')}</TableHead>
               <TableHead className="w-12">
-                <span className="sr-only">Actions</span>
+                <span className="sr-only">{t('common:labels.actions')}</span>
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -237,7 +233,7 @@ export function DeliveryTable({
         <div className="flex justify-center">
           <Button variant="outline" onClick={() => void loadMore()} disabled={loadingMore}>
             {loadingMore ? <Spinner /> : null}
-            Load more
+            {t('webhooks.deliveries.loadMore')}
           </Button>
         </div>
       ) : null}
@@ -264,6 +260,7 @@ function DeliveryRows({
   onToggle: () => void
   onResend: () => void
 }) {
+  const { t, i18n } = useTranslation(['settings', 'common'])
   const created = new Date(delivery.createdAt)
   const detailId = `delivery-${delivery.id}`
   return (
@@ -275,7 +272,11 @@ function DeliveryRows({
             size="icon-xs"
             aria-expanded={open}
             aria-controls={detailId}
-            aria-label={`${open ? 'Hide' : 'Show'} details of ${delivery.eventType}`}
+            aria-label={
+              open
+                ? t('webhooks.deliveries.hideDetails', { event: delivery.eventType })
+                : t('webhooks.deliveries.showDetails', { event: delivery.eventType })
+            }
             onClick={onToggle}
           >
             <ChevronRightIcon
@@ -287,8 +288,8 @@ function DeliveryRows({
           </Button>
         </TableCell>
         <TableCell className="whitespace-nowrap text-sm">
-          <time dateTime={created.toISOString()} title={formatDateTime(created)}>
-            {formatRelativeTime(created, { now })}
+          <time dateTime={created.toISOString()} title={formatDateTime(created, i18n.language)}>
+            {formatRelativeTime(created, { now, locale: i18n.language })}
           </time>
         </TableCell>
         <TableCell className="font-mono text-xs">{delivery.eventType}</TableCell>
@@ -305,9 +306,9 @@ function DeliveryRows({
           {delivery.status === 'pending' ? (
             <time
               dateTime={new Date(delivery.nextAttemptAt).toISOString()}
-              title={formatDateTime(delivery.nextAttemptAt)}
+              title={formatDateTime(delivery.nextAttemptAt, i18n.language)}
             >
-              {formatDelta(delivery.nextAttemptAt, now)}
+              {formatDelta(delivery.nextAttemptAt, now, i18n.language)}
             </time>
           ) : (
             '—'
@@ -315,7 +316,7 @@ function DeliveryRows({
         </TableCell>
         <TableCell className="text-right">
           <IconButton
-            label={`Resend ${delivery.eventType}`}
+            label={t('webhooks.deliveries.resend', { event: delivery.eventType })}
             disabledReason={resendReason}
             disabled={resending}
             onClick={onResend}
@@ -330,13 +331,13 @@ function DeliveryRows({
           <TableCell colSpan={7} className="whitespace-normal py-3">
             <div className="grid gap-4 lg:grid-cols-2">
               <div className="flex min-w-0 flex-col gap-1.5">
-                <h4 className="font-medium text-xs">Request payload</h4>
+                <h4 className="font-medium text-xs">{t('webhooks.deliveries.requestPayload')}</h4>
                 <pre className="max-h-72 overflow-auto rounded-md border bg-background p-3 font-mono text-xs">
                   {prettyJson(delivery.payload)}
                 </pre>
               </div>
               <div className="flex min-w-0 flex-col gap-1.5">
-                <h4 className="font-medium text-xs">Latest response</h4>
+                <h4 className="font-medium text-xs">{t('webhooks.deliveries.latestResponse')}</h4>
                 {delivery.lastError ? (
                   <p className="rounded-md border border-destructive/40 bg-destructive/5 p-3 text-destructive text-xs">
                     {delivery.lastError}
@@ -349,15 +350,17 @@ function DeliveryRows({
                 ) : (
                   <p className="text-muted-foreground text-xs">
                     {delivery.attempts === 0
-                      ? 'Not attempted yet.'
+                      ? t('webhooks.deliveries.notAttempted')
                       : canManage
-                        ? 'No response body was stored.'
-                        : 'Response bodies are visible to owners only.'}
+                        ? t('webhooks.deliveries.noBody')
+                        : t('webhooks.deliveries.ownersOnly')}
                   </p>
                 )}
                 {delivery.deliveredAt ? (
                   <p className="text-muted-foreground text-xs">
-                    Delivered {formatDateTime(delivery.deliveredAt)}
+                    {t('webhooks.deliveries.deliveredAt', {
+                      time: formatDateTime(delivery.deliveredAt, i18n.language),
+                    })}
                   </p>
                 ) : null}
               </div>

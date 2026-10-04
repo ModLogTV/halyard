@@ -1,1 +1,85 @@
-{}
+{
+  "list": {
+    "pageTitle": "Projekte · Halyard",
+    "newProject": "Neues Projekt",
+    "invitations": "Einladungen",
+    "empty": {
+      "title": "Noch keine Projekte",
+      "description": "Ein Projekt enthält seine Flags, Segmente und Umgebungen. Erstelle eines, um loszulegen.",
+      "create": "Projekt erstellen"
+    }
+  },
+  "newProject": {
+    "pageTitle": "Neues Projekt · Halyard",
+    "allProjects": "Alle Projekte",
+    "title": "Projekt erstellen",
+    "description": "Projekte starten mit den Umgebungen Development, Staging und Production. Du kannst Umgebungen später umbenennen oder hinzufügen.",
+    "form": {
+      "namePlaceholder": "Checkout",
+      "slugLabel": "Slug",
+      "slugHint": "Wird in URLs und der CLI verwendet. Kleinbuchstaben, Ziffern und Bindestriche.",
+      "optionalPlaceholder": "Optional",
+      "submit": "Projekt erstellen"
+    },
+    "created": "Projekt „{{name}}“ erstellt",
+    "createFailed": "Projekt konnte nicht erstellt werden"
+  },
+  "admin": {
+    "pageTitle": "Instanz-Administration · Halyard",
+    "title": "Instanz-Administration",
+    "description": "Alle Konten dieser Halyard-Instanz.",
+    "searchPlaceholder": "Nach E-Mail suchen",
+    "searchAriaLabel": "Konten nach E-Mail durchsuchen",
+    "empty": {
+      "noMatchTitle": "Keine passenden Konten",
+      "noAccountsTitle": "Keine Konten",
+      "noMatchDescription": "Keine E-Mail enthält „{{query}}“.",
+      "noAccountsDescription": "Bisher hat sich niemand registriert.",
+      "clearSearch": "Suche zurücksetzen"
+    },
+    "pagination": {
+      "ariaLabel": "Seitennavigation",
+      "summary_one": "Seite {{page}} von {{pageCount}} · {{count}} Konto",
+      "summary_other": "Seite {{page}} von {{pageCount}} · {{count}} Konten",
+      "previous": "Zurück",
+      "next": "Weiter"
+    },
+    "firstAdmin": {
+      "title": "Den ersten Admin anlegen",
+      "description": "Konten werden mit der Rolle „Benutzer“ erstellt. Ein bestehender Admin kann andere in der Tabelle oben befördern; der allererste Admin wird direkt in der Datenbank gesetzt.",
+      "step1": "Registriere dich und führe dann Folgendes in der Halyard-Datenbank aus:",
+      "step2": "Melde dich ab und wieder an, damit die neue Rolle greift. Seed-Datenbanken für die Entwicklung enthalten bereits <0>admin@example.com</0> als Admin."
+    },
+    "table": {
+      "you": "du",
+      "banned": "Gesperrt",
+      "noReason": "Kein Grund angegeben",
+      "userActions": "Benutzeraktionen",
+      "actionsFor": "Aktionen für {{name}}",
+      "ownAccount": "Das ist dein Konto",
+      "makeAdmin": "Zum Admin machen",
+      "removeAdmin": "Admin-Rolle entziehen",
+      "nowAdmin": "{{name}} ist jetzt Admin",
+      "noLongerAdmin": "{{name}} ist kein Admin mehr",
+      "unban": "Entsperren",
+      "unbanned": "{{name}} wurde entsperrt",
+      "ban": "Sperren…",
+      "delete": "Benutzer löschen…"
+    },
+    "banDialog": {
+      "title": "{{name}} sperren?",
+      "description": "Die Person wird sofort abgemeldet und kann sich bis zur Entsperrung nicht mehr anmelden. Projekte und Daten bleiben erhalten.",
+      "reasonHint": "Nur für Instanz-Admins sichtbar.",
+      "submit": "Benutzer sperren",
+      "banned": "{{name}} wurde gesperrt",
+      "failed": "Der Benutzer konnte nicht gesperrt werden"
+    },
+    "deleteDialog": {
+      "title": "{{name}} löschen?",
+      "description": "Das Konto von {{email}} wird dauerhaft gelöscht, einschließlich Sitzungen und Projektmitgliedschaften. Das kann nicht rückgängig gemacht werden.",
+      "submit": "Benutzer löschen",
+      "deleted": "{{name}} wurde gelöscht",
+      "failed": "Der Benutzer konnte nicht gelöscht werden"
+    }
+  }
+}

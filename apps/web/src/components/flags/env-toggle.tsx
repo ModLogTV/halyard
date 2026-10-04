@@ -1,7 +1,9 @@
 import { TriangleAlertIcon } from 'lucide-react'
 import { useId, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import type { EnvironmentLike } from '@/components/env/env-badge'
 import { EnvBadge, envStyle } from '@/components/env/env-badge'
+import { HazardBand } from '@/components/env/hazard-band'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,10 +39,14 @@ export function EnvToggle({
   disabledReason?: string
   size?: 'sm' | 'default'
 }) {
+  const { t } = useTranslation(['flags', 'common'])
   const [confirming, setConfirming] = useState<boolean | null>(null)
   const [pending, setPending] = useState(false)
   const id = useId()
-  const label = `${enabled ? 'Disable' : 'Enable'} ${flagKey} in ${environment.name}`
+  const label = t(enabled ? 'envToggle.label.disable' : 'envToggle.label.enable', {
+    flagKey,
+    environment: environment.name,
+  })
 
   async function apply(next: boolean) {
     setPending(true)
@@ -89,25 +95,33 @@ export function EnvToggle({
       )}
       <AlertDialog open={confirming !== null} onOpenChange={(open) => !open && setConfirming(null)}>
         <AlertDialogContent style={envStyle(environment)}>
-          <div className="hazard-stripes -mx-6 -mt-6 mb-2 h-2 rounded-t-lg" aria-hidden="true" />
+          <HazardBand />
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <TriangleAlertIcon className="size-5 text-(--env-color)" />
-              {confirming ? 'Enable' : 'Disable'} in production?
+              {confirming
+                ? t('envToggle.confirm.enableTitle')
+                : t('envToggle.confirm.disableTitle')}
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="space-y-2">
                 <p>
-                  <span className="font-mono text-foreground">{flagKey}</span> will be turned{' '}
-                  <strong>{confirming ? 'on' : 'off'}</strong> for everyone evaluating it in{' '}
-                  <EnvBadge env={environment} className="align-middle" />. The change takes effect
-                  immediately.
+                  <Trans
+                    t={t}
+                    i18nKey={confirming ? 'envToggle.confirm.bodyOn' : 'envToggle.confirm.bodyOff'}
+                    values={{ flagKey }}
+                    components={[
+                      <span key="key" className="font-mono text-foreground" />,
+                      <strong key="state" />,
+                      <EnvBadge key="env" env={environment} className="align-middle" />,
+                    ]}
+                  />
                 </p>
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('common:actions.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 const next = confirming
@@ -115,7 +129,9 @@ export function EnvToggle({
                 if (next !== null) void apply(next)
               }}
             >
-              {confirming ? 'Enable in production' : 'Disable in production'}
+              {confirming
+                ? t('envToggle.confirm.enableAction')
+                : t('envToggle.confirm.disableAction')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

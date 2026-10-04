@@ -1,13 +1,14 @@
 import type { Serve, Variant } from '@halyard/engine'
 import { ArrowRightIcon, RotateCwIcon } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { JsonDiff } from '@/components/audit'
 import { EnvBadge, envStyle } from '@/components/env/env-badge'
 import { RolloutBar, VariantValue } from '@/components/flags'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { formatRelativeTime, pluralize } from '@/lib/format'
+import { formatRelativeTime } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { getFlag } from '@/server/functions/flags'
 import { type CompareEnvironment, diffable, type EnvConfig, variantIndexOf } from './utils'
@@ -20,6 +21,7 @@ type State =
   | { status: 'ready'; data: FlagDetailData }
 
 function useFlagDetail(projectId: string, flagKey: string) {
+  const { t } = useTranslation('compare')
   const [state, setState] = useState<State>({ status: 'loading' })
   const [attempt, setAttempt] = useState(0)
 
@@ -35,14 +37,14 @@ function useFlagDetail(projectId: string, flagKey: string) {
         if (!cancelled) {
           setState({
             status: 'error',
-            message: error instanceof Error ? error.message : 'Could not load the flag',
+            message: error instanceof Error ? error.message : t('detail.loadFailed'),
           })
         }
       })
     return () => {
       cancelled = true
     }
-  }, [projectId, flagKey, attempt])
+  }, [projectId, flagKey, attempt, t])
 
   return { state, retry: useCallback(() => setAttempt((n) => n + 1), []) }
 }
@@ -63,6 +65,7 @@ function ServeView({
   variants: Variant[]
   type: FlagDetailData['type']
 }) {
+  const { t } = useTranslation('compare')
   if (serve.type === 'variant') {
     const index = variantIndexOf(variants, serve.variant)
     const variant = variants[index]
@@ -86,7 +89,12 @@ function ServeView({
       />
       {serve.bucketBy ? (
         <span className="text-[11px] text-muted-foreground">
-          Bucketed by <span className="font-mono">{serve.bucketBy}</span>
+          <Trans
+            t={t}
+            i18nKey="detail.bucketedBy"
+            values={{ key: serve.bucketBy }}
+            components={[<span key="key" className="font-mono" />]}
+          />
         </span>
       ) : null}
     </div>
@@ -119,9 +127,10 @@ function EnvColumn({
   detail: FlagDetailData
   action?: React.ReactNode
 }) {
+  const { t, i18n } = useTranslation(['compare', 'common'])
   return (
     <section
-      aria-label={`${environment.name} configuration`}
+      aria-label={t('detail.environmentConfiguration', { environment: environment.name })}
       style={envStyle(environment)}
       className={cn(
         'flex min-w-64 flex-1 flex-col gap-4 rounded-lg border bg-card p-3',
@@ -130,15 +139,15 @@ function EnvColumn({
     >
       <div className="flex items-center gap-2">
         <EnvBadge env={environment} />
-        {isBaseline ? <Badge variant="secondary">Baseline</Badge> : null}
+        {isBaseline ? <Badge variant="secondary">{t('detail.baseline')}</Badge> : null}
         <span className="ml-auto">{action}</span>
       </div>
       {!config ? (
-        <p className="text-sm text-muted-foreground">Not configured in this environment.</p>
+        <p className="text-sm text-muted-foreground">{t('detail.notConfigured')}</p>
       ) : (
         <>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Status">
+            <Field label={t('common:labels.status')}>
               <span className="inline-flex items-center gap-1.5 text-sm">
                 <span
                   aria-hidden="true"
@@ -147,10 +156,10 @@ function EnvColumn({
                     config.enabled ? 'bg-on' : 'bg-muted-foreground/40',
                   )}
                 />
-                {config.enabled ? 'On' : 'Off'}
+                {config.enabled ? t('detail.statusOn') : t('detail.statusOff')}
               </span>
             </Field>
-            <Field label="Off variant">
+            <Field label={t('copyFields.offVariant.label')}>
               <ServeView
                 serve={{ type: 'variant', variant: config.offVariant }}
                 variants={detail.variants}
@@ -158,12 +167,12 @@ function EnvColumn({
               />
             </Field>
           </div>
-          <Field label="Default">
+          <Field label={t('copyFields.fallthrough.label')}>
             <ServeView serve={config.fallthrough} variants={detail.variants} type={detail.type} />
           </Field>
-          <Field label={`Rules (${config.rules.length})`}>
+          <Field label={t('detail.rulesCount', { count: config.rules.length })}>
             {config.rules.length === 0 ? (
-              <span className="text-sm text-muted-foreground">No rules</span>
+              <span className="text-sm text-muted-foreground">{t('detail.noRules')}</span>
             ) : (
               <ol className="flex flex-col gap-2">
                 {config.rules.map((rule, index) => (
@@ -181,10 +190,10 @@ function EnvColumn({
                           !rule.description && 'text-muted-foreground',
                         )}
                       >
-                        {rule.description || 'Untitled rule'}
+                        {rule.description || t('detail.untitledRule')}
                       </span>
                       <span className="ml-auto shrink-0 text-xs text-muted-foreground">
-                        {pluralize(rule.conditions.length, 'condition')}
+                        {t('detail.conditions', { count: rule.conditions.length })}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -197,10 +206,13 @@ function EnvColumn({
             )}
           </Field>
           <p className="tabular text-xs text-muted-foreground">
-            Version {config.version} · updated {formatRelativeTime(config.updatedAt)}
+            {t('detail.versionLine', {
+              version: config.version,
+              time: formatRelativeTime(config.updatedAt, { locale: i18n.language }),
+            })}
           </p>
           {!isBaseline && baselineConfig ? (
-            <Field label="Differs from baseline">
+            <Field label={t('detail.differsFromBaseline')}>
               <JsonDiff before={diffable(baselineConfig)} after={diffable(config)} />
             </Field>
           ) : null}
@@ -227,6 +239,7 @@ export function FlagDetail({
   baseline: CompareEnvironment
   renderAction?: (environment: CompareEnvironment) => React.ReactNode
 }) {
+  const { t } = useTranslation(['compare', 'common'])
   const { state, retry } = useFlagDetail(projectId, flagKey)
 
   if (state.status === 'loading') {
@@ -243,7 +256,7 @@ export function FlagDetail({
       <div className="flex items-center gap-3 p-4 text-sm">
         <span className="text-destructive">{state.message}</span>
         <Button type="button" variant="outline" size="sm" onClick={retry}>
-          <RotateCwIcon /> Retry
+          <RotateCwIcon /> {t('common:actions.retry')}
         </Button>
       </div>
     )

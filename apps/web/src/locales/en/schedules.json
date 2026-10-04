@@ -1,1 +1,165 @@
-{}
+{
+  "list": {
+    "pageTitle": "Scheduled changes · Halyard",
+    "title": "Scheduled changes",
+    "description": "Changes that run automatically at a point in time. They run exactly once, even with several replicas.",
+    "scheduleButton": "Schedule a change",
+    "viewersCannotSchedule": "Viewers cannot schedule changes",
+    "loadFailedTitle": "Could not load scheduled changes",
+    "searchFlags": "Search flags",
+    "allEnvironments": "All environments",
+    "filters": {
+      "upcoming": "Upcoming",
+      "past": "Past",
+      "all": "All"
+    },
+    "empty": {
+      "title": "Nothing scheduled",
+      "description": "Schedule a flag to turn on or off, or to change its default, at a time you choose. A staged rollout ramps a variant up in steps, for example 10 % tomorrow morning, then 25 %, 50 % and 100 % over the next days."
+    },
+    "noMatch": {
+      "title": "No matching scheduled changes",
+      "description": "Try another environment or search term."
+    },
+    "noUpcoming": {
+      "title": "Nothing upcoming",
+      "description": "Everything scheduled has run. Schedule the next change or check the past ones."
+    },
+    "noPast": {
+      "title": "No past changes yet",
+      "description": "Completed, failed and cancelled changes show up here."
+    }
+  },
+  "dayHeading": {
+    "today": "Today, {{date}}",
+    "tomorrow": "Tomorrow, {{date}}",
+    "yesterday": "Yesterday, {{date}}"
+  },
+  "summary": {
+    "turnOn": "Turn on",
+    "turnOff": "Turn off",
+    "defaultVariant": "Default → {{variant}}",
+    "rollout": "Rollout → {{rollout}}",
+    "removeAllRules": "Remove all rules",
+    "replaceRules_one": "Replace {{count}} rule",
+    "replaceRules_other": "Replace {{count}} rules"
+  },
+  "validation": {
+    "enterPercentage": "Enter a percentage",
+    "percentageRange": "Use a value from 0 to 100",
+    "timeInFuture": "Pick a time in the future",
+    "afterPreviousStep": "Must be after the previous step",
+    "afterStep": "Must be after step {{number}} ({{time}})",
+    "beforeStep": "Must be before step {{number}} ({{time}})"
+  },
+  "picker": {
+    "pickDate": "Pick a date",
+    "dateAriaLabel": "{{label}}, date",
+    "timeAriaLabel": "{{label}}, time"
+  },
+  "steps": {
+    "listAriaLabel": "Rollout steps",
+    "stepLabel": "Step {{number}}",
+    "percentageAriaLabel": "Step {{number}} percentage",
+    "removeAriaLabel": "Remove step {{number}}",
+    "remove": "Remove step",
+    "addStep": "Add step"
+  },
+  "row": {
+    "stepOf": "Step {{number}} of {{total}}",
+    "scheduledBy": "Scheduled by {{name}}",
+    "deletedUser": "a deleted user",
+    "actionsAriaLabel": "Actions for {{flag}} at {{time}}"
+  },
+  "cancel": {
+    "title": "Cancel this scheduled change?",
+    "body": "The change to <0>{{flag}}</0> planned for {{time}} will not run.",
+    "planNote": "Other steps of its staged rollout stay scheduled.",
+    "confirm": "Cancel change",
+    "keep": "Keep it",
+    "toast": "Scheduled change cancelled",
+    "menuItem": "Cancel change"
+  },
+  "cancelPlan": {
+    "title": "Cancel the staged rollout?",
+    "body_one": "The {{count}} pending step of the rollout of <0>{{flag}}</0> will not run. Steps that already ran are kept, so the flag stays at its current percentage.",
+    "body_other": "The {{count}} pending steps of the rollout of <0>{{flag}}</0> will not run. Steps that already ran are kept, so the flag stays at its current percentage.",
+    "confirm": "Cancel plan",
+    "toast_one": "Cancelled {{count}} step",
+    "toast_other": "Cancelled {{count}} steps",
+    "menuItem_one": "Cancel plan ({{count}} step)",
+    "menuItem_other": "Cancel plan ({{count}} steps)"
+  },
+  "retry": {
+    "title": "Retry this change?",
+    "body": "This schedules the same change to <0>{{flag}}</0> in {{environment}} again, to run in about a minute.",
+    "productionNote": "This is production.",
+    "confirm": "Retry change",
+    "toast": "Change scheduled again"
+  },
+  "edit": {
+    "title": "Edit scheduled change",
+    "stepSuffix": "· step {{number}}",
+    "percentageFor": "Percentage for {{variant}}",
+    "save": "Save changes",
+    "toastUpdated": "Scheduled change updated",
+    "updateFailed": "Could not update the change"
+  },
+  "dialog": {
+    "title": "Schedule a change",
+    "description": "It runs once at the time you pick, even when several replicas are running.",
+    "modeSingle": "Single change",
+    "modeStaged": "Staged rollout",
+    "chooseFlag": "Choose a flag",
+    "chooseEnvironment": "Choose an environment",
+    "chooseFlagError": "Choose a flag",
+    "chooseEnvironmentError": "Choose an environment",
+    "chooseVariant": "Choose a variant",
+    "chooseVariantError": "Choose a variant",
+    "chooseFlagFirst": "Choose a flag first",
+    "loadFlagsFailed": "Could not load flags",
+    "productionTitle": "This runs in production",
+    "productionBody": "Nobody will be at the keyboard when it runs, so double-check the change and the time. You can cancel it up until then.",
+    "whatChanges": "What should change",
+    "action": {
+      "on": {
+        "title": "Turn on",
+        "hint": "Enable the flag"
+      },
+      "off": {
+        "title": "Turn off",
+        "hint": "Serve the off variant"
+      },
+      "serve": {
+        "title": "Change default",
+        "hint": "Set what everyone else gets"
+      }
+    },
+    "defaultForEveryone": "Default for everyone else",
+    "weightsError": "Weights must add up to 100%",
+    "when": "When",
+    "runAt": "Run at",
+    "runsAt": "Runs {{time}} ({{delta}}) · {{timeZone}}",
+    "startsAt": "Starts {{time}} ({{delta}}) · {{timeZone}}",
+    "localTime": "local time",
+    "rampVariant": "Variant to ramp up",
+    "rampHelp": "Each step turns the flag on and gives this variant the percentage; the other variants share the rest. People who already have it keep it as it grows.",
+    "rampNeedsVariants": "A staged rollout needs a flag with two or more variants",
+    "rampChooseVariant": "Choose the variant to ramp up",
+    "steps": "Steps",
+    "addAtLeastOneStep": "Add at least one step.",
+    "note": "Note",
+    "notePlaceholder": "Why is this scheduled? (optional)",
+    "submitSingle": "Schedule change",
+    "submitStaged": "Schedule rollout",
+    "toastScheduled": "Change scheduled for {{time}}",
+    "toastStagedScheduled_one": "Staged rollout scheduled in {{count}} step",
+    "toastStagedScheduled_other": "Staged rollout scheduled in {{count}} steps",
+    "scheduleFailed": "Could not schedule the change",
+    "confirmTitle": "Schedule in production?",
+    "confirmBodySingle": "This change of <0>{{flag}}</0> will change what everyone evaluating it in <1></1> gets, starting {{delta}}.",
+    "confirmBodyStaged_one": "This {{count}}-step rollout of <0>{{flag}}</0> will change what everyone evaluating it in <1></1> gets, starting {{delta}}.",
+    "confirmBodyStaged_other": "This {{count}}-step rollout of <0>{{flag}}</0> will change what everyone evaluating it in <1></1> gets, starting {{delta}}.",
+    "confirmAction": "Schedule in production"
+  }
+}

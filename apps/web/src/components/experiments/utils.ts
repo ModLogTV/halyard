@@ -30,41 +30,6 @@ export function keyify(value: string): string {
 }
 
 /** Rate (0..1) as `12.4%`. */
-export function formatRate(rate: number): string {
-  return `${(rate * 100).toFixed(1)}%`
-}
-
-/** `12.4% (10.1–15.0%)`; without an interval just the rate. */
-export function formatRateWithInterval(
-  rate: number,
-  interval: { lower: number; upper: number } | null,
-): string {
-  if (!interval) return formatRate(rate)
-  return `${formatRate(rate)} (${(interval.lower * 100).toFixed(1)}–${(interval.upper * 100).toFixed(1)}%)`
-}
-
-/** Three decimals, or `< 0.001` for tiny values. */
-export function formatPValue(p: number): string {
-  return p < 0.001 ? '< 0.001' : p.toFixed(3)
-}
-
-/** Absolute lift in percentage points: `+2.1 pp`. */
-export function formatLiftPoints(lift: number): string {
-  const points = lift * 100
-  const text = Math.abs(points).toFixed(1)
-  return `${points > 0 ? '+' : points < 0 ? '−' : ''}${text} pp`
-}
-
-export function formatRelativeLift(relative: number): string {
-  const percent = relative * 100
-  const text = Math.abs(percent).toFixed(1)
-  return `${percent > 0 ? '+' : percent < 0 ? '−' : ''}${text}%`
-}
-
-export function formatCount(value: number): string {
-  return new Intl.NumberFormat().format(value)
-}
-
 export function allocationTotal(allocation: RolloutVariation[]): number {
   return sumWeights(allocation)
 }

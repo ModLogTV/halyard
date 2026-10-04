@@ -1,14 +1,8 @@
 import type { FlagType } from '@halyard/engine'
+import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
-
-const TYPE_INFO: Record<FlagType, { short: string; full: string }> = {
-  boolean: { short: 'bool', full: 'Boolean' },
-  string: { short: 'str', full: 'String' },
-  number: { short: 'num', full: 'Number' },
-  json: { short: 'json', full: 'JSON' },
-}
 
 export interface FlagTypeBadgeProps {
   type: FlagType
@@ -17,7 +11,9 @@ export interface FlagTypeBadgeProps {
 
 /** Tiny mono badge: `bool`, `str`, `num` or `json`, with the full type name in a tooltip. */
 export function FlagTypeBadge({ type, className }: FlagTypeBadgeProps) {
-  const info = TYPE_INFO[type]
+  const { t } = useTranslation(['flags', 'common'])
+  const short = t(`flagTypeBadge.short.${type}`)
+  const full = t(`common:flagTypes.${type}Flag`)
   return (
     <TooltipProvider delayDuration={300}>
       <Tooltip>
@@ -29,11 +25,11 @@ export function FlagTypeBadge({ type, className }: FlagTypeBadgeProps) {
               className,
             )}
           >
-            <span aria-hidden="true">{info.short}</span>
-            <span className="sr-only">{info.full} flag</span>
+            <span aria-hidden="true">{short}</span>
+            <span className="sr-only">{full}</span>
           </Badge>
         </TooltipTrigger>
-        <TooltipContent>{info.full} flag</TooltipContent>
+        <TooltipContent>{full}</TooltipContent>
       </Tooltip>
     </TooltipProvider>
   )

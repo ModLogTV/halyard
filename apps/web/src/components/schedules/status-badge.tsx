@@ -1,16 +1,9 @@
 import { CircleAlertIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import type { ScheduleStatus } from './utils'
-
-const LABELS: Record<ScheduleStatus, string> = {
-  pending: 'Pending',
-  running: 'Running',
-  completed: 'Completed',
-  failed: 'Failed',
-  cancelled: 'Cancelled',
-}
 
 /** Status of a scheduled change. Failed changes show the error in a tooltip. */
 export function ScheduleStatusBadge({
@@ -22,6 +15,7 @@ export function ScheduleStatusBadge({
   error?: string | null
   className?: string
 }) {
+  const { t } = useTranslation(['schedules', 'common'])
   const badge = (
     <Badge
       variant={status === 'failed' ? 'destructive' : 'outline'}
@@ -34,7 +28,7 @@ export function ScheduleStatusBadge({
       tabIndex={status === 'failed' && error ? 0 : undefined}
     >
       {status === 'failed' ? <CircleAlertIcon /> : null}
-      {LABELS[status]}
+      {t(`common:states.${status}`)}
     </Badge>
   )
   if (status !== 'failed' || !error) return badge

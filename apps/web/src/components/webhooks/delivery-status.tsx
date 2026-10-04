@@ -1,13 +1,8 @@
+import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
 export type DeliveryStatus = 'pending' | 'success' | 'failed'
-
-const LABELS: Record<DeliveryStatus, string> = {
-  pending: 'Pending',
-  success: 'Delivered',
-  failed: 'Failed',
-}
 
 export function DeliveryStatusBadge({
   status,
@@ -16,6 +11,7 @@ export function DeliveryStatusBadge({
   status: DeliveryStatus
   className?: string
 }) {
+  const { t } = useTranslation('settings')
   return (
     <Badge
       variant={status === 'failed' ? 'destructive' : 'outline'}
@@ -24,13 +20,14 @@ export function DeliveryStatusBadge({
         className,
       )}
     >
-      {LABELS[status]}
+      {t(`webhooks.deliveries.status.${status}`)}
     </Badge>
   )
 }
 
 /** Small coloured dot for a delivery status, with a screen reader label. */
 export function DeliveryDot({ status, className }: { status: DeliveryStatus; className?: string }) {
+  const { t } = useTranslation('settings')
   return (
     <>
       <span
@@ -43,7 +40,11 @@ export function DeliveryDot({ status, className }: { status: DeliveryStatus; cla
           className,
         )}
       />
-      <span className="sr-only">Last delivery {LABELS[status].toLowerCase()}</span>
+      <span className="sr-only">
+        {t('webhooks.deliveries.lastDeliveryStatus', {
+          status: t(`webhooks.deliveries.statusInline.${status}`),
+        })}
+      </span>
     </>
   )
 }

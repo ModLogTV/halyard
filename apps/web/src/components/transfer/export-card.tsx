@@ -1,5 +1,6 @@
 import { DownloadIcon, FileJsonIcon } from 'lucide-react'
 import { useId, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { EnvDot, type EnvironmentLike } from '@/components/env/env-badge'
 import { CopyButton } from '@/components/settings/copy-button'
@@ -16,7 +17,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
-import { pluralize } from '@/lib/format'
 import { exportFlagd, exportProject } from '@/server/functions/transfer'
 import { downloadText } from './download'
 
@@ -37,6 +37,7 @@ export function ExportCard({
   projectSlug: string
   environments: EnvironmentLike[]
 }) {
+  const { t } = useTranslation(['settings', 'common'])
   const selectId = useId()
   const [downloading, setDownloading] = useState(false)
   const [environmentKey, setEnvironmentKey] = useState<string>('')
@@ -48,9 +49,9 @@ export function ExportCard({
     try {
       const document = await exportProject({ data: { projectId } })
       downloadText(`${projectSlug}-export.json`, `${JSON.stringify(document, null, 2)}\n`)
-      toast.success('Export downloaded')
+      toast.success(t('transfer.export.json.downloaded'))
     } catch (error) {
-      toast.error(errorMessage(error, 'Could not export the project'))
+      toast.error(errorMessage(error, t('transfer.export.json.failed')))
     } finally {
       setDownloading(false)
     }
@@ -69,7 +70,7 @@ export function ExportCard({
         flagCount: Object.keys(flagd.flags).length,
       })
     } catch (error) {
-      toast.error(errorMessage(error, 'Could not export for flagd'))
+      toast.error(errorMessage(error, t('transfer.export.flagd.failed')))
     } finally {
       setLoading(false)
     }
@@ -78,38 +79,32 @@ export function ExportCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Export</CardTitle>
-        <CardDescription>
-          Take this project's environments, segments and flags with their targeting out of Halyard.
-          Exports hold no keys, statistics or members.
-        </CardDescription>
+        <CardTitle>{t('transfer.export.title')}</CardTitle>
+        <CardDescription>{t('transfer.export.description')}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
-            <h3 className="text-sm font-medium">Halyard JSON</h3>
-            <p className="text-sm text-muted-foreground">
-              The complete document. Import it into another project or keep it as a backup.
-            </p>
+            <h3 className="text-sm font-medium">{t('transfer.export.json.title')}</h3>
+            <p className="text-sm text-muted-foreground">{t('transfer.export.json.description')}</p>
           </div>
           <Button type="button" onClick={downloadJson} disabled={downloading}>
-            {downloading ? <Spinner /> : <DownloadIcon />} Download JSON
+            {downloading ? <Spinner /> : <DownloadIcon />} {t('transfer.export.json.download')}
           </Button>
         </div>
 
         <div className="flex flex-col gap-4 border-t pt-6">
           <div className="min-w-0">
-            <h3 className="text-sm font-medium">Export for flagd</h3>
+            <h3 className="text-sm font-medium">{t('transfer.export.flagd.title')}</h3>
             <p className="text-sm text-muted-foreground">
-              One environment as a flagd flag definition file. Anything flagd cannot express exactly
-              is listed below.
+              {t('transfer.export.flagd.description')}
             </p>
           </div>
           <Field className="max-w-xs">
-            <FieldLabel htmlFor={selectId}>Environment</FieldLabel>
+            <FieldLabel htmlFor={selectId}>{t('common:labels.environment')}</FieldLabel>
             <Select value={environmentKey} onValueChange={(key) => void preview(key)}>
               <SelectTrigger id={selectId} className="w-full">
-                <SelectValue placeholder="Choose an environment" />
+                <SelectValue placeholder={t('transfer.export.flagd.environmentPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
                 {environments.map((env) => (
@@ -119,7 +114,7 @@ export function ExportCard({
                 ))}
               </SelectContent>
             </Select>
-            <FieldDescription>flagd definitions describe one environment.</FieldDescription>
+            <FieldDescription>{t('transfer.export.flagd.environmentHint')}</FieldDescription>
           </Field>
 
           {loading ? (
@@ -128,7 +123,7 @@ export function ExportCard({
               role="status"
               aria-live="polite"
             >
-              <Spinner /> Preparing the flagd file
+              <Spinner /> {t('transfer.export.flagd.preparing')}
             </div>
           ) : null}
 
@@ -138,7 +133,7 @@ export function ExportCard({
                 <Alert>
                   <FileJsonIcon />
                   <AlertTitle>
-                    {pluralize(result.warnings.length, 'note')} for the flagd export
+                    {t('transfer.export.flagd.notes', { count: result.warnings.length })}
                   </AlertTitle>
                   <AlertDescription>
                     <ul className="mt-1 flex list-disc flex-col gap-1 pl-4">
@@ -151,10 +146,10 @@ export function ExportCard({
               ) : null}
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="text-sm text-muted-foreground">
-                  {pluralize(result.flagCount, 'flag')} exported
+                  {t('transfer.export.flagd.flagsExported', { count: result.flagCount })}
                 </p>
                 <div className="flex items-center gap-2">
-                  <CopyButton value={result.text} label="Copy flagd JSON" />
+                  <CopyButton value={result.text} label={t('transfer.export.flagd.copy')} />
                   <Button
                     type="button"
                     variant="outline"
@@ -165,12 +160,12 @@ export function ExportCard({
                       )
                     }
                   >
-                    <DownloadIcon /> Download
+                    <DownloadIcon /> {t('common:actions.download')}
                   </Button>
                 </div>
               </div>
               <section
-                aria-label="flagd JSON preview"
+                aria-label={t('transfer.export.flagd.previewLabel')}
                 // biome-ignore lint/a11y/noNoninteractiveTabindex: keyboard users must be able to scroll the preview
                 tabIndex={0}
                 className="max-h-96 overflow-auto rounded-md border bg-muted/40 p-3"

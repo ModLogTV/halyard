@@ -1,4 +1,5 @@
 import type { FlagType, Variant } from '@halyard/engine'
+import { useTranslation } from 'react-i18next'
 import { RolloutBar } from '@/components/flags'
 import { cn } from '@/lib/utils'
 import { type ScheduledChangeItem, summarizeChange, syntheticVariants } from './utils'
@@ -15,7 +16,8 @@ export function ChangeSummary({
   type?: FlagType
   className?: string
 }) {
-  const { labels, rollout } = summarizeChange(change)
+  const { t } = useTranslation(['schedules', 'common'])
+  const { labels, rollout } = summarizeChange(change, t)
   return (
     <div className={cn('flex min-w-0 flex-col gap-1.5', className)}>
       <p className="text-sm font-medium">{labels.join(' · ')}</p>

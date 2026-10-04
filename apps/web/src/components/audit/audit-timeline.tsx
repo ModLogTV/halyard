@@ -1,6 +1,7 @@
 import { useMatch } from '@tanstack/react-router'
 import { ChevronRightIcon, CogIcon, HistoryIcon, KeyRoundIcon } from 'lucide-react'
-import { useMemo } from 'react'
+import { Fragment, useMemo } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { EnvBadge, type EnvironmentLike } from '@/components/env/env-badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
@@ -26,13 +27,14 @@ export interface AuditTimelineProps {
 }
 
 function ActorAvatar({ entry }: { entry: AuditEntryLike }) {
+  const { t } = useTranslation(['audit', 'common'])
   return (
     <Avatar size="sm" className="mt-0.5">
       <AvatarFallback className="text-[10px]">
         {entry.actorType === 'api_key' ? (
-          <KeyRoundIcon className="size-3.5" aria-label="API key" />
+          <KeyRoundIcon className="size-3.5" aria-label={t('common:labels.apiKey')} />
         ) : entry.actorType === 'system' ? (
-          <CogIcon className="size-3.5" aria-label="System" />
+          <CogIcon className="size-3.5" aria-label={t('timeline.system')} />
         ) : (
           initials(entry.actorName)
         )}
@@ -48,31 +50,38 @@ function Sentence({
   entry: AuditEntryLike
   environment: AuditTimelineEnvironment | undefined
 }) {
+  const { t } = useTranslation('audit')
   const sentence = describeAuditAction(entry)
   return (
     <p className="min-w-0 text-sm leading-6">
-      <strong className="font-semibold">{entry.actorName}</strong>{' '}
-      {sentence.raw ? (
-        <>
-          performed{' '}
-          <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">{entry.action}</code>
-        </>
-      ) : (
-        sentence.verb
-      )}
-      {sentence.entityLabel ? <> {sentence.entityLabel}</> : null}
-      {entry.entityKey ? (
-        <>
-          {' '}
-          <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">{entry.entityKey}</code>
-        </>
-      ) : null}
-      {environment ? (
-        <>
-          {' '}
-          {sentence.environmentPreposition} <EnvBadge env={environment} className="align-middle" />
-        </>
-      ) : null}
+      <Trans
+        t={t}
+        i18nKey={`timeline.actions.${sentence.actionKey}`}
+        values={{ entity: sentence.entity ? t(`timeline.entities.${sentence.entity}`) : '' }}
+        components={[
+          <strong key="actor" className="font-semibold">
+            {entry.actorName}
+          </strong>,
+          entry.entityKey ? (
+            <code key="entity" className="rounded bg-muted px-1 py-0.5 font-mono text-xs">
+              {entry.entityKey}
+            </code>
+          ) : (
+            <Fragment key="entity" />
+          ),
+          environment ? (
+            <Fragment key="environment">
+              {t(`timeline.preposition.${sentence.environmentPreposition}`)}{' '}
+              <EnvBadge env={environment} className="align-middle" />
+            </Fragment>
+          ) : (
+            <Fragment key="environment" />
+          ),
+          <code key="action" className="rounded bg-muted px-1 py-0.5 font-mono text-xs">
+            {entry.action}
+          </code>,
+        ]}
+      />
     </p>
   )
 }
@@ -84,6 +93,7 @@ function AuditRow({
   entry: AuditEntryLike
   environment: AuditTimelineEnvironment | undefined
 }) {
+  const { t, i18n } = useTranslation(['audit', 'common'])
   const hasDetails = entry.before !== null || entry.after !== null
   return (
     <Item size="sm" className="items-start" role="listitem">
@@ -98,10 +108,10 @@ function AuditRow({
           </span>
           <time
             dateTime={new Date(entry.createdAt).toISOString()}
-            title={formatDateTime(entry.createdAt)}
+            title={formatDateTime(entry.createdAt, i18n.language)}
             className="whitespace-nowrap text-muted-foreground text-xs"
           >
-            {formatRelativeTime(entry.createdAt)}
+            {formatRelativeTime(entry.createdAt, { locale: i18n.language })}
           </time>
         </div>
         {hasDetails ? (
@@ -111,7 +121,7 @@ function AuditRow({
                 aria-hidden="true"
                 className="size-3.5 transition-transform group-data-[state=open]/details:rotate-90"
               />
-              Details
+              {t('common:labels.details')}
             </CollapsibleTrigger>
             <CollapsibleContent className="pt-2">
               <JsonDiff before={entry.before} after={entry.after} />
@@ -128,6 +138,7 @@ function AuditRow({
  * as a sentence and expands to a before/after diff.
  */
 export function AuditTimeline({ items, environments, empty, className }: AuditTimelineProps) {
+  const { t, i18n } = useTranslation(['audit', 'common'])
   const projectMatch = useMatch({ from: '/app/$projectSlug', shouldThrow: false })
   const envs: AuditTimelineEnvironment[] = useMemo(
     () => environments ?? projectMatch?.loaderData?.project.environments ?? [],
@@ -140,10 +151,10 @@ export function AuditTimeline({ items, environments, empty, className }: AuditTi
       const key = dayKey(entry.createdAt)
       const last = out[out.length - 1]
       if (last && last.key === key) last.entries.push(entry)
-      else out.push({ key, label: dayLabel(entry.createdAt), entries: [entry] })
+      else out.push({ key, label: dayLabel(entry.createdAt, t, i18n.language), entries: [entry] })
     }
     return out
-  }, [items])
+  }, [items, t, i18n.language])
 
   if (items.length === 0) {
     return (
@@ -153,8 +164,8 @@ export function AuditTimeline({ items, environments, empty, className }: AuditTi
             <EmptyMedia variant="icon">
               <HistoryIcon />
             </EmptyMedia>
-            <EmptyTitle>No activity</EmptyTitle>
-            <EmptyDescription>Changes will show up here as they happen.</EmptyDescription>
+            <EmptyTitle>{t('timeline.empty.title')}</EmptyTitle>
+            <EmptyDescription>{t('timeline.empty.description')}</EmptyDescription>
           </EmptyHeader>
         </Empty>
       )

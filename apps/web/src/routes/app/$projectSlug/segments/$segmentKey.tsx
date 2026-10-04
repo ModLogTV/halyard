@@ -9,6 +9,7 @@ import {
 } from '@tanstack/react-router'
 import { ArrowLeftIcon, MoreHorizontalIcon, Trash2Icon } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { PageHeader } from '@/components/layout/page-header'
 import {
@@ -29,6 +30,7 @@ import {
 import { Spinner } from '@/components/ui/spinner'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { formatDateTime, formatRelativeTime } from '@/lib/format'
+import { translate } from '@/lib/i18n'
 import { deleteSegment, getSegment, updateSegment } from '@/server/functions/segments'
 
 const projectRoute = getRouteApi('/app/$projectSlug')
@@ -46,7 +48,15 @@ export const Route = createFileRoute('/app/$projectSlug/segments/$segmentKey')({
       throw error
     }
   },
-  head: ({ params }) => ({ meta: [{ title: `${params.segmentKey} · Segments · Halyard` }] }),
+  head: ({ match, params }) => ({
+    meta: [
+      {
+        title: translate(match.context.locale)('segments:detail.pageTitle', {
+          key: params.segmentKey,
+        }),
+      },
+    ],
+  }),
   component: SegmentDetailPage,
 })
 
@@ -73,6 +83,7 @@ const sameDraft = (a: SegmentDraft, b: SegmentDraft) =>
   JSON.stringify(a.conditions) === JSON.stringify(b.conditions)
 
 function SegmentDetail() {
+  const { t, i18n } = useTranslation(['segments', 'common'])
   const { segment } = Route.useLoaderData()
   const { project } = projectRoute.useLoaderData()
   const router = useRouter()
@@ -112,10 +123,10 @@ function SegmentDetail() {
           },
         },
       })
-      toast.success('Segment saved')
+      toast.success(t('detail.saved'))
       await router.invalidate()
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Could not save the segment'
+      const message = err instanceof Error ? err.message : t('detail.saveFailed')
       setSaveError(message)
       toast.error(message)
     } finally {
@@ -128,12 +139,12 @@ function SegmentDetail() {
     setDeleteError(null)
     try {
       await deleteSegment({ data: { projectId: project.id, segmentKey: segment.key } })
-      toast.success(`Segment "${segment.key}" deleted`)
+      toast.success(t('detail.deleted', { key: segment.key }))
       setDeleteOpen(false)
       await router.invalidate()
       await navigate({ to: '/app/$projectSlug/segments', params: { projectSlug: project.slug } })
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Could not delete the segment'
+      const message = err instanceof Error ? err.message : t('detail.deleteFailed')
       setDeleteError(message)
       toast.error(message)
       // The usages may have changed since this page loaded; refresh so the dialog lists them.
@@ -148,15 +159,17 @@ function SegmentDetail() {
       <div>
         <Button asChild variant="ghost" size="sm" className="-ml-2 mb-2">
           <Link to="/app/$projectSlug/segments" params={{ projectSlug: project.slug }}>
-            <ArrowLeftIcon /> All segments
+            <ArrowLeftIcon /> {t('backToList')}
           </Link>
         </Button>
         <PageHeader
           title={segment.name}
           description={
-            <span title={formatDateTime(segment.updatedAt)}>
-              <span className="font-mono">{segment.key}</span> · updated{' '}
-              {formatRelativeTime(segment.updatedAt)}
+            <span title={formatDateTime(segment.updatedAt, i18n.language)}>
+              <span className="font-mono">{segment.key}</span> ·{' '}
+              {t('detail.updatedMeta', {
+                time: formatRelativeTime(segment.updatedAt, { locale: i18n.language }),
+              })}
             </span>
           }
           actions={
@@ -165,7 +178,7 @@ function SegmentDetail() {
                 {dirty ? (
                   <Badge variant="outline" className="gap-1.5">
                     <span aria-hidden="true" className="size-1.5 rounded-full bg-amber-500" />
-                    Unsaved changes
+                    {t('detail.unsavedChanges')}
                   </Badge>
                 ) : null}
                 {dirty ? (
@@ -177,23 +190,23 @@ function SegmentDetail() {
                       setSaveError(null)
                     }}
                   >
-                    Discard
+                    {t('common:actions.discard')}
                   </Button>
                 ) : null}
                 <Button onClick={save} disabled={!dirty || !valid || saving}>
                   {saving ? <Spinner /> : null}
-                  Save changes
+                  {t('detail.saveChanges')}
                 </Button>
                 <DropdownMenu>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon" aria-label="Segment actions">
+                        <Button variant="outline" size="icon" aria-label={t('detail.actions')}>
                           <MoreHorizontalIcon aria-hidden="true" />
                         </Button>
                       </DropdownMenuTrigger>
                     </TooltipTrigger>
-                    <TooltipContent>Segment actions</TooltipContent>
+                    <TooltipContent>{t('detail.actions')}</TooltipContent>
                   </Tooltip>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem
@@ -204,7 +217,7 @@ function SegmentDetail() {
                       }}
                     >
                       <Trash2Icon aria-hidden="true" />
-                      Delete segment
+                      {t('detail.deleteSegment')}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -216,10 +229,8 @@ function SegmentDetail() {
 
       {canEdit ? null : (
         <Alert>
-          <AlertTitle>Read-only access</AlertTitle>
-          <AlertDescription>
-            Viewers can inspect segments but not change them. Ask an editor or owner.
-          </AlertDescription>
+          <AlertTitle>{t('readOnly.title')}</AlertTitle>
+          <AlertDescription>{t('readOnly.edit')}</AlertDescription>
         </Alert>
       )}
 

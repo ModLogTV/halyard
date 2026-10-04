@@ -1,67 +1,85 @@
 import type { JsonValue, Operator } from '@halyard/engine'
 
+/** Translation key segment (under `flags:conditions.operators`) for every engine operator. */
+export const OPERATOR_KEYS = {
+  eq: 'eq',
+  neq: 'neq',
+  in: 'in',
+  not_in: 'notIn',
+  contains: 'contains',
+  not_contains: 'notContains',
+  starts_with: 'startsWith',
+  ends_with: 'endsWith',
+  regex: 'regex',
+  gt: 'gt',
+  gte: 'gte',
+  lt: 'lt',
+  lte: 'lte',
+  semver_eq: 'semverEq',
+  semver_gt: 'semverGt',
+  semver_gte: 'semverGte',
+  semver_lt: 'semverLt',
+  semver_lte: 'semverLte',
+  exists: 'exists',
+  not_exists: 'notExists',
+} as const satisfies Record<Operator, string>
+
+export type OperatorKey = (typeof OPERATOR_KEYS)[Operator]
+
+export type OperatorGroupKey =
+  | 'equality'
+  | 'lists'
+  | 'strings'
+  | 'numbers'
+  | 'versions'
+  | 'presence'
+
 export interface OperatorGroup {
-  label: string
-  operators: { value: Operator; label: string }[]
+  /** Translation key segment (under `flags:conditions.operatorGroups`). */
+  key: OperatorGroupKey
+  /** English label. Prefer translating through `key`; kept for non-React callers. */
+  operators: { value: Operator }[]
 }
 
 /** Operators grouped and labelled for humans, in display order. */
 export const OPERATOR_GROUPS: OperatorGroup[] = [
   {
-    label: 'Equality',
+    key: 'equality',
+    operators: [{ value: 'eq' }, { value: 'neq' }],
+  },
+  {
+    key: 'lists',
+    operators: [{ value: 'in' }, { value: 'not_in' }],
+  },
+  {
+    key: 'strings',
     operators: [
-      { value: 'eq', label: 'is' },
-      { value: 'neq', label: 'is not' },
+      { value: 'contains' },
+      { value: 'not_contains' },
+      { value: 'starts_with' },
+      { value: 'ends_with' },
+      { value: 'regex' },
     ],
   },
   {
-    label: 'Lists',
+    key: 'numbers',
+    operators: [{ value: 'gt' }, { value: 'gte' }, { value: 'lt' }, { value: 'lte' }],
+  },
+  {
+    key: 'versions',
     operators: [
-      { value: 'in', label: 'is one of' },
-      { value: 'not_in', label: 'is not one of' },
+      { value: 'semver_eq' },
+      { value: 'semver_gt' },
+      { value: 'semver_gte' },
+      { value: 'semver_lt' },
+      { value: 'semver_lte' },
     ],
   },
   {
-    label: 'Strings',
-    operators: [
-      { value: 'contains', label: 'contains' },
-      { value: 'not_contains', label: 'does not contain' },
-      { value: 'starts_with', label: 'starts with' },
-      { value: 'ends_with', label: 'ends with' },
-      { value: 'regex', label: 'matches regex' },
-    ],
-  },
-  {
-    label: 'Numbers',
-    operators: [
-      { value: 'gt', label: '>' },
-      { value: 'gte', label: '≥' },
-      { value: 'lt', label: '<' },
-      { value: 'lte', label: '≤' },
-    ],
-  },
-  {
-    label: 'Versions',
-    operators: [
-      { value: 'semver_eq', label: 'semver =' },
-      { value: 'semver_gt', label: 'semver >' },
-      { value: 'semver_gte', label: 'semver ≥' },
-      { value: 'semver_lt', label: 'semver <' },
-      { value: 'semver_lte', label: 'semver ≤' },
-    ],
-  },
-  {
-    label: 'Presence',
-    operators: [
-      { value: 'exists', label: 'exists' },
-      { value: 'not_exists', label: 'does not exist' },
-    ],
+    key: 'presence',
+    operators: [{ value: 'exists' }, { value: 'not_exists' }],
   },
 ]
-
-export const OPERATOR_LABELS = Object.fromEntries(
-  OPERATOR_GROUPS.flatMap((group) => group.operators.map((op) => [op.value, op.label])),
-) as Record<Operator, string>
 
 export type ValueKind = 'none' | 'list' | 'number' | 'version' | 'regex' | 'equality' | 'text'
 

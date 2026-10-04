@@ -1,5 +1,6 @@
 import { useRouter } from '@tanstack/react-router'
 import { type FormEvent, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { EnvBadge } from '@/components/env/env-badge'
 import { Button } from '@/components/ui/button'
@@ -75,6 +76,7 @@ function EnvironmentForm({
   environment?: Environment
   onDone: () => void
 }) {
+  const { t } = useTranslation(['settings', 'common'])
   const router = useRouter()
   const editing = environment !== undefined
   const [name, setName] = useState(environment?.name ?? '')
@@ -120,17 +122,17 @@ function EnvironmentForm({
             },
           },
         })
-        toast.success(`Environment "${name.trim()}" updated`)
+        toast.success(t('environments.dialog.updated', { name: name.trim() }))
       } else {
         await createEnvironment({
           data: { projectId, key, name: name.trim(), color: color.toLowerCase(), isProduction },
         })
-        toast.success(`Environment "${name.trim()}" created`)
+        toast.success(t('environments.dialog.created', { name: name.trim() }))
       }
       await router.invalidate()
       onDone()
     } catch (error) {
-      setServerError(errorMessage(error, 'Could not save the environment'))
+      setServerError(errorMessage(error, t('environments.dialog.saveFailed')))
     } finally {
       setPending(false)
     }
@@ -138,7 +140,7 @@ function EnvironmentForm({
 
   const preview = {
     key: key || 'key',
-    name: name.trim() || 'Environment',
+    name: name.trim() || t('common:labels.environment'),
     color: /^#[0-9a-fA-F]{6}$/.test(color) ? color : DEFAULT_ENVIRONMENT_COLOR,
     isProduction,
   }
@@ -146,11 +148,15 @@ function EnvironmentForm({
   return (
     <form onSubmit={onSubmit} noValidate className="contents">
       <DialogHeader>
-        <DialogTitle>{editing ? `Edit ${environment.name}` : 'Add environment'}</DialogTitle>
+        <DialogTitle>
+          {editing
+            ? t('environments.dialog.editTitle', { name: environment.name })
+            : t('environments.add')}
+        </DialogTitle>
         <DialogDescription>
           {editing
-            ? 'The key identifies the environment in the API and the CLI, so it cannot be changed.'
-            : 'Every flag gets a disabled configuration in the new environment.'}
+            ? t('environments.dialog.editDescription')
+            : t('environments.dialog.addDescription')}
         </DialogDescription>
       </DialogHeader>
 
@@ -158,13 +164,13 @@ function EnvironmentForm({
         className="flex items-center justify-between gap-3 rounded-md border bg-muted/40 px-3 py-2.5"
         aria-live="polite"
       >
-        <span className="text-xs text-muted-foreground">Preview</span>
+        <span className="text-xs text-muted-foreground">{t('environments.dialog.preview')}</span>
         <EnvBadge env={preview} />
       </div>
 
       <FieldGroup className="gap-5">
         <Field data-invalid={showName ? true : undefined}>
-          <FieldLabel htmlFor="env-name">Name</FieldLabel>
+          <FieldLabel htmlFor="env-name">{t('common:labels.name')}</FieldLabel>
           <Input
             id="env-name"
             value={name}
@@ -172,7 +178,7 @@ function EnvironmentForm({
               setName(event.target.value)
               if (!editing && !keyTouched) setKey(slugifyEnvironmentKey(event.target.value))
             }}
-            placeholder="QA"
+            placeholder={t('environments.dialog.namePlaceholder')}
             aria-invalid={showName ? true : undefined}
             autoFocus
             autoComplete="off"
@@ -181,7 +187,7 @@ function EnvironmentForm({
         </Field>
 
         <Field data-invalid={showKey ? true : undefined}>
-          <FieldLabel htmlFor="env-key">Key</FieldLabel>
+          <FieldLabel htmlFor="env-key">{t('common:labels.key')}</FieldLabel>
           <Input
             id="env-key"
             value={key}
@@ -189,7 +195,7 @@ function EnvironmentForm({
               setKeyTouched(true)
               setKey(event.target.value)
             }}
-            placeholder="qa"
+            placeholder={t('environments.dialog.keyPlaceholder')}
             className="font-mono"
             disabled={editing}
             aria-invalid={showKey ? true : undefined}
@@ -199,25 +205,22 @@ function EnvironmentForm({
           {showKey ? (
             <FieldError>{showKey}</FieldError>
           ) : editing ? null : (
-            <FieldDescription>
-              Lowercase letters, digits, dashes and underscores. Generated from the name.
-            </FieldDescription>
+            <FieldDescription>{t('environments.dialog.keyHint')}</FieldDescription>
           )}
         </Field>
 
         <Field data-invalid={showColor ? true : undefined}>
-          <FieldLabel htmlFor="env-color">Colour</FieldLabel>
+          <FieldLabel htmlFor="env-color">{t('environments.dialog.colorLabel')}</FieldLabel>
           <ColorField id="env-color" value={color} onChange={setColor} invalid={!!showColor} />
           <FieldError>{showColor}</FieldError>
         </Field>
 
         <Field orientation="horizontal">
           <FieldContent>
-            <FieldLabel htmlFor="env-production">Production environment</FieldLabel>
-            <FieldDescription>
-              Production environments ask for confirmation before changes and are marked with hazard
-              stripes.
-            </FieldDescription>
+            <FieldLabel htmlFor="env-production">
+              {t('environments.dialog.productionLabel')}
+            </FieldLabel>
+            <FieldDescription>{t('environments.dialog.productionHint')}</FieldDescription>
           </FieldContent>
           <Switch id="env-production" checked={isProduction} onCheckedChange={setIsProduction} />
         </Field>
@@ -227,11 +230,11 @@ function EnvironmentForm({
 
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onDone} disabled={pending}>
-          Cancel
+          {t('common:actions.cancel')}
         </Button>
         <Button type="submit" disabled={pending || unchanged}>
           {pending ? <Spinner /> : null}
-          {editing ? 'Save changes' : 'Add environment'}
+          {editing ? t('shared.saveChanges') : t('environments.add')}
         </Button>
       </DialogFooter>
     </form>

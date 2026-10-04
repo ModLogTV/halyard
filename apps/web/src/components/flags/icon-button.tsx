@@ -1,4 +1,5 @@
 import type { ComponentProps, ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
@@ -26,6 +27,7 @@ export function IconButton({
   size = 'icon-sm',
   ...props
 }: IconButtonProps) {
+  const { t } = useTranslation('flags')
   return (
     <TooltipProvider delayDuration={300}>
       <Tooltip>
@@ -35,7 +37,11 @@ export function IconButton({
             variant={variant}
             size={size}
             {...props}
-            aria-label={disabledReason ? `${label} (unavailable: ${disabledReason})` : label}
+            aria-label={
+              disabledReason
+                ? t('iconButton.unavailable', { label, reason: disabledReason })
+                : label
+            }
             aria-disabled={disabledReason ? true : undefined}
             className={cn('text-muted-foreground', disabledReason && 'opacity-50', className)}
             onClick={disabledReason ? (event) => event.preventDefault() : onClick}

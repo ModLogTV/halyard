@@ -1,5 +1,6 @@
 import { Link, useRouter } from '@tanstack/react-router'
 import { AlertTriangleIcon, CompassIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import {
   Empty,
@@ -26,6 +27,7 @@ export function DefaultPending() {
 }
 
 export function DefaultErrorComponent({ error }: { error: unknown }) {
+  const { t } = useTranslation('common')
   const message = error instanceof Error ? error.message : String(error)
   const router = useRouter()
   return (
@@ -34,33 +36,32 @@ export function DefaultErrorComponent({ error }: { error: unknown }) {
         <EmptyMedia variant="icon">
           <AlertTriangleIcon />
         </EmptyMedia>
-        <EmptyTitle>Something went wrong</EmptyTitle>
+        <EmptyTitle>{t('errors.errorTitle')}</EmptyTitle>
         <EmptyDescription className="max-w-md font-mono text-xs break-words">
           {message}
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
-        <Button onClick={() => router.invalidate()}>Try again</Button>
+        <Button onClick={() => router.invalidate()}>{t('actions.tryAgain')}</Button>
       </EmptyContent>
     </Empty>
   )
 }
 
 export function DefaultNotFound() {
+  const { t } = useTranslation('layout')
   return (
     <Empty className="min-h-[50vh]">
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <CompassIcon />
         </EmptyMedia>
-        <EmptyTitle>Page not found</EmptyTitle>
-        <EmptyDescription>
-          The page you are looking for does not exist or was moved.
-        </EmptyDescription>
+        <EmptyTitle>{t('routeStates.notFoundTitle')}</EmptyTitle>
+        <EmptyDescription>{t('routeStates.notFoundDescription')}</EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
         <Button asChild>
-          <Link to="/">Go home</Link>
+          <Link to="/">{t('routeStates.goHome')}</Link>
         </Button>
       </EmptyContent>
     </Empty>

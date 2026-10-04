@@ -1,8 +1,10 @@
 import { createFileRoute, getRouteApi, Link, useNavigate, useRouter } from '@tanstack/react-router'
-import { FlagIcon, PlusIcon, SearchIcon, XIcon } from 'lucide-react'
+import { FlagIcon, PlusIcon, SearchIcon } from 'lucide-react'
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { FLAG_TYPES, FlagFilters } from '@/components/flags/flag-filters'
 import { type FlagRow, FlagTable, type FlagTableEnvironment } from '@/components/flags/flag-table'
 import { PageHeader } from '@/components/layout/page-header'
 import { Button } from '@/components/ui/button'
@@ -15,16 +17,8 @@ import {
   EmptyTitle,
 } from '@/components/ui/empty'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Toggle } from '@/components/ui/toggle'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { translate } from '@/lib/i18n'
 import { assessStaleness } from '@/lib/stale'
 import { listFlags, toggleFlag } from '@/server/functions/flags'
 
@@ -32,8 +26,8 @@ const projectRoute = getRouteApi('/app/$projectSlug')
 
 const searchSchema = z.object({
   q: z.string().optional().catch(undefined),
-  type: z.enum(['boolean', 'string', 'number', 'json']).optional().catch(undefined),
-  tag: z.string().optional().catch(undefined),
+  types: z.array(z.enum(FLAG_TYPES)).optional().catch(undefined),
+  tags: z.array(z.string()).optional().catch(undefined),
   stale: z.boolean().optional().catch(undefined),
   archived: z.boolean().optional().catch(undefined),
 })
@@ -48,17 +42,14 @@ export const Route = createFileRoute('/app/$projectSlug/flags/')({
     })
     return { flags }
   },
+  head: ({ match }) => ({
+    meta: [{ title: translate(match.context.locale)('flags:list.pageTitle') }],
+  }),
   pendingComponent: FlagsPending,
   component: FlagsPage,
 })
 
 const SKELETON_ROWS = ['a', 'b', 'c', 'd', 'e', 'f']
-const TYPE_LABELS = {
-  boolean: 'Boolean',
-  string: 'String',
-  number: 'Number',
-  json: 'JSON',
-} as const
 
 function FlagsPending() {
   return (
@@ -83,6 +74,7 @@ function FlagsPending() {
 }
 
 function FlagsPage() {
+  const { t } = useTranslation(['flags', 'common'])
   const { flags } = Route.useLoaderData()
   const { project } = projectRoute.useLoaderData()
   const search = Route.useSearch()
@@ -119,8 +111,8 @@ function FlagsPage() {
     const q = search.q?.trim().toLowerCase()
     return rows.filter((row) => {
       if (!search.archived && row.archivedAt) return false
-      if (search.type && row.type !== search.type) return false
-      if (search.tag && !row.tags.includes(search.tag)) return false
+      if (search.types?.length && !search.types.includes(row.type)) return false
+      if (search.tags?.length && !search.tags.some((tag) => row.tags.includes(tag))) return false
       if (search.stale && !row.staleness.stale) return false
       if (
         q &&
@@ -136,10 +128,6 @@ function FlagsPage() {
   const setSearch = (patch: Partial<typeof search>) =>
     navigate({ search: (prev) => ({ ...prev, ...patch }), replace: true })
 
-  const hasFilters = Boolean(
-    search.q || search.type || search.tag || search.stale || search.archived,
-  )
-
   async function onToggle(flag: FlagRow, environment: FlagTableEnvironment, enabled: boolean) {
     try {
       await toggleFlag({
@@ -150,23 +138,31 @@ function FlagsPage() {
           enabled,
         },
       })
-      toast.success(`${flag.key} is now ${enabled ? 'on' : 'off'} in ${environment.name}`)
+      toast.success(
+        t(enabled ? 'list.toggledOn' : 'list.toggledOff', {
+          flagKey: flag.key,
+          environment: environment.name,
+        }),
+      )
       await router.invalidate()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Could not update the flag')
+      toast.error(error instanceof Error ? error.message : t('list.toggleFailed'))
     }
   }
 
   return (
     <div className="flex flex-col gap-4 p-6">
       <PageHeader
-        title="Flags"
-        description={`${flags.filter((f) => !f.archivedAt).length} active flags across ${environments.length} environments.`}
+        title={t('list.title')}
+        description={t('list.description', {
+          flags: t('common:counts.flags', { count: flags.filter((f) => !f.archivedAt).length }),
+          environments: t('common:counts.environments', { count: environments.length }),
+        })}
         actions={
           canEdit ? (
             <Button asChild>
               <Link to="/app/$projectSlug/flags/new" params={{ projectSlug: project.slug }}>
-                <PlusIcon /> New flag
+                <PlusIcon /> {t('list.newFlag')}
               </Link>
             </Button>
           ) : null
@@ -179,82 +175,41 @@ function FlagsPage() {
             <SearchIcon />
           </InputGroupAddon>
           <InputGroupInput
-            placeholder="Search by key, name or tag"
+            placeholder={t('list.filters.searchPlaceholder')}
             value={search.q ?? ''}
             onChange={(e) => setSearch({ q: e.target.value || undefined })}
-            aria-label="Search flags"
+            aria-label={t('list.filters.searchLabel')}
           />
         </InputGroup>
-        <Select
-          value={search.type ?? 'all'}
-          onValueChange={(v) =>
-            setSearch({ type: v === 'all' ? undefined : (v as typeof search.type) })
+        <FlagFilters
+          value={{
+            types: search.types ?? [],
+            tags: search.tags ?? [],
+            stale: Boolean(search.stale),
+            archived: Boolean(search.archived),
+          }}
+          allTags={allTags}
+          staleCount={staleCount}
+          staleHelp={t('list.filters.staleHelp', {
+            staleDays: project.staleAfterDays,
+            singleVariantDays: project.singleVariantAfterDays,
+          })}
+          onChange={(patch) =>
+            setSearch({
+              ...(patch.types !== undefined
+                ? { types: patch.types.length > 0 ? patch.types : undefined }
+                : {}),
+              ...(patch.tags !== undefined
+                ? { tags: patch.tags.length > 0 ? patch.tags : undefined }
+                : {}),
+              ...(patch.stale !== undefined ? { stale: patch.stale || undefined } : {}),
+              ...(patch.archived !== undefined ? { archived: patch.archived || undefined } : {}),
+            })
           }
-        >
-          <SelectTrigger className="w-32" aria-label="Filter by type">
-            <SelectValue>{search.type ? TYPE_LABELS[search.type] : 'All types'}</SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All types</SelectItem>
-            <SelectItem value="boolean">Boolean</SelectItem>
-            <SelectItem value="string">String</SelectItem>
-            <SelectItem value="number">Number</SelectItem>
-            <SelectItem value="json">JSON</SelectItem>
-          </SelectContent>
-        </Select>
-        {allTags.length > 0 ? (
-          <Select
-            value={search.tag ?? 'all'}
-            onValueChange={(v) => setSearch({ tag: v === 'all' ? undefined : v })}
-          >
-            <SelectTrigger className="w-36" aria-label="Filter by tag">
-              <SelectValue>{search.tag ?? 'All tags'}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All tags</SelectItem>
-              {allTags.map((t) => (
-                <SelectItem key={t} value={t}>
-                  {t}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        ) : null}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Toggle
-              variant="outline"
-              size="sm"
-              pressed={Boolean(search.stale)}
-              onPressedChange={(v) => setSearch({ stale: v || undefined })}
-              aria-label="Show cleanup candidates only"
-              className="data-[state=on]:bg-warning-soft"
-            >
-              Cleanup candidates{' '}
-              {staleCount > 0 ? (
-                <span className="tabular text-muted-foreground">{staleCount}</span>
-              ) : null}
-            </Toggle>
-          </TooltipTrigger>
-          <TooltipContent>
-            Flags not evaluated for {project.staleAfterDays} days or returning one variant for{' '}
-            {project.singleVariantAfterDays} days
-          </TooltipContent>
-        </Tooltip>
-        <Toggle
-          variant="outline"
-          size="sm"
-          pressed={Boolean(search.archived)}
-          onPressedChange={(v) => setSearch({ archived: v || undefined })}
-          aria-label="Include archived flags"
-        >
-          Archived
-        </Toggle>
-        {hasFilters ? (
-          <Button variant="ghost" size="sm" onClick={() => navigate({ search: {}, replace: true })}>
-            <XIcon /> Clear
-          </Button>
-        ) : null}
+          onClear={() =>
+            setSearch({ types: undefined, tags: undefined, stale: undefined, archived: undefined })
+          }
+        />
       </div>
 
       {flags.length === 0 ? (
@@ -263,17 +218,14 @@ function FlagsPage() {
             <EmptyMedia variant="icon">
               <FlagIcon />
             </EmptyMedia>
-            <EmptyTitle>No flags yet</EmptyTitle>
-            <EmptyDescription>
-              Create your first flag. It starts switched off in every environment, so nothing
-              changes until you turn it on.
-            </EmptyDescription>
+            <EmptyTitle>{t('list.empty.title')}</EmptyTitle>
+            <EmptyDescription>{t('list.empty.description')}</EmptyDescription>
           </EmptyHeader>
           {canEdit ? (
             <EmptyContent>
               <Button asChild>
                 <Link to="/app/$projectSlug/flags/new" params={{ projectSlug: project.slug }}>
-                  <PlusIcon /> Create a flag
+                  <PlusIcon /> {t('list.empty.create')}
                 </Link>
               </Button>
             </EmptyContent>
@@ -285,12 +237,12 @@ function FlagsPage() {
             <EmptyMedia variant="icon">
               <SearchIcon />
             </EmptyMedia>
-            <EmptyTitle>No flags match these filters</EmptyTitle>
-            <EmptyDescription>Try a different search or clear the filters.</EmptyDescription>
+            <EmptyTitle>{t('list.noMatches.title')}</EmptyTitle>
+            <EmptyDescription>{t('list.noMatches.description')}</EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
             <Button variant="outline" onClick={() => navigate({ search: {}, replace: true })}>
-              Clear filters
+              {t('common:actions.clearFilters')}
             </Button>
           </EmptyContent>
         </Empty>

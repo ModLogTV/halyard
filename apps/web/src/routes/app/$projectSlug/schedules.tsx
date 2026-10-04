@@ -1,6 +1,13 @@
-import { createFileRoute, getRouteApi, useNavigate, useRouter } from '@tanstack/react-router'
+import {
+  createFileRoute,
+  type ErrorComponentProps,
+  getRouteApi,
+  useNavigate,
+  useRouter,
+} from '@tanstack/react-router'
 import { CalendarClockIcon, PlusIcon, SearchIcon } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 import { EnvDot } from '@/components/env/env-badge'
 import { PageHeader } from '@/components/layout/page-header'
@@ -26,6 +33,7 @@ import {
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { translate } from '@/lib/i18n'
 import { listFlags } from '@/server/functions/flags'
 import { listScheduledChanges } from '@/server/functions/scheduled-changes'
 
@@ -33,11 +41,6 @@ const projectRoute = getRouteApi('/app/$projectSlug')
 
 const STATUS_FILTERS = ['upcoming', 'past', 'all'] as const
 type StatusFilter = (typeof STATUS_FILTERS)[number]
-const STATUS_LABELS: Record<StatusFilter, string> = {
-  upcoming: 'Upcoming',
-  past: 'Past',
-  all: 'All',
-}
 
 export const Route = createFileRoute('/app/$projectSlug/schedules')({
   staticData: { crumbKey: 'schedules' },
@@ -58,33 +61,46 @@ export const Route = createFileRoute('/app/$projectSlug/schedules')({
     ])
     return { items, flags }
   },
-  head: () => ({ meta: [{ title: 'Scheduled changes · Halyard' }] }),
+  head: ({ match }) => ({
+    meta: [{ title: translate(match.context.locale)('schedules:list.pageTitle') }],
+  }),
   pendingComponent: SchedulesPending,
-  errorComponent: ({ error, reset }) => (
+  errorComponent: SchedulesError,
+  component: SchedulesPage,
+})
+
+function SchedulesError({ error, reset }: ErrorComponentProps) {
+  const { t } = useTranslation(['schedules', 'common'])
+  return (
     <div className="p-6">
       <Empty className="border border-dashed">
         <EmptyHeader>
-          <EmptyTitle>Could not load scheduled changes</EmptyTitle>
+          <EmptyTitle>{t('list.loadFailedTitle')}</EmptyTitle>
           <EmptyDescription>
-            {error instanceof Error ? error.message : 'Something went wrong.'}
+            {error instanceof Error ? error.message : t('common:errors.generic')}
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <Button variant="outline" onClick={reset}>
-            Try again
+            {t('common:actions.tryAgain')}
           </Button>
         </EmptyContent>
       </Empty>
     </div>
-  ),
-  component: SchedulesPage,
-})
+  )
+}
 
 const SKELETON_ROWS = ['a', 'b', 'c']
 
 function SchedulesPending() {
+  const { t } = useTranslation('common')
   return (
-    <div className="flex flex-col gap-4 p-6" role="status" aria-busy="true" aria-label="Loading">
+    <div
+      className="flex flex-col gap-4 p-6"
+      role="status"
+      aria-busy="true"
+      aria-label={t('a11y.loading')}
+    >
       <div className="flex items-center justify-between">
         <Skeleton className="h-7 w-48" />
         <Skeleton className="h-9 w-40" />
@@ -101,6 +117,7 @@ function SchedulesPending() {
 const isPast = (status: string) => status !== 'pending' && status !== 'running'
 
 function SchedulesPage() {
+  const { t } = useTranslation(['schedules', 'common'])
   const { items, flags } = Route.useLoaderData()
   const { project } = projectRoute.useLoaderData()
   const search = Route.useSearch()
@@ -173,9 +190,9 @@ function SchedulesPage() {
   const scheduleButton = (
     <HintedButton
       onClick={() => setDialogOpen(true)}
-      disabledReason={canEdit ? undefined : 'Viewers cannot schedule changes'}
+      disabledReason={canEdit ? undefined : t('list.viewersCannotSchedule')}
     >
-      <PlusIcon /> Schedule a change
+      <PlusIcon /> {t('list.scheduleButton')}
     </HintedButton>
   )
 
@@ -185,8 +202,8 @@ function SchedulesPage() {
   return (
     <div className="flex flex-col gap-4 p-6">
       <PageHeader
-        title="Scheduled changes"
-        description="Changes that run automatically at a point in time. They run exactly once, even with several replicas."
+        title={t('list.title')}
+        description={t('list.description')}
         actions={scheduleButton}
       />
 
@@ -196,12 +213,8 @@ function SchedulesPage() {
             <EmptyMedia variant="icon">
               <CalendarClockIcon />
             </EmptyMedia>
-            <EmptyTitle>Nothing scheduled</EmptyTitle>
-            <EmptyDescription>
-              Schedule a flag to turn on or off, or to change its default, at a time you choose. A
-              staged rollout ramps a variant up in steps, for example 10 % tomorrow morning, then 25
-              %, 50 % and 100 % over the next days.
-            </EmptyDescription>
+            <EmptyTitle>{t('list.empty.title')}</EmptyTitle>
+            <EmptyDescription>{t('list.empty.description')}</EmptyDescription>
           </EmptyHeader>
           <EmptyContent>{scheduleButton}</EmptyContent>
         </Empty>
@@ -215,7 +228,7 @@ function SchedulesPage() {
               <TabsList>
                 {STATUS_FILTERS.map((f) => (
                   <TabsTrigger key={f} value={f}>
-                    {STATUS_LABELS[f]}
+                    {t(`list.filters.${f}`)}
                   </TabsTrigger>
                 ))}
               </TabsList>
@@ -224,11 +237,11 @@ function SchedulesPage() {
               value={search.env ?? 'all'}
               onValueChange={(value) => setSearch({ env: value === 'all' ? '' : value })}
             >
-              <SelectTrigger className="w-48" aria-label="Environment">
-                <SelectValue placeholder="All environments" />
+              <SelectTrigger className="w-48" aria-label={t('common:labels.environment')}>
+                <SelectValue placeholder={t('list.allEnvironments')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All environments</SelectItem>
+                <SelectItem value="all">{t('list.allEnvironments')}</SelectItem>
                 {environments.map((env) => (
                   <SelectItem key={env.key} value={env.key}>
                     <EnvDot env={env} />
@@ -245,8 +258,8 @@ function SchedulesPage() {
                 type="search"
                 value={search.flag ?? ''}
                 onChange={(event) => setSearch({ flag: event.target.value })}
-                placeholder="Search flags"
-                aria-label="Search flags"
+                placeholder={t('list.searchFlags')}
+                aria-label={t('list.searchFlags')}
               />
             </InputGroup>
           </div>
@@ -265,17 +278,17 @@ function SchedulesPage() {
                 </EmptyMedia>
                 <EmptyTitle>
                   {filtering
-                    ? 'No matching scheduled changes'
+                    ? t('list.noMatch.title')
                     : status === 'upcoming'
-                      ? 'Nothing upcoming'
-                      : 'No past changes yet'}
+                      ? t('list.noUpcoming.title')
+                      : t('list.noPast.title')}
                 </EmptyTitle>
                 <EmptyDescription>
                   {filtering
-                    ? 'Try another environment or search term.'
+                    ? t('list.noMatch.description')
                     : status === 'upcoming'
-                      ? 'Everything scheduled has run. Schedule the next change or check the past ones.'
-                      : 'Completed, failed and cancelled changes show up here.'}
+                      ? t('list.noUpcoming.description')
+                      : t('list.noPast.description')}
                 </EmptyDescription>
               </EmptyHeader>
               <EmptyContent>
@@ -284,7 +297,7 @@ function SchedulesPage() {
                     variant="outline"
                     onClick={() => navigate({ search: { status: search.status }, replace: true })}
                   >
-                    Clear filters
+                    {t('common:actions.clearFilters')}
                   </Button>
                 ) : status === 'upcoming' ? (
                   scheduleButton

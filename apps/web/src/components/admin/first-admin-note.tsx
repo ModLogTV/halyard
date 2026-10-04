@@ -1,29 +1,32 @@
 import { ShieldCheckIcon } from 'lucide-react'
+import { Trans, useTranslation } from 'react-i18next'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 /** Explains how the first instance admin is created, since sign-up never grants admin. */
 export function FirstAdminNote() {
+  const { t } = useTranslation('projects')
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <ShieldCheckIcon className="size-4" aria-hidden="true" />
-          Creating the first admin
+          {t('admin.firstAdmin.title')}
         </CardTitle>
-        <CardDescription>
-          Accounts are created with the user role. An existing admin can promote others from the
-          table above; the very first admin is set directly in the database.
-        </CardDescription>
+        <CardDescription>{t('admin.firstAdmin.description')}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3 text-sm">
-        <p>Sign up, then run this against the Halyard database:</p>
+        <p>{t('admin.firstAdmin.step1')}</p>
         <pre className="overflow-x-auto rounded-md bg-muted px-3 py-2 font-mono text-xs">
           <code>{`update "user" set role = 'admin' where email = 'you@example.com';`}</code>
         </pre>
         <p className="text-muted-foreground">
-          Sign out and back in to pick up the new role. Seeded development databases already include{' '}
-          <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">admin@example.com</code>{' '}
-          as an admin.
+          <Trans
+            t={t}
+            i18nKey="admin.firstAdmin.step2"
+            components={[
+              <code key="email" className="rounded bg-muted px-1 py-0.5 font-mono text-xs" />,
+            ]}
+          />
         </p>
       </CardContent>
     </Card>

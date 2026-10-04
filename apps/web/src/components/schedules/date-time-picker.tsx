@@ -1,5 +1,6 @@
 import { CalendarIcon } from 'lucide-react'
 import { useId, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Input } from '@/components/ui/input'
@@ -43,6 +44,7 @@ export function DateTimePicker({
   className,
   'aria-label': ariaLabel,
 }: DateTimePickerProps) {
+  const { t, i18n } = useTranslation(['schedules', 'common'])
   const [open, setOpen] = useState(false)
   const generated = useId()
   const baseId = id ?? generated
@@ -60,7 +62,9 @@ export function DateTimePicker({
             variant="outline"
             disabled={disabled}
             aria-invalid={invalid || undefined}
-            aria-label={ariaLabel ? `${ariaLabel}, date` : 'Date'}
+            aria-label={
+              ariaLabel ? t('picker.dateAriaLabel', { label: ariaLabel }) : t('common:labels.date')
+            }
             className={cn(
               'min-w-40 flex-1 justify-start font-normal tabular-nums',
               !value && 'text-muted-foreground',
@@ -68,8 +72,8 @@ export function DateTimePicker({
           >
             <CalendarIcon />
             {value
-              ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(value)
-              : 'Pick a date'}
+              ? new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium' }).format(value)
+              : t('picker.pickDate')}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
@@ -92,7 +96,9 @@ export function DateTimePicker({
         value={timeValue(value)}
         disabled={disabled}
         aria-invalid={invalid || undefined}
-        aria-label={ariaLabel ? `${ariaLabel}, time` : 'Time'}
+        aria-label={
+          ariaLabel ? t('picker.timeAriaLabel', { label: ariaLabel }) : t('common:labels.time')
+        }
         className="w-32 tabular-nums"
         onChange={(event) => {
           const [hours, minutes] = event.target.value.split(':').map(Number)

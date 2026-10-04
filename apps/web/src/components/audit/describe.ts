@@ -15,7 +15,19 @@ export interface AuditEntryLike {
   createdAt: Date | string
 }
 
-const ENTITY_LABELS: Record<string, string> = {
+export type AuditEntityKey =
+  | 'project'
+  | 'environment'
+  | 'flag'
+  | 'segment'
+  | 'experiment'
+  | 'schedule'
+  | 'webhook'
+  | 'apiKey'
+  | 'member'
+
+/** Audit entity type (as stored) to the key of `audit:timeline.entities.*`. */
+const ENTITY_KEYS: Record<string, AuditEntityKey> = {
   project: 'project',
   environment: 'environment',
   flag: 'flag',
@@ -23,22 +35,47 @@ const ENTITY_LABELS: Record<string, string> = {
   experiment: 'experiment',
   schedule: 'schedule',
   webhook: 'webhook',
-  api_key: 'API key',
+  api_key: 'apiKey',
   member: 'member',
 }
 
-const VERBS: Record<string, string> = {
+export type AuditActionKey =
+  | 'created'
+  | 'updated'
+  | 'deleted'
+  | 'archived'
+  | 'unarchived'
+  | 'promoted'
+  | 'invited'
+  | 'invitationCanceled'
+  | 'roleChanged'
+  | 'removed'
+  | 'environmentUpdated'
+  | 'started'
+  | 'stopped'
+  | 'completed'
+  | 'rotated'
+  | 'revoked'
+  | 'toggled'
+  | 'enabled'
+  | 'disabled'
+  | 'memberJoined'
+  | 'memberLeft'
+  | 'raw'
+
+/** Stored action name (the part after the entity) to the key of `audit:timeline.actions.*`. */
+const VERBS: Record<string, AuditActionKey> = {
   created: 'created',
   updated: 'updated',
   deleted: 'deleted',
   archived: 'archived',
-  unarchived: 'restored',
+  unarchived: 'unarchived',
   promoted: 'promoted',
   invited: 'invited',
-  invitation_canceled: 'canceled the invitation for',
-  role_changed: 'changed the role of',
+  invitation_canceled: 'invitationCanceled',
+  role_changed: 'roleChanged',
   removed: 'removed',
-  environment_updated: 'updated the targeting of',
+  environment_updated: 'environmentUpdated',
   started: 'started',
   stopped: 'stopped',
   completed: 'completed',
@@ -47,12 +84,13 @@ const VERBS: Record<string, string> = {
 }
 
 export interface AuditSentence {
-  verb: string
-  /** Label such as `flag` or `API key`; absent when the verb stands alone (`joined the project`). */
-  entityLabel?: string
+  /** Key of `audit:timeline.actions.*`; `raw` when the action was not recognised. */
+  actionKey: AuditActionKey
+  /** Entity such as `flag` or `apiKey`; absent when the sentence has no entity (`joined the project`). */
+  entity?: AuditEntityKey
   /** Preposition before the environment: "in production", "to production". */
   environmentPreposition: 'in' | 'to'
-  /** True when the action was not recognised and `verb` is the raw action. */
+  /** True when the action was not recognised and the raw action is shown. */
   raw: boolean
 }
 
@@ -64,30 +102,30 @@ const enabledOf = (value: JsonValue | null): boolean | undefined => {
   return undefined
 }
 
-/** Derives the human verb for an audit entry; falls back to the raw action. */
+/** Derives the sentence kind for an audit entry; unknown actions fall back to the raw action. */
 export function describeAuditAction(entry: AuditEntryLike): AuditSentence {
   const [entity = '', ...rest] = entry.action.split('.')
   const name = rest.join('.')
-  const entityLabel = ENTITY_LABELS[entry.entityType] ?? ENTITY_LABELS[entity]
+  const entityKey = ENTITY_KEYS[entry.entityType] ?? ENTITY_KEYS[entity]
   const base = { environmentPreposition: 'in' as const }
 
   if (entity === 'member' && name === 'joined') {
-    return { ...base, verb: 'joined the project', raw: false }
+    return { ...base, actionKey: 'memberJoined', raw: false }
   }
   if (entity === 'member' && name === 'left') {
-    return { ...base, verb: 'left the project', raw: false }
+    return { ...base, actionKey: 'memberLeft', raw: false }
   }
   if (name === 'toggled') {
     const enabled = enabledOf(entry.after)
-    const verb = enabled === undefined ? 'toggled' : enabled ? 'enabled' : 'disabled'
-    return { ...base, verb, entityLabel, raw: false }
+    const actionKey = enabled === undefined ? 'toggled' : enabled ? 'enabled' : 'disabled'
+    return { ...base, actionKey, entity: entityKey, raw: false }
   }
   if (name === 'promoted') {
-    return { verb: 'promoted', entityLabel, environmentPreposition: 'to', raw: false }
+    return { actionKey: 'promoted', entity: entityKey, environmentPreposition: 'to', raw: false }
   }
-  const verb = VERBS[name]
-  if (verb) return { ...base, verb, entityLabel, raw: false }
-  return { ...base, verb: entry.action, entityLabel: undefined, raw: true }
+  const actionKey = VERBS[name]
+  if (actionKey) return { ...base, actionKey, entity: entityKey, raw: false }
+  return { ...base, actionKey: 'raw', raw: true }
 }
 
 export function initials(name: string): string {
@@ -104,11 +142,19 @@ export function dayKey(date: Date | string): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-export function dayLabel(date: Date | string, now: Date = new Date()): string {
+/** Translator slice used for day headings. */
+export type DayLabelT = (key: 'audit:timeline.today' | 'audit:timeline.yesterday') => string
+
+export function dayLabel(
+  date: Date | string,
+  t: DayLabelT,
+  locale?: string,
+  now: Date = new Date(),
+): string {
   const d = new Date(date)
-  if (dayKey(d) === dayKey(now)) return 'Today'
+  if (dayKey(d) === dayKey(now)) return t('audit:timeline.today')
   const yesterday = new Date(now)
   yesterday.setDate(now.getDate() - 1)
-  if (dayKey(d) === dayKey(yesterday)) return 'Yesterday'
-  return new Intl.DateTimeFormat(undefined, { dateStyle: 'full' }).format(d)
+  if (dayKey(d) === dayKey(yesterday)) return t('audit:timeline.yesterday')
+  return new Intl.DateTimeFormat(locale, { dateStyle: 'full' }).format(d)
 }

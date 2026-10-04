@@ -63,7 +63,7 @@ function RootDocument({ children }: { children: ReactNode }) {
         <I18nextProvider i18n={getI18n(locale)}>
           <ThemeProvider>
             <TooltipProvider delayDuration={300}>{children}</TooltipProvider>
-            <Toaster richColors closeButton position="bottom-right" />
+            <Toaster richColors position="bottom-right" />
           </ThemeProvider>
         </I18nextProvider>
         <Scripts />

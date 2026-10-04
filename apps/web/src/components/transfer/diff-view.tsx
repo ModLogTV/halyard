@@ -1,6 +1,8 @@
 import type { JsonValue } from '@halyard/engine'
+import type { TFunction } from 'i18next'
 import { ChevronsUpDownIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { JsonDiff } from '@/components/audit'
 import { EnvBadge, type EnvironmentLike } from '@/components/env/env-badge'
 import { Badge } from '@/components/ui/badge'
@@ -14,7 +16,6 @@ import {
   ItemGroup,
   ItemTitle,
 } from '@/components/ui/item'
-import { pluralize } from '@/lib/format'
 import type {
   EntityDiff,
   EntityRef,
@@ -29,29 +30,35 @@ const fieldsToJson = (changes: FieldChange[], side: 'before' | 'after'): JsonVal
   Object.fromEntries(changes.map((change) => [change.field, change[side]]))
 
 function Counts({ diff }: { diff: EntityDiff<unknown, unknown> }) {
+  const { t } = useTranslation('settings')
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      {diff.create.length > 0 ? <Badge>{diff.create.length} created</Badge> : null}
+      {diff.create.length > 0 ? (
+        <Badge>{t('transfer.diff.count.created', { count: diff.create.length })}</Badge>
+      ) : null}
       {diff.update.length > 0 ? (
-        <Badge variant="secondary">{diff.update.length} updated</Badge>
+        <Badge variant="secondary">
+          {t('transfer.diff.count.updated', { count: diff.update.length })}
+        </Badge>
       ) : null}
       {diff.delete.length > 0 ? (
-        <Badge variant="destructive">{diff.delete.length} deleted</Badge>
+        <Badge variant="destructive">
+          {t('transfer.diff.count.deleted', { count: diff.delete.length })}
+        </Badge>
       ) : null}
-      <Badge variant="outline">{diff.unchanged} unchanged</Badge>
+      <Badge variant="outline">
+        {t('transfer.diff.count.unchanged', { count: diff.unchanged })}
+      </Badge>
     </div>
   )
 }
 
 type Kind = 'created' | 'updated' | 'deleted'
 
-const KIND_BADGE: Record<
-  Kind,
-  { label: string; variant: 'default' | 'secondary' | 'destructive' }
-> = {
-  created: { label: 'Created', variant: 'default' },
-  updated: { label: 'Updated', variant: 'secondary' },
-  deleted: { label: 'Deleted', variant: 'destructive' },
+const KIND_VARIANT: Record<Kind, 'default' | 'secondary' | 'destructive'> = {
+  created: 'default',
+  updated: 'secondary',
+  deleted: 'destructive',
 }
 
 /** One entity of the diff; rows with details expand to show them. */
@@ -68,12 +75,12 @@ function ChangeRow({
   summary?: string
   children?: ReactNode
 }) {
-  const badge = KIND_BADGE[kind]
+  const { t } = useTranslation('settings')
   const row = (
     <Item variant="outline" size="sm">
       <ItemContent>
         <ItemTitle>
-          <Badge variant={badge.variant}>{badge.label}</Badge>
+          <Badge variant={KIND_VARIANT[kind]}>{t(`transfer.diff.kind.${kind}`)}</Badge>
           <span className="font-mono">{entityKey}</span>
         </ItemTitle>
         {name !== entityKey || summary ? (
@@ -86,8 +93,8 @@ function ChangeRow({
         <ItemActions>
           <CollapsibleTrigger asChild>
             <Button type="button" variant="ghost" size="sm" className="group/trigger">
-              Details <ChevronsUpDownIcon />
-              <span className="sr-only">for {entityKey}</span>
+              {t('transfer.diff.details')} <ChevronsUpDownIcon />
+              <span className="sr-only">{t('transfer.diff.detailsFor', { key: entityKey })}</span>
             </Button>
           </CollapsibleTrigger>
         </ItemActions>
@@ -170,25 +177,32 @@ function Deleted({ refs }: { refs: EntityRef[] }) {
   ))
 }
 
-function updatesOf<U extends EntityUpdate>(updates: U[], environments: EnvironmentLike[]) {
+function updatesOf<U extends EntityUpdate>(
+  updates: U[],
+  environments: EnvironmentLike[],
+  t: TFunction<['settings', 'common']>,
+) {
   return updates.map((update) => (
     <ChangeRow
       key={`updated-${update.key}`}
       kind="updated"
       entityKey={update.key}
       name={update.name}
-      summary={summaryOf(update)}
+      summary={summaryOf(update, t)}
     >
       <UpdateDetails update={update} environments={environments} />
     </ChangeRow>
   ))
 }
 
-function summaryOf(update: EntityUpdate | FlagUpdate): string {
+function summaryOf(
+  update: EntityUpdate | FlagUpdate,
+  t: TFunction<['settings', 'common']>,
+): string {
   const envs = 'environments' in update ? update.environments.length : 0
   const parts = []
   if (update.changes.length > 0) parts.push(update.changes.map((c) => c.field).join(', '))
-  if (envs > 0) parts.push(pluralize(envs, 'environment config'))
+  if (envs > 0) parts.push(t('transfer.diff.environmentConfigs', { count: envs }))
   return parts.join(' · ')
 }
 
@@ -200,6 +214,7 @@ export function DiffView({
   diff: ImportChanges
   environments: EnvironmentLike[]
 }) {
+  const { t } = useTranslation(['settings', 'common'])
   // Environments created by the import are not in the project yet.
   const known: EnvironmentLike[] = [
     ...environments,
@@ -207,47 +222,50 @@ export function DiffView({
   ]
   return (
     <div className="flex flex-col gap-6">
-      <Section title="Environments" diff={diff.environments}>
+      <Section title={t('common:labels.environments')} diff={diff.environments}>
         {diff.environments.create.map((env: ExportEnvironment) => (
           <ChangeRow
             key={`created-${env.key}`}
             kind="created"
             entityKey={env.key}
             name={env.name}
-            summary={env.isProduction ? 'production' : undefined}
+            summary={env.isProduction ? t('common:states.production') : undefined}
           />
         ))}
-        {updatesOf(diff.environments.update, known)}
+        {updatesOf(diff.environments.update, known, t)}
         <Deleted refs={diff.environments.delete} />
       </Section>
-      <Section title="Segments" diff={diff.segments}>
+      <Section title={t('common:labels.segments')} diff={diff.segments}>
         {diff.segments.create.map((segment: ExportSegment) => (
           <ChangeRow
             key={`created-${segment.key}`}
             kind="created"
             entityKey={segment.key}
             name={segment.name}
-            summary={pluralize(segment.conditions.length, 'condition')}
+            summary={t('transfer.diff.conditions', { count: segment.conditions.length })}
           >
             <JsonDiff before={null} after={segment as unknown as JsonValue} />
           </ChangeRow>
         ))}
-        {updatesOf(diff.segments.update, known)}
+        {updatesOf(diff.segments.update, known, t)}
         <Deleted refs={diff.segments.delete} />
       </Section>
-      <Section title="Flags" diff={diff.flags}>
+      <Section title={t('common:labels.flags')} diff={diff.flags}>
         {diff.flags.create.map((flag: ExportFlag) => (
           <ChangeRow
             key={`created-${flag.key}`}
             kind="created"
             entityKey={flag.key}
             name={flag.name}
-            summary={`${flag.type}, ${pluralize(flag.variants.length, 'variant')}`}
+            summary={t('transfer.diff.flagSummary', {
+              type: t(`common:flagTypes.${flag.type}`),
+              count: flag.variants.length,
+            })}
           >
             <JsonDiff before={null} after={flag as unknown as JsonValue} />
           </ChangeRow>
         ))}
-        {updatesOf(diff.flags.update, known)}
+        {updatesOf(diff.flags.update, known, t)}
         <Deleted refs={diff.flags.delete} />
       </Section>
     </div>

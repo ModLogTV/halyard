@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { AnimatePresence, MotionConfig, motion } from 'motion/react'
 import { useMemo, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { EnvBadge, type EnvironmentLike } from '@/components/env/env-badge'
 import { ConfirmDialog } from '@/components/settings/confirm-dialog'
@@ -24,7 +25,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Item, ItemActions, ItemContent, ItemGroup } from '@/components/ui/item'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { pluralize } from '@/lib/format'
 import {
   cancelPlan,
   cancelScheduledChange,
@@ -42,6 +42,7 @@ import {
   MINUTE,
   planSteps,
   type ScheduledChangeItem,
+  type ScheduleT,
 } from './utils'
 
 export interface TimelineFlagInfo {
@@ -68,14 +69,19 @@ interface Group {
   items: ScheduledChangeItem[]
 }
 
-function groupByDay(items: ScheduledChangeItem[], now: Date): Group[] {
+function groupByDay(
+  items: ScheduledChangeItem[],
+  now: Date,
+  t: ScheduleT,
+  locale: string,
+): Group[] {
   const groups: Group[] = []
   for (const item of items) {
     const date = new Date(item.scheduledFor)
     const key = dayKey(date)
     const last = groups[groups.length - 1]
     if (last && last.key === key) last.items.push(item)
-    else groups.push({ key, heading: formatDayHeading(date, now), items: [item] })
+    else groups.push({ key, heading: formatDayHeading(date, t, locale, now), items: [item] })
   }
   return groups
 }
@@ -90,12 +96,16 @@ export function ScheduleTimeline({
   canEdit,
   now,
 }: ScheduleTimelineProps) {
+  const { t, i18n } = useTranslation(['schedules', 'common'])
   const router = useRouter()
   const [editing, setEditing] = useState<ScheduledChangeItem | null>(null)
   const [cancelling, setCancelling] = useState<ScheduledChangeItem | null>(null)
   const [cancellingPlan, setCancellingPlan] = useState<ScheduledChangeItem | null>(null)
   const [retrying, setRetrying] = useState<ScheduledChangeItem | null>(null)
-  const groups = useMemo(() => groupByDay(items, now), [items, now])
+  const groups = useMemo(
+    () => groupByDay(items, now, t, i18n.language),
+    [items, now, t, i18n.language],
+  )
 
   const planPending = cancellingPlan?.planId
     ? planSteps(all, cancellingPlan.planId).filter((s) => s.status === 'pending').length
@@ -153,22 +163,29 @@ export function ScheduleTimeline({
         onOpenChange={(open) => {
           if (!open) setCancelling(null)
         }}
-        title="Cancel this scheduled change?"
+        title={t('cancel.title')}
         description={
           cancelling ? (
             <>
-              The change to <span className="font-mono text-foreground">{cancelling.flagKey}</span>{' '}
-              planned for {formatFullDateTime(cancelling.scheduledFor)} will not run.
-              {cancelling.planId ? ' Other steps of its staged rollout stay scheduled.' : ''}
+              <Trans
+                t={t}
+                i18nKey="cancel.body"
+                values={{
+                  flag: cancelling.flagKey,
+                  time: formatFullDateTime(cancelling.scheduledFor, i18n.language),
+                }}
+                components={[<span key="flag" className="font-mono text-foreground" />]}
+              />
+              {cancelling.planId ? ` ${t('cancel.planNote')}` : ''}
             </>
           ) : null
         }
-        confirmLabel="Cancel change"
-        cancelLabel="Keep it"
+        confirmLabel={t('cancel.confirm')}
+        cancelLabel={t('cancel.keep')}
         onConfirm={async () => {
           if (!cancelling) return
           await cancelScheduledChange({ data: { projectId, id: cancelling.id } })
-          toast.success('Scheduled change cancelled')
+          toast.success(t('cancel.toast'))
           await router.invalidate()
         }}
       />
@@ -178,22 +195,24 @@ export function ScheduleTimeline({
         onOpenChange={(open) => {
           if (!open) setCancellingPlan(null)
         }}
-        title="Cancel the staged rollout?"
+        title={t('cancelPlan.title')}
         description={
           cancellingPlan ? (
-            <>
-              The {pluralize(planPending, 'pending step')} of the rollout of{' '}
-              <span className="font-mono text-foreground">{cancellingPlan.flagKey}</span> will not
-              run. Steps that already ran are kept, so the flag stays at its current percentage.
-            </>
+            <Trans
+              t={t}
+              i18nKey="cancelPlan.body"
+              count={planPending}
+              values={{ flag: cancellingPlan.flagKey }}
+              components={[<span key="flag" className="font-mono text-foreground" />]}
+            />
           ) : null
         }
-        confirmLabel="Cancel plan"
-        cancelLabel="Keep it"
+        confirmLabel={t('cancelPlan.confirm')}
+        cancelLabel={t('cancel.keep')}
         onConfirm={async () => {
           if (!cancellingPlan?.planId) return
           const result = await cancelPlan({ data: { projectId, planId: cancellingPlan.planId } })
-          toast.success(`Cancelled ${pluralize(result.cancelled, 'step')}`)
+          toast.success(t('cancelPlan.toast', { count: result.cancelled }))
           await router.invalidate()
         }}
       />
@@ -203,22 +222,28 @@ export function ScheduleTimeline({
         onOpenChange={(open) => {
           if (!open) setRetrying(null)
         }}
-        title="Retry this change?"
+        title={t('retry.title')}
         destructive={false}
         description={
           retrying ? (
             <>
-              This schedules the same change to{' '}
-              <span className="font-mono text-foreground">{retrying.flagKey}</span> in{' '}
-              {environments.get(retrying.environmentKey)?.name ?? retrying.environmentKey} again, to
-              run in about a minute.
+              <Trans
+                t={t}
+                i18nKey="retry.body"
+                values={{
+                  flag: retrying.flagKey,
+                  environment:
+                    environments.get(retrying.environmentKey)?.name ?? retrying.environmentKey,
+                }}
+                components={[<span key="flag" className="font-mono text-foreground" />]}
+              />
               {environments.get(retrying.environmentKey)?.isProduction
-                ? ' This is production.'
+                ? ` ${t('retry.productionNote')}`
                 : ''}
             </>
           ) : null
         }
-        confirmLabel="Retry change"
+        confirmLabel={t('retry.confirm')}
         onConfirm={async () => {
           if (!retrying) return
           await createScheduledChange({
@@ -231,7 +256,7 @@ export function ScheduleTimeline({
               note: retrying.note ?? undefined,
             },
           })
-          toast.success('Change scheduled again')
+          toast.success(t('retry.toast'))
           await router.invalidate()
         }}
       />
@@ -264,6 +289,7 @@ function ScheduleRow({
   onCancelPlan: () => void
   onRetry: () => void
 }) {
+  const { t, i18n } = useTranslation(['schedules', 'common'])
   const date = new Date(item.scheduledFor)
   const steps = item.planId ? planSteps(all, item.planId) : []
   const pendingInPlan = steps.filter((s) => s.status === 'pending').length
@@ -278,12 +304,14 @@ function ScheduleRow({
       <div className="w-24 shrink-0">
         <time
           dateTime={date.toISOString()}
-          title={formatFullDateTime(date)}
+          title={formatFullDateTime(date, i18n.language)}
           className="tabular block font-medium text-sm"
         >
-          {formatTimeOfDay(date)}
+          {formatTimeOfDay(date, i18n.language)}
         </time>
-        <span className="block text-muted-foreground text-xs">{formatDelta(date, now)}</span>
+        <span className="block text-muted-foreground text-xs">
+          {formatDelta(date, now, i18n.language)}
+        </span>
       </div>
       <ItemContent className="min-w-0 basis-64">
         <div className="flex flex-wrap items-center gap-2">
@@ -303,7 +331,7 @@ function ScheduleRow({
           {item.planId ? (
             <Badge variant="secondary" className="gap-1 font-normal">
               <ListOrderedIcon />
-              Step {item.stepIndex + 1} of {steps.length}
+              {t('row.stepOf', { number: item.stepIndex + 1, total: steps.length })}
             </Badge>
           ) : null}
         </div>
@@ -313,7 +341,7 @@ function ScheduleRow({
           <p className="text-destructive text-xs">{item.error}</p>
         ) : null}
         <p className="text-muted-foreground text-xs">
-          Scheduled by {item.createdByName ?? 'a deleted user'}
+          {t('row.scheduledBy', { name: item.createdByName ?? t('row.deletedUser') })}
         </p>
       </ItemContent>
       <ItemActions>
@@ -326,34 +354,37 @@ function ScheduleRow({
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    aria-label={`Actions for ${item.flagKey} at ${formatTimeOfDay(date)}`}
+                    aria-label={t('row.actionsAriaLabel', {
+                      flag: item.flagKey,
+                      time: formatTimeOfDay(date, i18n.language),
+                    })}
                   >
                     <MoreHorizontalIcon />
                   </Button>
                 </DropdownMenuTrigger>
               </TooltipTrigger>
-              <TooltipContent>Actions</TooltipContent>
+              <TooltipContent>{t('common:labels.actions')}</TooltipContent>
             </Tooltip>
             <DropdownMenuContent align="end">
               {canEditThis ? (
                 <DropdownMenuItem onClick={onEdit}>
-                  <PencilIcon /> Edit
+                  <PencilIcon /> {t('common:actions.edit')}
                 </DropdownMenuItem>
               ) : null}
               {canRetry ? (
                 <DropdownMenuItem onClick={onRetry}>
-                  <RotateCcwIcon /> Retry
+                  <RotateCcwIcon /> {t('common:actions.retry')}
                 </DropdownMenuItem>
               ) : null}
               {canEditThis ? <DropdownMenuSeparator /> : null}
               {canEditThis ? (
                 <DropdownMenuItem variant="destructive" onClick={onCancel}>
-                  <XIcon /> Cancel change
+                  <XIcon /> {t('cancel.menuItem')}
                 </DropdownMenuItem>
               ) : null}
               {canCancelPlan ? (
                 <DropdownMenuItem variant="destructive" onClick={onCancelPlan}>
-                  <BanIcon /> Cancel plan ({pluralize(pendingInPlan, 'step')})
+                  <BanIcon /> {t('cancelPlan.menuItem', { count: pendingInPlan })}
                 </DropdownMenuItem>
               ) : null}
             </DropdownMenuContent>

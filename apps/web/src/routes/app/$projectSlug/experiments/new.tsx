@@ -1,6 +1,7 @@
 import { createFileRoute, getRouteApi, Link, useNavigate, useRouter } from '@tanstack/react-router'
 import { ArrowLeftIcon, FlagIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { ExperimentForm, type ExperimentFormValues } from '@/components/experiments'
@@ -16,6 +17,7 @@ import {
   EmptyTitle,
 } from '@/components/ui/empty'
 import { Skeleton } from '@/components/ui/skeleton'
+import { translate } from '@/lib/i18n'
 import { createExperiment } from '@/server/functions/experiments'
 import { listFlags } from '@/server/functions/flags'
 
@@ -32,6 +34,9 @@ export const Route = createFileRoute('/app/$projectSlug/experiments/new')({
     const flags = await listFlags({ data: { projectId: parent.loaderData!.projectId } })
     return { flags }
   },
+  head: ({ match }) => ({
+    meta: [{ title: translate(match.context.locale)('experiments:new.pageTitle') }],
+  }),
   pendingComponent: () => (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-6" aria-busy="true">
       <Skeleton className="h-4 w-24" />
@@ -43,6 +48,7 @@ export const Route = createFileRoute('/app/$projectSlug/experiments/new')({
 })
 
 function NewExperimentPage() {
+  const { t } = useTranslation(['experiments', 'common'])
   const { flags } = Route.useLoaderData()
   const { project } = projectRoute.useLoaderData()
   const search = Route.useSearch()
@@ -80,14 +86,14 @@ function NewExperimentPage() {
           controlVariant: values.controlVariant,
         },
       })
-      toast.success(`Experiment ${values.key} created as a draft`)
+      toast.success(t('new.toastCreated', { key: values.key }))
       await router.invalidate()
       await navigate({
         to: '/app/$projectSlug/experiments/$experimentKey',
         params: { projectSlug: project.slug, experimentKey: values.key },
       })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not create the experiment')
+      setError(err instanceof Error ? err.message : t('new.createFailed'))
     } finally {
       setPending(false)
     }
@@ -98,13 +104,10 @@ function NewExperimentPage() {
       <div>
         <Button asChild variant="ghost" size="sm" className="-ml-2 mb-2">
           <Link to="/app/$projectSlug/experiments" params={{ projectSlug: project.slug }}>
-            <ArrowLeftIcon /> Experiments
+            <ArrowLeftIcon /> {t('common:labels.experiments')}
           </Link>
         </Button>
-        <PageHeader
-          title="New experiment"
-          description="The experiment is created as a draft. Nothing is served until you start it."
-        />
+        <PageHeader title={t('new.title')} description={t('new.description')} />
       </div>
 
       {flagOptions.length === 0 ? (
@@ -113,15 +116,13 @@ function NewExperimentPage() {
             <EmptyMedia variant="icon">
               <FlagIcon />
             </EmptyMedia>
-            <EmptyTitle>You need a flag first</EmptyTitle>
-            <EmptyDescription>
-              Experiments split the variants of a flag. Create a flag with at least two variants.
-            </EmptyDescription>
+            <EmptyTitle>{t('new.needFlag.title')}</EmptyTitle>
+            <EmptyDescription>{t('new.needFlag.description')}</EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
             <Button asChild>
               <Link to="/app/$projectSlug/flags/new" params={{ projectSlug: project.slug }}>
-                Create a flag
+                {t('new.needFlag.action')}
               </Link>
             </Button>
           </EmptyContent>
@@ -130,10 +131,8 @@ function NewExperimentPage() {
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <Card>
             <CardHeader>
-              <CardTitle>Design</CardTitle>
-              <CardDescription>
-                Flag, environment and key cannot be changed once the experiment exists.
-              </CardDescription>
+              <CardTitle>{t('new.design.title')}</CardTitle>
+              <CardDescription>{t('new.design.description')}</CardDescription>
             </CardHeader>
             <CardContent>
               <ExperimentForm
@@ -146,12 +145,12 @@ function NewExperimentPage() {
                 }}
                 pending={pending}
                 error={error}
-                submitLabel="Create draft"
+                submitLabel={t('new.submit')}
                 onSubmit={onSubmit}
                 actions={
                   <Button asChild variant="ghost">
                     <Link to="/app/$projectSlug/experiments" params={{ projectSlug: project.slug }}>
-                      Cancel
+                      {t('common:actions.cancel')}
                     </Link>
                   </Button>
                 }
@@ -161,27 +160,24 @@ function NewExperimentPage() {
 
           <Card className="lg:sticky lg:top-6">
             <CardHeader>
-              <CardTitle>How it works</CardTitle>
+              <CardTitle>{t('new.howItWorks.title')}</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 text-muted-foreground text-sm">
+              <p>{t('new.howItWorks.split')}</p>
+              <p>{t('new.howItWorks.exposure')}</p>
+              <p>{t('new.howItWorks.results')}</p>
               <p>
-                Contexts that reach the flag's default, meaning no targeting rule matched, are split
-                across the variants by the allocation. The same user always sees the same variant.
-              </p>
-              <p>
-                An exposure is recorded the first time a user is evaluated. Conversions are sent
-                with the tracking endpoint using the conversion event name.
-              </p>
-              <p>
-                Results compare each variant with the control using a two-proportion z-test and need
-                a minimum sample before they can be called.
-              </p>
-              <p>
-                The method and its limits are described in{' '}
-                <code className="rounded bg-muted px-1 py-0.5 font-mono text-foreground text-xs">
-                  docs/experiments.md
-                </code>{' '}
-                in the repository.
+                <Trans
+                  t={t}
+                  i18nKey="new.howItWorks.docs"
+                  values={{ path: 'docs/experiments.md' }}
+                  components={[
+                    <code
+                      key="docs"
+                      className="rounded bg-muted px-1 py-0.5 font-mono text-foreground text-xs"
+                    />,
+                  ]}
+                />
               </p>
             </CardContent>
           </Card>

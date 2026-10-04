@@ -1,1 +1,192 @@
-{}
+{
+  "labels": {
+    "exposures": "Exposures",
+    "conversions": "Conversions",
+    "conversionEvent": "Conversion-Ereignis",
+    "started": "Gestartet",
+    "stopped": "Gestoppt"
+  },
+  "status": {
+    "stopped": "Gestoppt"
+  },
+  "badges": {
+    "control": "Kontrolle"
+  },
+  "list": {
+    "pageTitle": "Experimente · Halyard",
+    "title": "Experimente",
+    "description": "Teile den Traffic zwischen Flag-Varianten auf und miss, welche besser konvertiert.",
+    "newButton": "Neues Experiment",
+    "loadFailedTitle": "Experimente konnten nicht geladen werden",
+    "empty": {
+      "title": "Noch keine Experimente",
+      "description": "Ein Experiment verteilt die Nutzer, die den Standard eines Flags erreichen, auf seine Varianten, zählt, wer danach konvertiert, und sagt dir, ob der Unterschied echt ist."
+    },
+    "noFiltered": {
+      "all": "Keine Experimente",
+      "running": "Keine laufenden Experimente",
+      "draft": "Keine Experiment-Entwürfe",
+      "stopped": "Keine gestoppten Experimente",
+      "description": "Wähle einen anderen Filter, um den Rest zu sehen."
+    },
+    "showAll": "Alle anzeigen",
+    "actionsAriaLabel": "Aktionen für {{key}}"
+  },
+  "new": {
+    "pageTitle": "Neues Experiment · Halyard",
+    "title": "Neues Experiment",
+    "description": "Das Experiment wird als Entwurf erstellt. Nichts wird ausgespielt, bis du es startest.",
+    "needFlag": {
+      "title": "Du brauchst zuerst ein Flag",
+      "description": "Experimente teilen die Varianten eines Flags auf. Erstelle ein Flag mit mindestens zwei Varianten.",
+      "action": "Flag erstellen"
+    },
+    "design": {
+      "title": "Aufbau",
+      "description": "Flag, Umgebung und Schlüssel können nicht mehr geändert werden, sobald das Experiment existiert."
+    },
+    "submit": "Entwurf erstellen",
+    "toastCreated": "Experiment {{key}} als Entwurf erstellt",
+    "createFailed": "Das Experiment konnte nicht erstellt werden",
+    "howItWorks": {
+      "title": "So funktioniert es",
+      "split": "Kontexte, die den Standard des Flags erreichen, also keine Targeting-Regel treffen, werden gemäß der Aufteilung auf die Varianten verteilt. Derselbe Nutzer sieht immer dieselbe Variante.",
+      "exposure": "Eine Exposure wird beim ersten Auswerten eines Nutzers erfasst. Conversions sendest du mit dem Namen des Conversion-Ereignisses an den Tracking-Endpunkt.",
+      "results": "Die Ergebnisse vergleichen jede Variante per Zwei-Anteile-z-Test mit der Kontrolle und brauchen eine Mindeststichprobe, bevor sie gewertet werden.",
+      "docs": "Methode und Grenzen sind in <0>{{path}}</0> im Repository beschrieben."
+    }
+  },
+  "detail": {
+    "pageTitle": "{{name}} · Halyard",
+    "pageTitleFallback": "Experiment · Halyard",
+    "flagArchived": "Flag archiviert",
+    "frozen": "Eingefroren {{time}}",
+    "refreshResults": "Ergebnisse aktualisieren",
+    "draftDescription": "Dieses Experiment ist ein Entwurf. Starte es, um Traffic aufzuteilen und Exposures zu sammeln; die Ergebnisse erscheinen hier und aktualisieren sich alle 30 Sekunden.",
+    "notStarted": "Nicht gestartet",
+    "toastUpdated": "Experiment aktualisiert",
+    "updateFailed": "Das Experiment konnte nicht aktualisiert werden",
+    "disabled": {
+      "editRunning": "Die Aufteilung ist gesperrt, solange das Experiment läuft",
+      "editStopped": "Die Aufteilung ist gesperrt, sobald das Experiment gelaufen ist",
+      "deleteRunning": "Stoppe das Experiment, um es zu löschen"
+    },
+    "allocation": {
+      "title": "Aufteilung",
+      "description": "Anteil der Kontexte, die den Standard des Flags erreichen und jede Variante sehen."
+    },
+    "edit": {
+      "title": "Experiment bearbeiten",
+      "description": "Aufteilung, Kontrolle und Conversion-Ereignis lassen sich nur ändern, solange das Experiment ein Entwurf ist.",
+      "submit": "Änderungen speichern"
+    }
+  },
+  "form": {
+    "chooseFlag": "Flag wählen",
+    "flagHelp": "Das Experiment teilt Kontexte auf, die den Standard dieses Flags erreichen.",
+    "chooseEnvironment": "Umgebung wählen",
+    "productionTitle": "Experimente in der Produktion betreffen echte Nutzer.",
+    "productionBody": "Nichts ändert sich, bis du es startest, und du wirst um Bestätigung gebeten.",
+    "namePlaceholder": "Neuer Bezahlvorgang",
+    "keyHelp": "Eindeutig im Projekt. Kann später nicht geändert werden.",
+    "hypothesis": {
+      "label": "Hypothese",
+      "placeholder": "Wenn wir den neuen Bezahlvorgang zeigen, steigt die Checkout-Conversion, weil…"
+    },
+    "allocation": {
+      "label": "Aufteilung",
+      "chooseFlag": "Wähle ein Flag, um seine Varianten aufzuteilen.",
+      "help": "Prozent der Kontexte, die jede Variante sehen. Die Gewichtungen müssen zusammen 100 ergeben."
+    },
+    "control": {
+      "label": "Kontrollvariante",
+      "placeholder": "Kontrolle wählen",
+      "help": "Jede andere Variante wird mit dieser verglichen."
+    },
+    "conversionEventHelp": "Der <0>event</0>-Name, den deine App an den Tracking-Endpunkt sendet, wenn ein Nutzer konvertiert.",
+    "problems": {
+      "needTwoVariants": "Gib mindestens zwei Varianten eine Gewichtung über 0.",
+      "controlNeedsWeight": "Die Kontrollvariante braucht eine Gewichtung über 0."
+    }
+  },
+  "allocation": {
+    "weightAriaLabel": "Gewichtung von {{variant}} in Prozent",
+    "splitEvenly": "Gleichmäßig aufteilen",
+    "total": "Gesamt {{value}}",
+    "totalAdd": "Gesamt {{value}} (muss 100 % sein, füge {{delta}} hinzu)",
+    "totalRemove": "Gesamt {{value}} (muss 100 % sein, entferne {{delta}})"
+  },
+  "actions": {
+    "startTitle": "Dieses Experiment in der Produktion starten?",
+    "stopTitle": "{{key}} stoppen?",
+    "deleteTitle": "{{key}} löschen?",
+    "startBody": "<0>{{key}}</0> beginnt sofort, echte Nutzer in <1></1> aufzuteilen. Experimente in der Produktion betreffen echte Nutzer. Aufteilung, Kontrolle und Conversion-Ereignis sind gesperrt, sobald es läuft.",
+    "stopBody": "Stoppen friert die Ergebnisse ein und entfernt die Aufteilung aus der Auswertung. Ein gestopptes Experiment kann nicht neu gestartet werden.",
+    "deleteBody": "Das entfernt <0>{{key}}</0> mit allen Exposures und Conversions. Das kann nicht rückgängig gemacht werden.",
+    "confirm": {
+      "start": "Experiment starten",
+      "stop": "Experiment stoppen",
+      "delete": "Experiment löschen"
+    },
+    "toast": {
+      "start": "Experiment {{key}} gestartet",
+      "stop": "Experiment {{key}} gestoppt",
+      "delete": "Experiment {{key}} gelöscht"
+    },
+    "failed": {
+      "start": "Das Experiment konnte nicht gestartet werden",
+      "stop": "Das Experiment konnte nicht gestoppt werden",
+      "delete": "Das Experiment konnte nicht gelöscht werden"
+    }
+  },
+  "snippet": {
+    "title": "Conversions senden",
+    "description": "Rufe den Tracking-Endpunkt auf, wenn ein Nutzer konvertiert. Verwende denselben <0>targetingKey</0> wie bei der Flag-Auswertung.",
+    "curlLabel": "cURL-Snippet",
+    "javascriptLabel": "JavaScript-Snippet",
+    "copy": "{{label}} kopieren",
+    "footer": "Ersetze den Platzhalter durch einen SDK-Schlüssel der Umgebung {{environment}} (siehe <0>API-Schlüssel</0>). Zum Bündeln sende ein Array mit bis zu 100 Ereignissen in einer Anfrage. Nur die erste Conversion pro Subjekt zählt."
+  },
+  "verdict": {
+    "winner": "Gewinner",
+    "loser": "Verlierer",
+    "noDifference": "Kein Unterschied",
+    "insufficientData": "Zu wenig Daten",
+    "minimumSample": "Ein Ergebnis braucht mindestens {{exposures}} Exposures und {{conversions}} Conversions sowohl in der Variante als auch in der Kontrolle.",
+    "insufficientTooltip": "{{rule}} Signifikanz wird bei p < {{level}} getestet."
+  },
+  "results": {
+    "title": "Ergebnisse",
+    "description": "Jede Variante wird per Zwei-Anteile-z-Test mit der Kontrolle verglichen. Conversions zählen einmal pro Subjekt.",
+    "columns": {
+      "rate": "Conversion-Rate (95 %-Intervall)",
+      "lift": "Lift vs. Kontrolle",
+      "pValue": "p-Wert",
+      "verdict": "Urteil"
+    },
+    "baseline": "Basis",
+    "points": "{{value}} PP",
+    "noExposures": "Noch keine Exposures. Sie erscheinen, sobald Kontexte, die den Standard des Flags erreichen, bei laufendem Experiment ausgewertet werden.",
+    "progress": {
+      "title": "Fortschritt zur Mindeststichprobe",
+      "exposuresAria": "Exposures von {{variant}} zur Mindeststichprobe",
+      "conversionsAria": "Conversions von {{variant}} zur Mindeststichprobe"
+    },
+    "chart": {
+      "rateLabel": "Conversion-Rate",
+      "interval": "({{low}}–{{high}}, 95 %-Intervall)",
+      "converted": "{{conversions}} von {{exposures}} konvertiert",
+      "ariaLabel": "Conversion-Rate pro Variante: {{summary}}"
+    },
+    "summary": {
+      "needMoreExposures": "Noch nicht genug Daten: {{current}} von mindestens {{minimum}} Exposures pro Variante.",
+      "needMoreConversions": "Noch nicht genug Daten: {{current}} von mindestens {{minimum}} Conversions pro Variante.",
+      "variantNotEnough": "{{variant}}: noch nicht genug Daten ({{exposures}} Exposures, {{conversions}} Conversions).",
+      "pLessThan": "p < {{value}}",
+      "pEquals": "p = {{value}}",
+      "noDifference": "{{variant}} zeigt keinen signifikanten Unterschied zu {{control}} ({{p}}).",
+      "better": "{{variant}} konvertiert {{points}} PP besser als {{control}}, {{p}} – signifikant.",
+      "worse": "{{variant}} konvertiert {{points}} PP schlechter als {{control}}, {{p}} – signifikant."
+    }
+  }
+}

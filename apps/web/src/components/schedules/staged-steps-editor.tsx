@@ -1,6 +1,7 @@
 import type { Variant } from '@halyard/engine'
 import { PlusIcon, Trash2Icon } from 'lucide-react'
 import { AnimatePresence, MotionConfig, motion } from 'motion/react'
+import { useTranslation } from 'react-i18next'
 import { newId, RolloutBar } from '@/components/flags'
 import { Button } from '@/components/ui/button'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
@@ -46,6 +47,7 @@ export function StagedStepsEditor({
   now: Date
   disabled?: boolean
 }) {
+  const { t, i18n } = useTranslation(['schedules', 'common'])
   const keys = variants.map((v) => v.key)
 
   function update(id: string, patch: Partial<DraftStep>) {
@@ -69,7 +71,7 @@ export function StagedStepsEditor({
 
   return (
     <MotionConfig reducedMotion="user">
-      <ol className="flex flex-col gap-2" aria-label="Rollout steps">
+      <ol className="flex flex-col gap-2" aria-label={t('steps.listAriaLabel')}>
         <AnimatePresence initial={false}>
           {steps.map((step, index) => {
             const problem = problems[index] ?? {}
@@ -89,7 +91,7 @@ export function StagedStepsEditor({
                 <div className="flex flex-col gap-2 rounded-lg border bg-card p-3">
                   <div className="flex flex-wrap items-start gap-3">
                     <span className="mt-2 w-12 shrink-0 font-medium text-muted-foreground text-xs">
-                      Step {index + 1}
+                      {t('steps.stepLabel', { number: index + 1 })}
                     </span>
                     <div className="flex w-28 flex-col gap-1">
                       <InputGroup>
@@ -101,7 +103,7 @@ export function StagedStepsEditor({
                           step="any"
                           value={step.percentage}
                           disabled={disabled}
-                          aria-label={`Step ${index + 1} percentage`}
+                          aria-label={t('steps.percentageAriaLabel', { number: index + 1 })}
                           aria-invalid={Boolean(problem.percentage) || undefined}
                           className="tabular-nums"
                           onChange={(event) => update(step.id, { percentage: event.target.value })}
@@ -118,12 +120,14 @@ export function StagedStepsEditor({
                         onChange={(at) => update(step.id, { at })}
                         disabled={disabled}
                         invalid={Boolean(problem.at)}
-                        aria-label={`Step ${index + 1}`}
+                        aria-label={t('steps.stepLabel', { number: index + 1 })}
                       />
                       {problem.at ? (
                         <p className="text-destructive text-xs">{problem.at}</p>
                       ) : (
-                        <p className="text-muted-foreground text-xs">{formatDelta(step.at, now)}</p>
+                        <p className="text-muted-foreground text-xs">
+                          {formatDelta(step.at, now, i18n.language)}
+                        </p>
                       )}
                     </div>
                     <Tooltip>
@@ -132,14 +136,14 @@ export function StagedStepsEditor({
                           type="button"
                           variant="ghost"
                           size="icon-sm"
-                          aria-label={`Remove step ${index + 1}`}
+                          aria-label={t('steps.removeAriaLabel', { number: index + 1 })}
                           disabled={disabled || steps.length <= 1}
                           onClick={() => onChange(steps.filter((s) => s.id !== step.id))}
                         >
                           <Trash2Icon />
                         </Button>
                       </TooltipTrigger>
-                      <TooltipContent>Remove step</TooltipContent>
+                      <TooltipContent>{t('steps.remove')}</TooltipContent>
                     </Tooltip>
                   </div>
                   {serve ? (
@@ -164,7 +168,7 @@ export function StagedStepsEditor({
           onClick={addStep}
           disabled={disabled || steps.length >= MAX_STEPS}
         >
-          <PlusIcon /> Add step
+          <PlusIcon /> {t('steps.addStep')}
         </Button>
       </div>
     </MotionConfig>

@@ -1,14 +1,15 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { MailIcon, PlusIcon, Trash2Icon, UserMinusIcon } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { ConfirmDialog } from '@/components/settings/confirm-dialog'
 import { errorMessage, initials } from '@/components/settings/form-utils'
 import { DisabledHint, HintedButton, IconButton } from '@/components/settings/hinted-button'
 import { InviteMemberDialog } from '@/components/settings/invite-member-dialog'
-import { ROLE_INFO, ROLE_ORDER } from '@/components/settings/roles'
+import { ROLE_ORDER } from '@/components/settings/roles'
 import { SettingsPending, SettingsSection } from '@/components/settings/settings-section'
-import { OWNER_ONLY_MESSAGE, useSettingsContext } from '@/components/settings/use-settings-context'
+import { useSettingsContext } from '@/components/settings/use-settings-context'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -34,7 +35,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { formatDateTime, formatRelativeTime, pluralize } from '@/lib/format'
+import { formatDateTime, formatRelativeTime } from '@/lib/format'
+import { translate } from '@/lib/i18n'
 import type { ProjectRole } from '@/lib/permissions'
 import {
   cancelInvitation,
@@ -52,12 +54,15 @@ export const Route = createFileRoute('/app/$projectSlug/settings/members')({
     if (!projectId) return { members: [], invitations: [] }
     return listMembers({ data: { projectId } })
   },
-  head: () => ({ meta: [{ title: 'Members · Halyard' }] }),
+  head: ({ match }) => ({
+    meta: [{ title: translate(match.context.locale)('settings:members.pageTitle') }],
+  }),
   pendingComponent: () => <SettingsPending rows={4} />,
   component: MembersSettings,
 })
 
 function MembersSettings() {
+  const { t } = useTranslation(['settings', 'common'])
   const { project, user, isOwner } = useSettingsContext()
   const { members, invitations } = Route.useLoaderData()
   const [inviteOpen, setInviteOpen] = useState(false)
@@ -66,28 +71,28 @@ function MembersSettings() {
   const inviteButton = (
     <HintedButton
       onClick={() => setInviteOpen(true)}
-      disabledReason={isOwner ? undefined : OWNER_ONLY_MESSAGE}
+      disabledReason={isOwner ? undefined : t('shared.ownerOnly')}
     >
-      <PlusIcon /> Invite member
+      <PlusIcon /> {t('members.invite')}
     </HintedButton>
   )
 
   return (
     <div className="flex flex-col gap-10">
       <SettingsSection
-        title="Members"
-        description={`${pluralize(members.length, 'person', 'people')} can access ${project.name}.`}
+        title={t('common:labels.members')}
+        description={t('members.description', { count: members.length, name: project.name })}
         actions={inviteButton}
       >
         <div className="overflow-hidden rounded-md border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Member</TableHead>
-                <TableHead className="w-44">Role</TableHead>
-                <TableHead className="hidden w-40 md:table-cell">Joined</TableHead>
+                <TableHead>{t('common:labels.member')}</TableHead>
+                <TableHead className="w-44">{t('common:labels.role')}</TableHead>
+                <TableHead className="hidden w-40 md:table-cell">{t('members.joined')}</TableHead>
                 <TableHead className="w-12">
-                  <span className="sr-only">Actions</span>
+                  <span className="sr-only">{t('common:labels.actions')}</span>
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -108,8 +113,8 @@ function MembersSettings() {
       </SettingsSection>
 
       <SettingsSection
-        title="Pending invitations"
-        description="Invitations are accepted in the app by the invitee after signing in."
+        title={t('members.pending.title')}
+        description={t('members.pending.description')}
       >
         {invitations.length === 0 ? (
           <Empty className="border border-dashed">
@@ -117,11 +122,8 @@ function MembersSettings() {
               <EmptyMedia variant="icon">
                 <MailIcon />
               </EmptyMedia>
-              <EmptyTitle>No pending invitations</EmptyTitle>
-              <EmptyDescription>
-                Invite a teammate by email. They will see the invitation after signing in with that
-                address.
-              </EmptyDescription>
+              <EmptyTitle>{t('members.pending.empty.title')}</EmptyTitle>
+              <EmptyDescription>{t('members.pending.empty.description')}</EmptyDescription>
             </EmptyHeader>
             <EmptyContent>{inviteButton}</EmptyContent>
           </Empty>
@@ -130,12 +132,16 @@ function MembersSettings() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Email</TableHead>
-                  <TableHead className="w-28">Role</TableHead>
-                  <TableHead className="hidden w-40 md:table-cell">Invited</TableHead>
-                  <TableHead className="hidden w-44 md:table-cell">Expires</TableHead>
+                  <TableHead>{t('common:labels.email')}</TableHead>
+                  <TableHead className="w-28">{t('common:labels.role')}</TableHead>
+                  <TableHead className="hidden w-40 md:table-cell">
+                    {t('members.pending.invited')}
+                  </TableHead>
+                  <TableHead className="hidden w-44 md:table-cell">
+                    {t('members.pending.expires')}
+                  </TableHead>
                   <TableHead className="w-12">
-                    <span className="sr-only">Actions</span>
+                    <span className="sr-only">{t('common:labels.actions')}</span>
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -172,21 +178,22 @@ function MemberRow({
   isOwner: boolean
   isLastOwner: boolean
 }) {
+  const { t, i18n } = useTranslation(['settings', 'common'])
   const router = useRouter()
   const [pending, setPending] = useState(false)
   const [removeOpen, setRemoveOpen] = useState(false)
 
   const roleReason = !isOwner
-    ? OWNER_ONLY_MESSAGE
+    ? t('shared.ownerOnly')
     : isLastOwner
-      ? 'A project needs at least one owner. Make someone else an owner first.'
+      ? t('members.lastOwnerRole')
       : undefined
   const removeReason = !isOwner
-    ? OWNER_ONLY_MESSAGE
+    ? t('shared.ownerOnly')
     : isSelf
-      ? 'Use "Leave project" in General settings to remove yourself'
+      ? t('members.selfRemove')
       : isLastOwner
-        ? 'A project needs at least one owner'
+        ? t('members.lastOwnerRemove')
         : undefined
 
   async function changeRole(role: ProjectRole) {
@@ -194,10 +201,12 @@ function MemberRow({
     setPending(true)
     try {
       await updateMemberRole({ data: { projectId, memberId: member.id, role } })
-      toast.success(`${member.name} is now ${ROLE_INFO[role].label.toLowerCase()}`)
+      toast.success(
+        t('members.roleChanged', { name: member.name, role: t(`common:roles.${role}`) }),
+      )
       await router.invalidate()
     } catch (error) {
-      toast.error(errorMessage(error, 'Could not change the role'))
+      toast.error(errorMessage(error, t('members.roleChangeFailed')))
     } finally {
       setPending(false)
     }
@@ -209,13 +218,17 @@ function MemberRow({
       onValueChange={(value) => changeRole(value as ProjectRole)}
       disabled={roleReason !== undefined || pending}
     >
-      <SelectTrigger size="sm" className="w-32" aria-label={`Role of ${member.name}`}>
+      <SelectTrigger
+        size="sm"
+        className="w-32"
+        aria-label={t('members.roleAria', { name: member.name })}
+      >
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
         {ROLE_ORDER.map((role) => (
           <SelectItem key={role} value={role}>
-            {ROLE_INFO[role].label}
+            {t(`common:roles.${role}`)}
           </SelectItem>
         ))}
       </SelectContent>
@@ -233,7 +246,7 @@ function MemberRow({
           <div className="min-w-0">
             <div className="flex items-center gap-2 font-medium">
               <span className="truncate">{member.name}</span>
-              {isSelf ? <Badge variant="secondary">You</Badge> : null}
+              {isSelf ? <Badge variant="secondary">{t('members.you')}</Badge> : null}
             </div>
             <div className="truncate text-xs text-muted-foreground">{member.email}</div>
           </div>
@@ -245,14 +258,14 @@ function MemberRow({
       <TableCell className="hidden text-muted-foreground md:table-cell">
         <time
           dateTime={new Date(member.createdAt).toISOString()}
-          title={formatDateTime(member.createdAt)}
+          title={formatDateTime(member.createdAt, i18n.language)}
         >
-          {formatRelativeTime(member.createdAt)}
+          {formatRelativeTime(member.createdAt, { locale: i18n.language })}
         </time>
       </TableCell>
       <TableCell className="text-right">
         <IconButton
-          label={`Remove ${member.name}`}
+          label={t('members.removeAria', { name: member.name })}
           className="text-destructive hover:text-destructive"
           disabledReason={removeReason}
           onClick={() => setRemoveOpen(true)}
@@ -262,12 +275,12 @@ function MemberRow({
         <ConfirmDialog
           open={removeOpen}
           onOpenChange={setRemoveOpen}
-          title={`Remove ${member.name}?`}
-          description={`${member.name} loses access to this project right away. You can invite them again later.`}
-          confirmLabel="Remove member"
+          title={t('members.remove.title', { name: member.name })}
+          description={t('members.remove.description', { name: member.name })}
+          confirmLabel={t('members.remove.confirm')}
           onConfirm={async () => {
             await removeMember({ data: { projectId, memberId: member.id } })
-            toast.success(`${member.name} was removed`)
+            toast.success(t('members.remove.removed', { name: member.name }))
             await router.invalidate()
           }}
         />
@@ -285,6 +298,7 @@ function InvitationRow({
   projectId: string
   isOwner: boolean
 }) {
+  const { t, i18n } = useTranslation(['settings', 'common'])
   const router = useRouter()
   const [cancelOpen, setCancelOpen] = useState(false)
 
@@ -292,29 +306,29 @@ function InvitationRow({
     <TableRow>
       <TableCell className="font-medium">{invitation.email}</TableCell>
       <TableCell>
-        <Badge variant="outline">{ROLE_INFO[invitation.role].label}</Badge>
+        <Badge variant="outline">{t(`common:roles.${invitation.role}`)}</Badge>
       </TableCell>
       <TableCell className="hidden text-muted-foreground md:table-cell">
         <time
           dateTime={new Date(invitation.createdAt).toISOString()}
-          title={formatDateTime(invitation.createdAt)}
+          title={formatDateTime(invitation.createdAt, i18n.language)}
         >
-          {formatRelativeTime(invitation.createdAt)}
+          {formatRelativeTime(invitation.createdAt, { locale: i18n.language })}
         </time>
       </TableCell>
       <TableCell className="hidden text-muted-foreground md:table-cell">
         <time
           dateTime={new Date(invitation.expiresAt).toISOString()}
-          title={formatDateTime(invitation.expiresAt)}
+          title={formatDateTime(invitation.expiresAt, i18n.language)}
         >
-          {formatDateTime(invitation.expiresAt)}
+          {formatDateTime(invitation.expiresAt, i18n.language)}
         </time>
       </TableCell>
       <TableCell className="text-right">
         <IconButton
-          label={`Cancel invitation for ${invitation.email}`}
+          label={t('members.pending.cancelAria', { email: invitation.email })}
           className="text-destructive hover:text-destructive"
-          disabledReason={isOwner ? undefined : OWNER_ONLY_MESSAGE}
+          disabledReason={isOwner ? undefined : t('shared.ownerOnly')}
           onClick={() => setCancelOpen(true)}
         >
           <Trash2Icon />
@@ -322,13 +336,13 @@ function InvitationRow({
         <ConfirmDialog
           open={cancelOpen}
           onOpenChange={setCancelOpen}
-          title={`Cancel the invitation for ${invitation.email}?`}
-          description="The invitation stops working. You can send a new one at any time."
-          confirmLabel="Cancel invitation"
-          cancelLabel="Keep invitation"
+          title={t('members.pending.cancelTitle', { email: invitation.email })}
+          description={t('members.pending.cancelDescription')}
+          confirmLabel={t('members.pending.cancelConfirm')}
+          cancelLabel={t('members.pending.keep')}
           onConfirm={async () => {
             await cancelInvitation({ data: { projectId, invitationId: invitation.id } })
-            toast.success('Invitation canceled')
+            toast.success(t('members.pending.canceled'))
             await router.invalidate()
           }}
         />

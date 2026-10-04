@@ -1,1 +1,147 @@
-{}
+{
+  "page": {
+    "description": "Sieh, wie sich Flags zwischen Umgebungen unterscheiden.",
+    "summary_one": "{{count}} aktives Flag in {{environments}}. Eingefärbte Zellen weichen von der Basis {{baseline}} ab.",
+    "summary_other": "{{count}} aktive Flags in {{environments}}. Eingefärbte Zellen weichen von der Basis {{baseline}} ab.",
+    "footnote": "Zellen vergleichen An/Aus-Zustand, Standard und Anzahl der Regeln. Klappe eine Zeile auf, um Unterschiede auf Regelebene zu sehen.",
+    "search": {
+      "placeholder": "Nach Schlüssel oder Name suchen",
+      "ariaLabel": "Flags durchsuchen",
+      "clear": "Suche zurücksetzen"
+    },
+    "onlyDifferences": "Nur Unterschiede anzeigen",
+    "visibleCount_one": "{{shown}} von {{count}} Flag",
+    "visibleCount_other": "{{shown}} von {{count}} Flags",
+    "selected": "{{count}} ausgewählt",
+    "promoteSelected": "Auswahl übertragen",
+    "promoteDisabled": "Nur Bearbeiter und Eigentümer können Flags übertragen",
+    "noFlags": {
+      "title": "Keine Flags zum Vergleichen",
+      "description": "Erstelle zuerst ein Flag. Danach kannst du es über Umgebungen hinweg vergleichen und seine Konfiguration übertragen.",
+      "create": "Flag erstellen"
+    },
+    "noEnvironments": {
+      "title": "Füge eine zweite Umgebung hinzu",
+      "description": "Der Vergleich braucht mindestens zwei Umgebungen. Füge eine in den Projekteinstellungen hinzu.",
+      "manage": "Umgebungen verwalten"
+    },
+    "allMatch": {
+      "title": "Alle Umgebungen stimmen überein",
+      "description": "Kein Flag weicht in An/Aus-Zustand, Standard oder Regelanzahl von {{baseline}} ab."
+    },
+    "noMatches": {
+      "title": "Keine passenden Flags",
+      "description": "Versuche eine andere Suche."
+    },
+    "showAll": "Alle Flags anzeigen"
+  },
+  "copyFields": {
+    "enabled": {
+      "label": "Aktiviert",
+      "hint": "Ob das Flag an ist"
+    },
+    "offVariant": {
+      "label": "Aus-Variante",
+      "hint": "Wird ausgespielt, solange das Flag aus ist"
+    },
+    "fallthrough": {
+      "label": "Standard",
+      "hint": "Wird ausgespielt, wenn keine Regel zutrifft"
+    },
+    "rules": {
+      "label": "Regeln",
+      "hint": "Alle Targeting-Regeln, in Reihenfolge"
+    }
+  },
+  "serve": {
+    "noTraffic": "kein Traffic"
+  },
+  "changes": {
+    "enabled": "Aktiviert: {{from}} → {{to}}",
+    "offVariant": "Aus-Variante: {{from}} → {{to}}",
+    "fallthrough": "Standard: {{from}} → {{to}}",
+    "rulesUpdated_one": "Regeln: {{count}} Regel aktualisiert",
+    "rulesUpdated_other": "Regeln: {{count}} Regeln aktualisiert",
+    "rulesCount": "Regeln: {{from}} → {{to}}"
+  },
+  "matrix": {
+    "selectAll": "Alle sichtbaren Flags auswählen",
+    "selectFlag": "{{flag}} auswählen",
+    "expandColumn": "Aufklappen",
+    "expandFlag": "{{flag}} aufklappen",
+    "collapseFlag": "{{flag}} zuklappen",
+    "expandTooltip": "Vollständige Konfiguration anzeigen",
+    "collapseTooltip": "Details zuklappen",
+    "baseline": "Basis",
+    "differsFromBaseline": "(weicht von {{baseline}} ab)",
+    "noRules": "keine Regeln",
+    "ruleSummary": "{{rules}} · v{{version}}"
+  },
+  "promote": {
+    "button": "Übertragen",
+    "label": "{{flag}} von {{from}} nach {{to}} übertragen",
+    "unavailableLabel": "{{label}} (nicht verfügbar: {{reason}})"
+  },
+  "detail": {
+    "loadFailed": "Das Flag konnte nicht geladen werden",
+    "environmentConfiguration": "Konfiguration in {{environment}}",
+    "baseline": "Basis",
+    "notConfigured": "In dieser Umgebung nicht konfiguriert.",
+    "statusOn": "An",
+    "statusOff": "Aus",
+    "rulesCount": "Regeln ({{count}})",
+    "noRules": "Keine Regeln",
+    "untitledRule": "Unbenannte Regel",
+    "conditions_one": "{{count}} Bedingung",
+    "conditions_other": "{{count}} Bedingungen",
+    "bucketedBy": "Bucket nach <0>{{key}}</0>",
+    "versionLine": "Version {{version}} · aktualisiert {{time}}",
+    "differsFromBaseline": "Weicht von der Basis ab"
+  },
+  "dialog": {
+    "titleSingle": "<0>{{flag}}</0> übertragen",
+    "titleMany_one": "{{count}} Flag übertragen",
+    "titleMany_other": "{{count}} Flags übertragen",
+    "description": "Kopiere die Konfiguration einer Umgebung in eine andere. Alles, was unten nicht ausgewählt ist, bleibt wie es ist.",
+    "from": "Von",
+    "to": "Nach",
+    "fieldsLegend": "Zu kopierende Felder",
+    "productionHint": "„Aktiviert“ wird für die Produktion standardmäßig ausgelassen, damit eine Übertragung nie überraschend ein Flag einschaltet.",
+    "preview": "Vorschau",
+    "progress": "Fortschritt",
+    "progressAriaLabel": "Fortschritt der Übertragung",
+    "withChanges": "{{promotable}} von {{total}} mit Änderungen",
+    "chooseDifferent": "Wähle zwei verschiedene Umgebungen.",
+    "selectAtLeastOne": "Wähle mindestens ein Feld zum Kopieren.",
+    "missingConfig": "Dieses Flag hat in einer der Umgebungen keine Konfiguration.",
+    "noChanges": "Keine Änderungen. {{to}} stimmt bei den gewählten Feldern bereits mit {{from}} überein.",
+    "rawDiff": "Roh-Diff",
+    "confirmPrompt": "Das ändert das Live-Verhalten in <0/>. Gib <1>{{key}}</1> zur Bestätigung ein.",
+    "promoting": "Übertrage {{current}} von {{total}}",
+    "submitSingle": "Nach {{environment}} übertragen",
+    "submitMany_one": "{{count}} Flag nach {{environment}} übertragen",
+    "submitMany_other": "{{count}} Flags nach {{environment}} übertragen",
+    "outcome": {
+      "promotedLabel": "Übertragen",
+      "noChangesLabel": "Keine Änderungen",
+      "failedLabel": "Fehlgeschlagen",
+      "waitingLabel": "Wartet",
+      "pending": "Wartet",
+      "running": "Wird übertragen",
+      "changed": "Übertragen, jetzt Version {{version}}",
+      "unchanged": "Stimmte bereits überein, nichts geändert",
+      "skipped": "Keine Änderungen zu übertragen"
+    },
+    "toast": {
+      "promotedSingle": "{{flag}} von {{from}} nach {{to}} übertragen",
+      "alreadyMatched": "{{flag}} stimmte in {{to}} bereits überein",
+      "promotedMany_one": "{{count}} Flag von {{from}} nach {{to}} übertragen",
+      "promotedMany_other": "{{count}} Flags von {{from}} nach {{to}} übertragen",
+      "failed_one": "{{count}} Flag konnte nicht übertragen werden",
+      "failed_other": "{{count}} Flags konnten nicht übertragen werden",
+      "failedPartial_one": "{{count}} Flag konnte nicht übertragen werden, {{succeeded}} erfolgreich",
+      "failedPartial_other": "{{count}} Flags konnten nicht übertragen werden, {{succeeded}} erfolgreich"
+    },
+    "promotionFailed": "Übertragung fehlgeschlagen"
+  }
+}

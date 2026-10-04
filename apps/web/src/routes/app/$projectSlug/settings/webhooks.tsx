@@ -1,9 +1,15 @@
-import { createFileRoute, Outlet, useChildMatches } from '@tanstack/react-router'
+import {
+  createFileRoute,
+  type ErrorComponentProps,
+  Outlet,
+  useChildMatches,
+} from '@tanstack/react-router'
 import { PlusIcon } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { HintedButton } from '@/components/settings/hinted-button'
 import { SettingsPending, SettingsSection } from '@/components/settings/settings-section'
-import { OWNER_ONLY_MESSAGE, useSettingsContext } from '@/components/settings/use-settings-context'
+import { useSettingsContext } from '@/components/settings/use-settings-context'
 import { Button } from '@/components/ui/button'
 import {
   Empty,
@@ -16,6 +22,7 @@ import { SignatureCard } from '@/components/webhooks'
 import { type RevealedSecret, SecretRevealDialog } from '@/components/webhooks/secret-reveal-dialog'
 import { WebhookFormDialog } from '@/components/webhooks/webhook-form-dialog'
 import { WebhookList } from '@/components/webhooks/webhook-list'
+import { translate } from '@/lib/i18n'
 import { listWebhookEventTypes, listWebhooks } from '@/server/functions/webhooks'
 import type { Webhook } from '@/server/services/webhooks'
 
@@ -31,25 +38,32 @@ export const Route = createFileRoute('/app/$projectSlug/settings/webhooks')({
     ])
     return { projectId, webhooks, eventTypes }
   },
-  head: () => ({ meta: [{ title: 'Webhooks · Halyard' }] }),
+  head: ({ match }) => ({
+    meta: [{ title: translate(match.context.locale)('settings:webhooks.pageTitle') }],
+  }),
   pendingComponent: () => <SettingsPending rows={3} />,
-  errorComponent: ({ error, reset }) => (
+  errorComponent: WebhooksError,
+  component: WebhooksRoute,
+})
+
+function WebhooksError({ error, reset }: ErrorComponentProps) {
+  const { t } = useTranslation(['settings', 'common'])
+  return (
     <Empty className="border border-dashed">
       <EmptyHeader>
-        <EmptyTitle>Could not load webhooks</EmptyTitle>
+        <EmptyTitle>{t('webhooks.loadFailedTitle')}</EmptyTitle>
         <EmptyDescription>
-          {error instanceof Error ? error.message : 'Something went wrong.'}
+          {error instanceof Error ? error.message : t('common:errors.generic')}
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
         <Button variant="outline" onClick={reset}>
-          Try again
+          {t('common:actions.tryAgain')}
         </Button>
       </EmptyContent>
     </Empty>
-  ),
-  component: WebhooksRoute,
-})
+  )
+}
 
 /** The list is this route's own page; the deliveries view is a child route rendered instead of it. */
 function WebhooksRoute() {
@@ -59,6 +73,7 @@ function WebhooksRoute() {
 }
 
 function WebhooksSettings() {
+  const { t } = useTranslation(['settings', 'common'])
   const { project, isOwner } = useSettingsContext()
   const { webhooks, eventTypes } = Route.useLoaderData()
   const [formOpen, setFormOpen] = useState(false)
@@ -71,17 +86,17 @@ function WebhooksSettings() {
         setEditing(null)
         setFormOpen(true)
       }}
-      disabledReason={isOwner ? undefined : OWNER_ONLY_MESSAGE}
+      disabledReason={isOwner ? undefined : t('shared.ownerOnly')}
     >
-      <PlusIcon /> Add webhook
+      <PlusIcon /> {t('webhooks.add')}
     </HintedButton>
   )
 
   return (
     <div className="flex flex-col gap-10">
       <SettingsSection
-        title="Webhooks"
-        description="Send a signed HTTP request to your own server when something changes in this project."
+        title={t('common:labels.webhooks')}
+        description={t('webhooks.description')}
         actions={webhooks.length > 0 ? addButton : undefined}
       >
         <WebhookList

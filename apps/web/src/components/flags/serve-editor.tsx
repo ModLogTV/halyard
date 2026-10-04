@@ -2,6 +2,7 @@ import type { FlagDefinition, RolloutVariation, Serve } from '@halyard/engine'
 import { WEIGHT_TOLERANCE } from '@halyard/engine'
 import { CheckIcon, ChevronRightIcon, CircleAlertIcon } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Input } from '@/components/ui/input'
@@ -35,6 +36,7 @@ export function ServeEditor({
   allowRollout = true,
   className,
 }: ServeEditorProps) {
+  const { t } = useTranslation(['flags', 'common'])
   const baseId = useId()
   // The rollout the user started from, so "Reset" has something sensible to go back to.
   const baseline = useRef<RolloutVariation[] | null>(
@@ -71,13 +73,13 @@ export function ServeEditor({
               value={value.type}
               onValueChange={switchMode}
               disabled={disabled}
-              aria-label={label ? `${label} mode` : 'Serve mode'}
+              aria-label={label ? t('serve.modeLabelNamed', { label }) : t('serve.modeLabel')}
             >
               <ToggleGroupItem value="variant" className="h-7 px-2.5 text-xs">
-                Variant
+                {t('serve.modes.variant')}
               </ToggleGroupItem>
               <ToggleGroupItem value="rollout" className="h-7 px-2.5 text-xs">
-                Percentage rollout
+                {t('serve.modes.rollout')}
               </ToggleGroupItem>
             </ToggleGroup>
           ) : null}
@@ -91,7 +93,7 @@ export function ServeEditor({
           value={value.variant}
           onValueChange={(variant) => onChange({ type: 'variant', variant })}
           disabled={disabled}
-          aria-label={label ? `${label} variant` : 'Variant'}
+          aria-label={label ? t('serve.variantLabelNamed', { label }) : t('serve.variantLabel')}
         />
       ) : (
         <RolloutEditor
@@ -124,6 +126,7 @@ function RolloutEditor({
   baseline: { current: RolloutVariation[] | null }
   baseId: string
 }) {
+  const { t } = useTranslation(['flags', 'common'])
   const weights = new Map(value.variations.map((v) => [v.variant, v.weight]))
   const known = new Set(flag.variants.map((v) => v.key))
   // One row per flag variant, plus any rollout entry that points at a variant that no longer exists.
@@ -184,13 +187,13 @@ function RolloutEditor({
                   />
                 ) : (
                   <span className="truncate font-mono text-destructive text-xs">
-                    {row.variant} (missing)
+                    {t('serve.missingVariant', { variant: row.variant })}
                   </span>
                 )}
               </Label>
               <WeightInput
                 id={inputId}
-                label={`Weight for ${row.variant}`}
+                label={t('serve.weightFor', { variant: row.variant })}
                 value={row.weight}
                 onChange={(weight) => setWeight(row.variant, weight)}
                 disabled={disabled}
@@ -213,21 +216,21 @@ function RolloutEditor({
           {balanced ? (
             <>
               <CheckIcon className="size-3.5 text-on" aria-hidden="true" />
-              Weights add up to 100%.
+              {t('serve.balanced')}
             </>
           ) : (
             <>
               <CircleAlertIcon className="size-3.5 shrink-0" aria-hidden="true" />
-              Weights add up to {formatPercent(total)}.{' '}
-              {total < 100
-                ? `Add ${formatPercent(diff)} to reach 100%.`
-                : `Remove ${formatPercent(diff)} to reach 100%.`}
+              {t(total < 100 ? 'serve.unbalancedUnder' : 'serve.unbalancedOver', {
+                total: formatPercent(total),
+                diff: formatPercent(diff),
+              })}
             </>
           )}
         </p>
         <div className="flex items-center gap-1">
           <Button type="button" variant="ghost" size="xs" onClick={splitEvenly} disabled={disabled}>
-            Split evenly
+            {t('serve.splitEvenly')}
           </Button>
           <Button
             type="button"
@@ -236,7 +239,7 @@ function RolloutEditor({
             onClick={reset}
             disabled={disabled || matchesBaseline}
           >
-            Reset
+            {t('common:actions.reset')}
           </Button>
         </div>
       </div>
@@ -248,13 +251,13 @@ function RolloutEditor({
               className={cn('transition-transform duration-150', advancedOpen && 'rotate-90')}
               aria-hidden="true"
             />
-            Advanced
+            {t('serve.advanced')}
           </Button>
         </CollapsibleTrigger>
         <CollapsibleContent className="pt-2">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor={`${baseId}-bucket`} className="text-xs">
-              Bucket by
+              {t('serve.bucketBy')}
             </Label>
             <Input
               id={`${baseId}-bucket`}
@@ -270,10 +273,7 @@ function RolloutEditor({
                 onChange(next ? { ...rest, bucketBy: next } : rest)
               }}
             />
-            <p className="text-muted-foreground text-xs">
-              Contexts with the same value always land in the same bucket. Defaults to the targeting
-              key.
-            </p>
+            <p className="text-muted-foreground text-xs">{t('serve.bucketByHelp')}</p>
           </div>
         </CollapsibleContent>
       </Collapsible>

@@ -1,7 +1,9 @@
 import type { ResolutionReason } from '@halyard/engine'
+import type { TFunction } from 'i18next'
 import { ArrowLeftIcon, FlaskConicalIcon, TriangleAlertIcon } from 'lucide-react'
 import { MotionConfig, motion } from 'motion/react'
 import type { ReactNode } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { EnvBadge, type EnvironmentLike } from '@/components/env/env-badge'
 import { FlagTypeBadge, RolloutBar, VariantValue, variantColor } from '@/components/flags'
 import { describeCondition } from '@/components/segments/describe'
@@ -19,19 +21,25 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { formatPercent, formatVariantValue, pluralize } from '@/lib/format'
+import { formatPercent, formatVariantValue } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import type { PlaygroundFlagResult } from '@/server/functions/playground'
 
-const REASON_STYLES: Record<ResolutionReason, { label: string; className: string }> = {
-  DISABLED: { label: 'Disabled', className: 'border-border bg-muted text-muted-foreground' },
+/** `t` as returned by `useTranslation(['playground', 'segments', 'flags', 'common'])`. */
+type PlaygroundT = TFunction<['playground', 'segments', 'common']>
+
+const REASON_STYLES: Record<
+  ResolutionReason,
+  { key: 'disabled' | 'targetingMatch' | 'split' | 'static' | 'error'; className: string }
+> = {
+  DISABLED: { key: 'disabled', className: 'border-border bg-muted text-muted-foreground' },
   TARGETING_MATCH: {
-    label: 'Targeting match',
+    key: 'targetingMatch',
     className: 'border-transparent bg-on-soft text-foreground',
   },
-  SPLIT: { label: 'Split', className: 'border-transparent bg-info-soft text-foreground' },
-  STATIC: { label: 'Static', className: 'border-border bg-secondary text-secondary-foreground' },
-  ERROR: { label: 'Error', className: 'border-transparent bg-destructive/10 text-destructive' },
+  SPLIT: { key: 'split', className: 'border-transparent bg-info-soft text-foreground' },
+  STATIC: { key: 'static', className: 'border-border bg-secondary text-secondary-foreground' },
+  ERROR: { key: 'error', className: 'border-transparent bg-destructive/10 text-destructive' },
 }
 
 export function ReasonBadge({
@@ -41,10 +49,11 @@ export function ReasonBadge({
   reason: ResolutionReason
   className?: string
 }) {
+  const { t } = useTranslation('playground')
   const style = REASON_STYLES[reason]
   return (
     <Badge variant="outline" className={cn('font-mono text-[11px]', style.className, className)}>
-      {style.label}
+      {t(`reasons.${style.key}`)}
     </Badge>
   )
 }
@@ -58,21 +67,20 @@ function variantIndexOf(result: PlaygroundFlagResult): number {
   )
 }
 
-function ruleLabel(result: PlaygroundFlagResult): string | null {
+function ruleLabel(result: PlaygroundFlagResult, t: PlaygroundT): string | null {
   if (!result.rule) return null
-  const n = result.rule.index + 1
-  return result.rule.description ? `Rule ${n}: ${result.rule.description}` : `Rule ${n}`
+  const number = result.rule.index + 1
+  return result.rule.description
+    ? t('explain.ruleWithDescription', { number, description: result.rule.description })
+    : t('explain.rule', { number })
 }
 
 function ConditionList({ result }: { result: PlaygroundFlagResult }) {
+  const { t } = useTranslation(['playground', 'segments', 'flags', 'common'])
   const rule = result.rule
   if (!rule) return null
   if (rule.conditions.length === 0) {
-    return (
-      <p className="text-xs text-muted-foreground">
-        This rule has no conditions, so it matches every context.
-      </p>
-    )
+    return <p className="text-xs text-muted-foreground">{t('explain.noConditions')}</p>
   }
   return (
     <ul className="flex flex-col gap-1">
@@ -82,17 +90,19 @@ function ConditionList({ result }: { result: PlaygroundFlagResult }) {
           key={index}
           className="flex flex-wrap items-center gap-1.5 text-xs"
         >
-          <span className="text-muted-foreground">{index === 0 ? 'When' : 'and'}</span>
+          <span className="text-muted-foreground">
+            {index === 0 ? t('explain.when') : t('explain.and')}
+          </span>
           {condition.type === 'segment' ? (
             <>
-              <span>{condition.negate ? 'not in segment' : 'in segment'}</span>
+              <span>{condition.negate ? t('explain.notInSegment') : t('explain.inSegment')}</span>
               <Badge variant="secondary" className="font-normal">
                 {result.segmentNames[condition.segmentKey] ?? condition.segmentKey}
               </Badge>
             </>
           ) : (
             <code className="rounded bg-muted px-1.5 py-0.5 font-mono">
-              {describeCondition(condition)}
+              {describeCondition(condition, t)}
             </code>
           )}
         </li>
@@ -138,21 +148,38 @@ function Explanation({
   result: PlaygroundFlagResult
   environment: EnvironmentLike
 }) {
+  const { t } = useTranslation(['playground', 'segments', 'flags', 'common'])
   const { details } = result
-  const label = ruleLabel(result)
+  const label = ruleLabel(result, t)
   switch (details.reason) {
     case 'DISABLED':
       return (
         <p className="text-sm">
-          The flag is off in <strong>{environment.name}</strong>; the off variant was served.
+          <Trans
+            t={t}
+            i18nKey="explain.disabled"
+            values={{ environment: environment.name }}
+            components={[<strong key="environment" />]}
+          />
         </p>
       )
     case 'TARGETING_MATCH':
       return (
         <div className="flex flex-col gap-2">
           <p className="text-sm">
-            <strong>Rule {(result.rule?.index ?? 0) + 1}</strong> matched
-            {result.rule?.description ? `: ${result.rule.description}` : '.'}
+            <Trans
+              t={t}
+              i18nKey={
+                result.rule?.description
+                  ? 'explain.targetingMatchDescribed'
+                  : 'explain.targetingMatch'
+              }
+              values={{
+                number: (result.rule?.index ?? 0) + 1,
+                description: result.rule?.description,
+              }}
+              components={[<strong key="rule" />]}
+            />
           </p>
           <ConditionList result={result} />
         </div>
@@ -163,34 +190,47 @@ function Explanation({
           {result.servedBy === 'rule' ? (
             <div className="flex flex-col gap-2">
               <p className="text-sm">
-                <strong>{label}</strong> matched and serves a rollout.
+                <Trans
+                  t={t}
+                  i18nKey="explain.splitRule"
+                  values={{ label }}
+                  components={[<strong key="label" />]}
+                />
               </p>
               <ConditionList result={result} />
             </div>
           ) : null}
           {result.servedBy === 'experiment' ? (
             <p className="text-sm">
-              Allocated by experiment{' '}
-              <code className="rounded bg-muted px-1 font-mono text-xs">
-                {details.experimentKey}
-              </code>
-              .
+              <Trans
+                t={t}
+                i18nKey="explain.splitExperiment"
+                values={{ key: details.experimentKey }}
+                components={[
+                  <code key="key" className="rounded bg-muted px-1 font-mono text-xs" />,
+                ]}
+              />
             </p>
           ) : null}
           <p className="text-sm">
-            Rollout: this context lands in bucket{' '}
-            <strong className="tabular">
-              {details.bucket === undefined ? '?' : formatPercent(details.bucket)}
-            </strong>{' '}
-            (sticky per{' '}
-            <code className="rounded bg-muted px-1 font-mono text-xs">{result.bucketBy}</code>
-            ).
+            <Trans
+              t={t}
+              i18nKey="explain.splitBucket"
+              values={{
+                bucket: details.bucket === undefined ? '?' : formatPercent(details.bucket),
+                bucketBy: result.bucketBy,
+              }}
+              components={[
+                <strong key="bucket" className="tabular" />,
+                <code key="bucketBy" className="rounded bg-muted px-1 font-mono text-xs" />,
+              ]}
+            />
           </p>
           <BucketBar result={result} />
         </div>
       )
     case 'STATIC':
-      return <p className="text-sm">No rule matched; the default was served.</p>
+      return <p className="text-sm">{t('explain.static')}</p>
     case 'ERROR':
       return (
         <div className="flex flex-col gap-2">
@@ -201,15 +241,10 @@ function Explanation({
             {details.errorMessage}
           </p>
           {details.errorCode === 'TARGETING_KEY_MISSING' ? (
-            <p className="text-xs text-muted-foreground">
-              Add a targeting key in the context. Rollouts and per-user rules need one to decide who
-              gets what.
-            </p>
+            <p className="text-xs text-muted-foreground">{t('explain.targetingKeyMissing')}</p>
           ) : null}
           {details.errorCode === 'FLAG_NOT_FOUND' ? (
-            <p className="text-xs text-muted-foreground">
-              The flag is archived or does not exist in this environment.
-            </p>
+            <p className="text-xs text-muted-foreground">{t('explain.flagNotFound')}</p>
           ) : null}
         </div>
       )
@@ -258,6 +293,7 @@ export function SingleResult({
   evaluationId: number
   stale?: boolean
 }) {
+  const { t } = useTranslation('playground')
   const type = result.flag?.type
   return (
     <MotionConfig reducedMotion="user">
@@ -288,7 +324,9 @@ export function SingleResult({
                     hideValue
                   />
                 ) : (
-                  <span className="font-mono text-xs text-muted-foreground">no variant</span>
+                  <span className="font-mono text-xs text-muted-foreground">
+                    {t('result.noVariant')}
+                  </span>
                 )}
                 <ReasonBadge reason={result.details.reason} />
               </div>
@@ -303,7 +341,9 @@ export function SingleResult({
             </div>
             {result.matchedSegments.length > 0 ? (
               <div className="flex flex-col gap-1.5">
-                <span className="text-xs font-medium text-muted-foreground">Matched segments</span>
+                <span className="text-xs font-medium text-muted-foreground">
+                  {t('result.matchedSegments')}
+                </span>
                 <div className="flex flex-wrap gap-1.5">
                   {result.matchedSegments.map((segment) => (
                     <Badge key={segment.key} variant="secondary" className="font-normal">
@@ -333,6 +373,7 @@ export function AllFlagsResult({
   onSelect: (flagKey: string) => void
   stale?: boolean
 }) {
+  const { t } = useTranslation(['playground', 'common'])
   if (results.length === 0) {
     return (
       <Empty className="border border-dashed">
@@ -340,8 +381,8 @@ export function AllFlagsResult({
           <EmptyMedia variant="icon">
             <FlaskConicalIcon />
           </EmptyMedia>
-          <EmptyTitle>No flags in this environment</EmptyTitle>
-          <EmptyDescription>Archived flags are not evaluated.</EmptyDescription>
+          <EmptyTitle>{t('all.empty.title')}</EmptyTitle>
+          <EmptyDescription>{t('all.empty.description')}</EmptyDescription>
         </EmptyHeader>
       </Empty>
     )
@@ -356,18 +397,22 @@ export function AllFlagsResult({
         className="flex flex-col gap-2"
       >
         <p className="text-xs text-muted-foreground">
-          {pluralize(results.length, 'flag')} evaluated
-          {errors > 0 ? `, ${pluralize(errors, 'error')}` : ''}. Select a row for details.
+          {errors > 0
+            ? t('all.summaryWithErrors', {
+                flags: t('common:counts.flags', { count: results.length }),
+                errors: t('all.errors', { count: errors }),
+              })
+            : t('all.summary', { flags: t('common:counts.flags', { count: results.length }) })}
         </p>
         <div className="rounded-lg border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Flag</TableHead>
-                <TableHead>Value</TableHead>
-                <TableHead>Variant</TableHead>
-                <TableHead>Reason</TableHead>
-                <TableHead>Matched rule</TableHead>
+                <TableHead>{t('common:labels.flag')}</TableHead>
+                <TableHead>{t('common:labels.value')}</TableHead>
+                <TableHead>{t('common:labels.variant')}</TableHead>
+                <TableHead>{t('common:labels.reason')}</TableHead>
+                <TableHead>{t('all.columns.matchedRule')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -435,21 +480,19 @@ export function AllFlagsResult({
 }
 
 export function ResultEmpty({ children }: { children?: ReactNode }) {
+  const { t } = useTranslation('playground')
   return (
     <Empty className="border border-dashed">
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <FlaskConicalIcon />
         </EmptyMedia>
-        <EmptyTitle>No result yet</EmptyTitle>
-        <EmptyDescription>
-          Fill in a context and choose Evaluate. Playground runs never count towards metrics or
-          experiment exposure.
-        </EmptyDescription>
+        <EmptyTitle>{t('result.empty.title')}</EmptyTitle>
+        <EmptyDescription>{t('result.empty.description')}</EmptyDescription>
       </EmptyHeader>
       {children}
       <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        Shortcut <Kbd>⌘</Kbd>
+        {t('result.empty.shortcut')} <Kbd>⌘</Kbd>
         <Kbd>↵</Kbd>
       </p>
     </Empty>
@@ -468,13 +511,14 @@ export function ResultSkeleton() {
 }
 
 export function ResultError({ message }: { message: string }) {
+  const { t } = useTranslation('playground')
   return (
     <Empty className="border border-dashed border-destructive/40">
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <TriangleAlertIcon />
         </EmptyMedia>
-        <EmptyTitle>Could not evaluate</EmptyTitle>
+        <EmptyTitle>{t('result.error.title')}</EmptyTitle>
         <EmptyDescription className="font-mono text-xs break-words">{message}</EmptyDescription>
       </EmptyHeader>
     </Empty>
@@ -482,9 +526,10 @@ export function ResultError({ message }: { message: string }) {
 }
 
 export function BackToAll({ onClick }: { onClick: () => void }) {
+  const { t } = useTranslation('playground')
   return (
     <Button type="button" variant="ghost" size="sm" onClick={onClick} className="self-start">
-      <ArrowLeftIcon /> All flags
+      <ArrowLeftIcon /> {t('result.backToAll')}
     </Button>
   )
 }

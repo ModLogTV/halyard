@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { ChevronRightIcon } from 'lucide-react'
 import { AnimatePresence, MotionConfig, motion } from 'motion/react'
+import { useTranslation } from 'react-i18next'
 import { EnvDot, envStyle } from '@/components/env/env-badge'
 import { summariseServe } from '@/components/flags/flag-table'
 import { FlagTypeBadge } from '@/components/flags/flag-type-badge'
@@ -14,7 +15,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { pluralize } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { FlagDetail } from './flag-detail'
 import { PromoteButton } from './promote-button'
@@ -49,6 +49,7 @@ function MatrixCell({
   promoteDisabledReason?: string
   onPromote: () => void
 }) {
+  const { t } = useTranslation(['compare', 'common'])
   const summary = summaryFor(flag, environment)
   const isBaseline = environment.id === baseline.id
   const differs = cellDiffers(flag, environment, baseline)
@@ -68,19 +69,33 @@ function MatrixCell({
             summary.enabled ? 'bg-on' : 'bg-muted-foreground/40',
           )}
         />
-        {summary.enabled ? 'on' : 'off'}
-        {differs ? <span className="sr-only"> (differs from {baseline.name})</span> : null}
+        {summary.enabled ? t('common:states.on') : t('common:states.off')}
+        {differs ? (
+          <span className="sr-only">
+            {' '}
+            {t('matrix.differsFromBaseline', { baseline: baseline.name })}
+          </span>
+        ) : null}
       </span>
       <span className="truncate font-mono text-xs" title={summariseServe(summary.fallthrough)}>
         {summariseServe(summary.fallthrough)}
       </span>
       <span className="tabular truncate text-[11px] text-muted-foreground">
-        {summary.ruleCount > 0 ? pluralize(summary.ruleCount, 'rule') : 'no rules'} · v
-        {summary.version}
+        {t('matrix.ruleSummary', {
+          rules:
+            summary.ruleCount > 0
+              ? t('common:counts.rules', { count: summary.ruleCount })
+              : t('matrix.noRules'),
+          version: summary.version,
+        })}
       </span>
       {isBaseline ? null : (
         <PromoteButton
-          label={`Promote ${flag.key} from ${baseline.name} to ${environment.name}`}
+          label={t('promote.label', {
+            flag: flag.key,
+            from: baseline.name,
+            to: environment.name,
+          })}
           disabledReason={promoteDisabledReason}
           onClick={onPromote}
           className={cn(
@@ -109,6 +124,7 @@ export function CompareMatrix({
   promoteDisabledReason,
   onPromote,
 }: CompareMatrixProps) {
+  const { t } = useTranslation(['compare', 'common'])
   const allSelected = flags.length > 0 && flags.every((f) => selected.has(f.key))
   const someSelected = flags.some((f) => selected.has(f.key))
 
@@ -138,13 +154,13 @@ export function CompareMatrix({
                 <Checkbox
                   checked={allSelected ? true : someSelected ? 'indeterminate' : false}
                   onCheckedChange={(checked) => toggleAll(checked === true)}
-                  aria-label="Select all visible flags"
+                  aria-label={t('matrix.selectAll')}
                 />
               </TableHead>
               <TableHead className="w-10">
-                <span className="sr-only">Expand</span>
+                <span className="sr-only">{t('matrix.expandColumn')}</span>
               </TableHead>
-              <TableHead className="min-w-56">Flag</TableHead>
+              <TableHead className="min-w-56">{t('common:labels.flag')}</TableHead>
               {environments.map((environment) => (
                 <TableHead key={environment.id} className="min-w-44 align-top">
                   <div className="flex flex-col gap-1 py-1" style={envStyle(environment)}>
@@ -161,7 +177,7 @@ export function CompareMatrix({
                         onChange={() => onBaselineChange(environment.key)}
                         className="size-3 accent-primary"
                       />
-                      Baseline
+                      {t('matrix.baseline')}
                     </label>
                   </div>
                 </TableHead>
@@ -223,6 +239,7 @@ function FlagRows({
   onToggleExpanded: (flagKey: string) => void
   toggleOne: (key: string, checked: boolean) => void
 }) {
+  const { t } = useTranslation(['compare', 'common'])
   // Version numbers change when a flag is edited or promoted, which reloads an open detail.
   const versionKey = flag.environments.map((e) => e.version).join('.')
   return (
@@ -236,13 +253,13 @@ function FlagRows({
           <Checkbox
             checked={isSelected}
             onCheckedChange={(checked) => toggleOne(flag.key, checked === true)}
-            aria-label={`Select ${flag.key}`}
+            aria-label={t('matrix.selectFlag', { flag: flag.key })}
           />
         </TableCell>
         <TableCell onClick={(e) => e.stopPropagation()}>
           <IconButton
-            label={open ? `Collapse ${flag.key}` : `Expand ${flag.key}`}
-            tooltip={open ? 'Collapse details' : 'Show full configuration'}
+            label={t(open ? 'matrix.collapseFlag' : 'matrix.expandFlag', { flag: flag.key })}
+            tooltip={t(open ? 'matrix.collapseTooltip' : 'matrix.expandTooltip')}
             aria-expanded={open}
             onClick={() => onToggleExpanded(flag.key)}
           >
@@ -306,7 +323,11 @@ function FlagRows({
                   baseline={baseline}
                   renderAction={(environment) => (
                     <PromoteButton
-                      label={`Promote ${flag.key} from ${baseline.name} to ${environment.name}`}
+                      label={t('promote.label', {
+                        flag: flag.key,
+                        from: baseline.name,
+                        to: environment.name,
+                      })}
                       disabledReason={promoteDisabledReason}
                       onClick={() => onPromote(flag.key, baseline.key, environment.key)}
                     />

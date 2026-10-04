@@ -3,6 +3,7 @@ import { validateFlagDefinition } from '@halyard/engine'
 import { createFileRoute, getRouteApi, Link, useNavigate, useRouter } from '@tanstack/react-router'
 import { ArrowLeftIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { TagInput, VariantSelect, VariantsEditor } from '@/components/flags'
 import { PageHeader } from '@/components/layout/page-header'
@@ -23,29 +24,20 @@ import { Input } from '@/components/ui/input'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
+import { translate } from '@/lib/i18n'
 import { createFlag } from '@/server/functions/flags'
 
 const projectRoute = getRouteApi('/app/$projectSlug')
 
 export const Route = createFileRoute('/app/$projectSlug/flags/new')({
   staticData: { crumbKey: 'newFlag' },
+  head: ({ match }) => ({
+    meta: [{ title: translate(match.context.locale)('flags:new.pageTitle') }],
+  }),
   component: NewFlagPage,
 })
 
-const TYPE_OPTIONS: { value: FlagType; label: string; description: string }[] = [
-  { value: 'boolean', label: 'Boolean', description: 'On or off. The most common kind of flag.' },
-  {
-    value: 'string',
-    label: 'String',
-    description: 'Pick one of several text values, for example a banner text.',
-  },
-  {
-    value: 'number',
-    label: 'Number',
-    description: 'Pick one of several numeric values, for example a limit.',
-  },
-  { value: 'json', label: 'JSON', description: 'Structured configuration objects.' },
-]
+const TYPE_OPTIONS: FlagType[] = ['boolean', 'string', 'number', 'json']
 
 function defaultVariants(type: FlagType): Variant[] {
   switch (type) {
@@ -82,6 +74,7 @@ function keyify(value: string): string {
 }
 
 function NewFlagPage() {
+  const { t } = useTranslation(['flags', 'common'])
   const { project } = projectRoute.useLoaderData()
   const navigate = useNavigate()
   const router = useRouter()
@@ -144,14 +137,14 @@ function NewFlagPage() {
           defaultVariant,
         },
       })
-      toast.success(`Flag ${key} created`)
+      toast.success(t('new.created', { key }))
       await router.invalidate()
       await navigate({
         to: '/app/$projectSlug/flags/$flagKey',
         params: { projectSlug: project.slug, flagKey: key },
       })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not create the flag')
+      setError(err instanceof Error ? err.message : t('new.createFailed'))
     } finally {
       setPending(false)
     }
@@ -162,31 +155,26 @@ function NewFlagPage() {
       <div>
         <Button asChild variant="ghost" size="sm" className="-ml-2 mb-2">
           <Link to="/app/$projectSlug/flags" params={{ projectSlug: project.slug }}>
-            <ArrowLeftIcon /> Flags
+            <ArrowLeftIcon /> {t('common:labels.flags')}
           </Link>
         </Button>
-        <PageHeader
-          title="New flag"
-          description="A flag is defined once per project and configured separately in each environment. It starts switched off everywhere."
-        />
+        <PageHeader title={t('new.title')} description={t('new.description')} />
       </div>
       <form onSubmit={onSubmit} noValidate className="flex flex-col gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Definition</CardTitle>
-            <CardDescription>
-              Key and type cannot be changed after the flag is created.
-            </CardDescription>
+            <CardTitle>{t('new.definition.title')}</CardTitle>
+            <CardDescription>{t('new.definition.description')}</CardDescription>
           </CardHeader>
           <CardContent>
             <FieldGroup>
               <Field>
-                <FieldLabel htmlFor="name">Name</FieldLabel>
+                <FieldLabel htmlFor="name">{t('common:labels.name')}</FieldLabel>
                 <Input
                   id="name"
                   value={name}
                   autoFocus
-                  placeholder="New payment flow"
+                  placeholder={t('new.form.namePlaceholder')}
                   onChange={(e) => {
                     setName(e.target.value)
                     if (!keyTouched) setKey(keyify(e.target.value))
@@ -194,7 +182,7 @@ function NewFlagPage() {
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="key">Key</FieldLabel>
+                <FieldLabel htmlFor="key">{t('common:labels.key')}</FieldLabel>
                 <Input
                   id="key"
                   value={key}
@@ -207,28 +195,30 @@ function NewFlagPage() {
                   aria-invalid={problems.some((p) => p.toLowerCase().includes('key'))}
                 />
                 <FieldDescription>
-                  Used in code and the API. Letters, numbers, dots, dashes and underscores.
-                  Prefixing by area (for example <span className="font-mono">checkout.</span>) keeps
-                  the list tidy.
+                  <Trans
+                    t={t}
+                    i18nKey="new.form.keyHelp"
+                    components={[<span key="prefix" className="font-mono" />]}
+                  />
                 </FieldDescription>
               </Field>
               <Field>
-                <FieldLabel htmlFor="description">Description</FieldLabel>
+                <FieldLabel htmlFor="description">{t('common:labels.description')}</FieldLabel>
                 <Textarea
                   id="description"
                   rows={2}
                   value={description}
-                  placeholder="What does this flag control, and when can it be removed?"
+                  placeholder={t('new.form.descriptionPlaceholder')}
                   onChange={(e) => setDescription(e.target.value)}
                 />
               </Field>
               <Field>
-                <FieldLabel>Tags</FieldLabel>
+                <FieldLabel>{t('common:labels.tags')}</FieldLabel>
                 <TagInput
-                  aria-label="Tags"
+                  aria-label={t('common:labels.tags')}
                   values={tags}
                   onChange={setTags}
-                  placeholder="Add a tag and press Enter"
+                  placeholder={t('new.form.tagsPlaceholder')}
                 />
               </Field>
             </FieldGroup>
@@ -237,29 +227,25 @@ function NewFlagPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Type and variants</CardTitle>
-            <CardDescription>Variants are the values a flag can resolve to.</CardDescription>
+            <CardTitle>{t('new.variants.title')}</CardTitle>
+            <CardDescription>{t('new.variants.description')}</CardDescription>
           </CardHeader>
           <CardContent>
             <FieldGroup>
               <FieldSet>
-                <FieldLegend>Type</FieldLegend>
+                <FieldLegend>{t('common:labels.type')}</FieldLegend>
                 <RadioGroup
                   value={type}
                   onValueChange={(v) => changeType(v as FlagType)}
                   className="grid gap-2 sm:grid-cols-2"
                 >
                   {TYPE_OPTIONS.map((option) => (
-                    <FieldLabel key={option.value} htmlFor={`type-${option.value}`}>
+                    <FieldLabel key={option} htmlFor={`type-${option}`}>
                       <Field orientation="horizontal" className="items-start">
-                        <RadioGroupItem
-                          value={option.value}
-                          id={`type-${option.value}`}
-                          className="mt-0.5"
-                        />
+                        <RadioGroupItem value={option} id={`type-${option}`} className="mt-0.5" />
                         <FieldContent>
-                          <FieldTitle>{option.label}</FieldTitle>
-                          <FieldDescription>{option.description}</FieldDescription>
+                          <FieldTitle>{t(`common:flagTypes.${option}`)}</FieldTitle>
+                          <FieldDescription>{t(`new.types.${option}`)}</FieldDescription>
                         </FieldContent>
                       </Field>
                     </FieldLabel>
@@ -267,7 +253,7 @@ function NewFlagPage() {
                 </RadioGroup>
               </FieldSet>
               <Field>
-                <FieldLabel>Variants</FieldLabel>
+                <FieldLabel>{t('common:labels.variants')}</FieldLabel>
                 <VariantsEditor
                   type={type}
                   value={variants}
@@ -277,7 +263,7 @@ function NewFlagPage() {
               </Field>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field>
-                  <FieldLabel htmlFor="off-variant">Serve when off</FieldLabel>
+                  <FieldLabel htmlFor="off-variant">{t('new.form.serveWhenOff')}</FieldLabel>
                   <VariantSelect
                     id="off-variant"
                     variants={variants}
@@ -285,10 +271,10 @@ function NewFlagPage() {
                     value={offVariant}
                     onValueChange={setOffVariant}
                   />
-                  <FieldDescription>Returned while the flag is disabled.</FieldDescription>
+                  <FieldDescription>{t('new.form.serveWhenOffHelp')}</FieldDescription>
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="default-variant">Default when on</FieldLabel>
+                  <FieldLabel htmlFor="default-variant">{t('new.form.defaultWhenOn')}</FieldLabel>
                   <VariantSelect
                     id="default-variant"
                     variants={variants}
@@ -296,7 +282,7 @@ function NewFlagPage() {
                     value={defaultVariant}
                     onValueChange={setDefaultVariant}
                   />
-                  <FieldDescription>Returned when no targeting rule matches.</FieldDescription>
+                  <FieldDescription>{t('new.form.defaultWhenOnHelp')}</FieldDescription>
                 </Field>
               </div>
               {problems.length > 0 ? <FieldError>{problems.join(' ')}</FieldError> : null}
@@ -308,12 +294,12 @@ function NewFlagPage() {
         <div className="flex items-center justify-end gap-2">
           <Button asChild variant="ghost">
             <Link to="/app/$projectSlug/flags" params={{ projectSlug: project.slug }}>
-              Cancel
+              {t('common:actions.cancel')}
             </Link>
           </Button>
           <Button type="submit" disabled={!canSubmit || pending}>
             {pending ? <Spinner /> : null}
-            Create flag
+            {t('new.form.submit')}
           </Button>
         </div>
       </form>

@@ -1,4 +1,5 @@
 import { TriangleAlertIcon } from 'lucide-react'
+import { Trans, useTranslation } from 'react-i18next'
 import { CopyButton } from '@/components/settings/copy-button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -26,6 +27,7 @@ export function SecretRevealDialog({
   revealed: RevealedSecret | null
   onClose: () => void
 }) {
+  const { t } = useTranslation(['settings', 'common'])
   return (
     <Dialog open={revealed !== null} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl [&>*]:min-w-0">
@@ -33,42 +35,46 @@ export function SecretRevealDialog({
           <>
             <DialogHeader>
               <DialogTitle>
-                {revealed.kind === 'created' ? 'Webhook created' : 'Secret rotated'}
+                {revealed.kind === 'created'
+                  ? t('webhooks.reveal.createdTitle')
+                  : t('webhooks.reveal.rotatedTitle')}
               </DialogTitle>
               <DialogDescription>
                 {revealed.kind === 'created'
-                  ? `${revealed.name} is enabled and will receive the events you chose.`
-                  : `The previous secret of ${revealed.name} no longer works. Update your endpoint.`}
+                  ? t('webhooks.reveal.createdDescription', { name: revealed.name })
+                  : t('webhooks.reveal.rotatedDescription', { name: revealed.name })}
               </DialogDescription>
             </DialogHeader>
             <Alert>
               <TriangleAlertIcon />
-              <AlertTitle>Copy the signing secret now</AlertTitle>
-              <AlertDescription>
-                It is shown only once. If you lose it, rotate the secret to get a new one.
-              </AlertDescription>
+              <AlertTitle>{t('webhooks.reveal.copyNowTitle')}</AlertTitle>
+              <AlertDescription>{t('webhooks.reveal.copyNowDescription')}</AlertDescription>
             </Alert>
             <div className="flex items-center gap-2">
               <code className="min-w-0 flex-1 select-all break-all rounded-md border bg-muted/50 px-3 py-2 font-mono text-sm">
-                <span className="sr-only">Signing secret: </span>
+                <span className="sr-only">{t('webhooks.reveal.secretSr')} </span>
                 {revealed.secret}
               </code>
-              <CopyButton value={revealed.secret} label="Copy secret" />
+              <CopyButton value={revealed.secret} label={t('webhooks.reveal.copySecret')} />
             </div>
             <div className="flex flex-col gap-2">
-              <h3 className="font-medium text-sm">Request headers</h3>
+              <h3 className="font-medium text-sm">{t('webhooks.reveal.headersTitle')}</h3>
               <HeadersTable />
             </div>
             <div className="flex flex-col gap-2">
-              <h3 className="font-medium text-sm">Verify the signature (Node.js)</h3>
+              <h3 className="font-medium text-sm">{t('webhooks.reveal.verifyTitle')}</h3>
               <p className="text-muted-foreground text-sm">
-                The signature is <code className="font-mono text-xs">{SIGNATURE_FORMULA}</code>.
-                Reject requests older than 5 minutes.
+                <Trans
+                  t={t}
+                  i18nKey="webhooks.reveal.signatureIs"
+                  values={{ formula: SIGNATURE_FORMULA }}
+                  components={[<code key="formula" className="font-mono text-xs" />]}
+                />
               </p>
               <VerifySnippet />
             </div>
             <DialogFooter>
-              <Button onClick={onClose}>I have saved the secret</Button>
+              <Button onClick={onClose}>{t('webhooks.reveal.done')}</Button>
             </DialogFooter>
           </>
         ) : null}

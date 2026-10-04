@@ -37,7 +37,7 @@ Header (position, description, move, delete with confirmation), conditions joine
 `condition, onChange(condition), onRemove(), segments, attributeSuggestions?, disabled?, index`
 
 Attribute conditions (attribute with datalist, grouped operator select, value editor per operator) and
-segment conditions. The kebab menu switches kind or removes. `OPERATOR_GROUPS`, `OPERATOR_LABELS` and
+segment conditions. The kebab menu switches kind or removes. `OPERATOR_GROUPS`, `OPERATOR_KEYS` (translation keys under `flags:conditions.operators`) and
 `valueKind` are exported for reuse (e.g. segment editors).
 
 ## ServeEditor
@@ -79,4 +79,4 @@ keeps the last valid value in `value`; use `onValidityChange` (or `validateFlagD
 ## Formatting helpers (`@/lib/format`)
 
 `formatVariantValue(value, type, { maxLength? })`, `formatPercent(weight)`, `formatRelativeTime(date, { now?, locale? })`,
-`formatDateTime(date)`, `pluralize(count, singular, plural?)` (the count is included: `pluralize(2, 'rule')` is `"2 rules"`).
+`formatDateTime(date, locale?)`. Counts use plural translation keys (`t('common:counts.rules', { count })`).

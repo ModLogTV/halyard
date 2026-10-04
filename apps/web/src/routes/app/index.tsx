@@ -1,7 +1,9 @@
 import { createFileRoute, getRouteApi, Link, redirect } from '@tanstack/react-router'
 import { ArrowRightIcon, FlagIcon, LayersIcon, PlusIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { HalyardMark } from '@/components/brand'
 import { InvitationList } from '@/components/invitations'
+import { useRoleLabel } from '@/components/layout/role-label'
 import { Button } from '@/components/ui/button'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -12,6 +14,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@/components/ui/empty'
+import { translate } from '@/lib/i18n'
 import { listMyInvitations } from '@/server/functions/members'
 import { listProjects } from '@/server/functions/projects'
 
@@ -26,11 +29,15 @@ export const Route = createFileRoute('/app/')({
     }
     return { invitations }
   },
-  head: () => ({ meta: [{ title: 'Projects · Halyard' }] }),
+  head: ({ match }) => ({
+    meta: [{ title: translate(match.context.locale)('projects:list.pageTitle') }],
+  }),
   component: ProjectsPage,
 })
 
 function ProjectsPage() {
+  const { t } = useTranslation(['projects', 'common'])
+  const roleLabel = useRoleLabel()
   const { invitations } = Route.useLoaderData()
   const { projects } = appRoute.useLoaderData()
 
@@ -43,14 +50,16 @@ function ProjectsPage() {
         </div>
         <Button asChild>
           <Link to="/app/new">
-            <PlusIcon /> New project
+            <PlusIcon /> {t('list.newProject')}
           </Link>
         </Button>
       </div>
 
       {invitations.length > 0 ? (
         <section className="mb-10">
-          <h2 className="mb-3 text-sm font-medium text-muted-foreground">Invitations</h2>
+          <h2 className="mb-3 text-sm font-medium text-muted-foreground">
+            {t('list.invitations')}
+          </h2>
           <InvitationList invitations={invitations} />
         </section>
       ) : null}
@@ -61,22 +70,22 @@ function ProjectsPage() {
             <EmptyMedia variant="icon">
               <LayersIcon />
             </EmptyMedia>
-            <EmptyTitle>No projects yet</EmptyTitle>
-            <EmptyDescription>
-              A project owns its flags, segments and environments. Create one to get started.
-            </EmptyDescription>
+            <EmptyTitle>{t('list.empty.title')}</EmptyTitle>
+            <EmptyDescription>{t('list.empty.description')}</EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
             <Button asChild>
               <Link to="/app/new">
-                <PlusIcon /> Create a project
+                <PlusIcon /> {t('list.empty.create')}
               </Link>
             </Button>
           </EmptyContent>
         </Empty>
       ) : (
         <section>
-          <h2 className="mb-3 text-sm font-medium text-muted-foreground">Projects</h2>
+          <h2 className="mb-3 text-sm font-medium text-muted-foreground">
+            {t('common:labels.projects')}
+          </h2>
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {projects.map((project) => (
               <li key={project.id}>
@@ -99,7 +108,7 @@ function ProjectsPage() {
                         <span className="inline-flex items-center gap-1 tabular">
                           <LayersIcon className="size-3" /> {project.environmentCount}
                         </span>
-                        <span className="ml-auto capitalize">{project.role}</span>
+                        <span className="ml-auto">{roleLabel(project.role)}</span>
                       </CardDescription>
                     </CardHeader>
                   </Card>

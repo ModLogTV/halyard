@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 
@@ -34,8 +35,14 @@ export function SettingsSection({
 
 /** Route `pendingComponent` for settings pages. */
 export function SettingsPending({ rows = 3 }: { rows?: number }) {
+  const { t } = useTranslation()
   return (
-    <div className="flex flex-col gap-3" role="status" aria-busy="true" aria-label="Loading">
+    <div
+      className="flex flex-col gap-3"
+      role="status"
+      aria-busy="true"
+      aria-label={t('a11y.loading')}
+    >
       <Skeleton className="h-5 w-40" />
       <Skeleton className="h-4 w-72" />
       <div className="mt-2 grid gap-2">

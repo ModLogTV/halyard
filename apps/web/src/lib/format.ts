@@ -76,9 +76,3 @@ export function formatRelativeTime(
   if (days < 7) return rtf.format(sign * days, 'day')
   return formatDate(d, opts.locale)
 }
-
-/** `pluralize(1, 'rule')` -> `1 rule`, `pluralize(2, 'rule')` -> `2 rules`. The count is included. */
-export function pluralize(count: number, singular: string, plural?: string): string {
-  const word = count === 1 ? singular : (plural ?? `${singular}s`)
-  return `${count} ${word}`
-}

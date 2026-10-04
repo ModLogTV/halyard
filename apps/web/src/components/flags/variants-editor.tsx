@@ -3,12 +3,12 @@ import { isValidKey, validateFlagDefinition } from '@halyard/engine'
 import { CircleAlertIcon, PlusIcon, Trash2Icon } from 'lucide-react'
 import { AnimatePresence, MotionConfig, motion } from 'motion/react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { pluralize } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { IconButton } from './icon-button'
 import { useStableKeys } from './use-stable-keys'
@@ -68,6 +68,7 @@ export function VariantsEditor({
   onValidityChange,
   className,
 }: VariantsEditorProps) {
+  const { t } = useTranslation(['flags', 'common'])
   const isBoolean = type === 'boolean'
   const { keys, add, remove } = useStableKeys(value.length)
   const [jsonErrors, setJsonErrors] = useState<Record<string, string>>({})
@@ -134,9 +135,9 @@ export function VariantsEditor({
           )}
           aria-hidden="true"
         >
-          <span>Key</span>
-          <span>Value</span>
-          <span>Name (optional)</span>
+          <span>{t('common:labels.key')}</span>
+          <span>{t('common:labels.value')}</span>
+          <span>{t('variants.nameColumn')}</span>
           <span className="w-8" />
         </div>
 
@@ -150,9 +151,9 @@ export function VariantsEditor({
               const removeReason = isBoolean
                 ? undefined
                 : locked
-                  ? 'Used by live configuration. Remove it from targeting first.'
+                  ? t('variants.removeReasonLocked')
                   : value.length <= minVariants
-                    ? `A flag needs at least ${minVariants} variants.`
+                    ? t('variants.removeReasonMinimum', { count: minVariants })
                     : undefined
               return (
                 <motion.li
@@ -174,7 +175,7 @@ export function VariantsEditor({
                       value={variant.key}
                       onChange={(event) => patch(index, { key: event.target.value })}
                       placeholder="variant-key"
-                      aria-label={`Variant ${n} key`}
+                      aria-label={t('variants.keyLabel', { n })}
                       aria-invalid={keyInvalid || undefined}
                       readOnly={locked}
                       disabled={disabled}
@@ -208,8 +209,8 @@ export function VariantsEditor({
                         ),
                       )
                     }}
-                    placeholder="Display name"
-                    aria-label={`Variant ${n} name`}
+                    placeholder={t('variants.namePlaceholder')}
+                    aria-label={t('variants.nameLabel', { n })}
                     disabled={disabled}
                     className="h-8 text-xs md:text-xs"
                   />
@@ -217,8 +218,8 @@ export function VariantsEditor({
                   <div className="flex h-8 w-8 items-center justify-end">
                     {isBoolean ? null : (
                       <IconButton
-                        label={`Remove variant ${variant.key || n}`}
-                        tooltip="Remove variant"
+                        label={t('variants.removeLabel', { name: variant.key || n })}
+                        tooltip={t('variants.remove')}
                         disabledReason={removeReason}
                         disabled={disabled}
                         className="hover:text-destructive"
@@ -236,8 +237,14 @@ export function VariantsEditor({
 
         {isBoolean ? (
           <p className="text-muted-foreground text-xs">
-            Boolean flags always have two variants, <span className="font-mono">true</span> and{' '}
-            <span className="font-mono">false</span>. You can rename them.
+            <Trans
+              t={t}
+              i18nKey="variants.booleanHint"
+              components={[
+                <span key="true" className="font-mono" />,
+                <span key="false" className="font-mono" />,
+              ]}
+            />
           </p>
         ) : (
           <div>
@@ -249,7 +256,7 @@ export function VariantsEditor({
               disabled={disabled}
             >
               <PlusIcon aria-hidden="true" />
-              Add variant
+              {t('variants.add')}
             </Button>
           </div>
         )}
@@ -258,7 +265,9 @@ export function VariantsEditor({
           <Alert variant="destructive" className="py-2">
             <CircleAlertIcon aria-hidden="true" />
             <AlertDescription>
-              <p className="font-medium">{pluralize(problems.length, 'problem')} with variants</p>
+              <p className="font-medium">
+                {t('variants.problemsTitle', { count: problems.length })}
+              </p>
               <ul className="list-inside list-disc">
                 {problems.map((problem) => (
                   <li key={problem}>{problem}</li>
@@ -289,14 +298,15 @@ function ValueField({
   onChange: (value: JsonValue) => void
   onJsonError: (rowKey: string, message: string | null) => void
 }) {
-  const label = `Variant ${n} value`
+  const { t } = useTranslation('flags')
+  const label = t('variants.valueLabel', { n })
   if (type === 'boolean') {
     return (
       <div className="flex h-8 items-center">
         <Badge
           variant="outline"
           className="font-mono text-xs"
-          aria-label={`${label}: ${String(value)}`}
+          aria-label={t('variants.booleanValueLabel', { label, value: String(value) })}
         >
           {String(value)}
         </Badge>
@@ -322,7 +332,7 @@ function ValueField({
     <Input
       value={typeof value === 'string' ? value : ''}
       onChange={(event) => onChange(event.target.value)}
-      placeholder="Value"
+      placeholder={t('variants.valuePlaceholder')}
       aria-label={label}
       disabled={disabled}
       spellCheck={false}
@@ -388,6 +398,7 @@ function JsonField({
   onChange: (value: JsonValue) => void
   onError: (rowKey: string, message: string | null) => void
 }) {
+  const { t } = useTranslation('flags')
   const [text, setText] = useState(() => pretty(value))
   const [error, setError] = useState<string | null>(null)
   const lastEmitted = useRef(JSON.stringify(value))
@@ -420,7 +431,7 @@ function JsonField({
             onError(rowKey, null)
             onChange(parsed)
           } catch (cause) {
-            const message = cause instanceof Error ? cause.message : 'Invalid JSON'
+            const message = cause instanceof Error ? cause.message : t('variants.invalidJson')
             setError(message)
             onError(rowKey, message)
           }

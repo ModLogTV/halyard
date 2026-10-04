@@ -1,1 +1,100 @@
-{}
+{
+  "intro": "Reusable groups of users you can target from any flag.",
+  "backToList": "All segments",
+  "readOnly": {
+    "title": "Read-only access",
+    "create": "Viewers cannot create segments. Ask an editor or owner.",
+    "edit": "Viewers can inspect segments but not change them. Ask an editor or owner."
+  },
+  "list": {
+    "pageTitle": "Segments · Halyard",
+    "title": "Segments",
+    "loading": "Loading segments",
+    "newSegment": "New segment",
+    "viewersCannotCreate": "Viewers cannot create segments",
+    "empty": {
+      "title": "No segments yet",
+      "description": "Define a group once, for example beta testers or internal staff, and target it from any flag rule."
+    },
+    "search": {
+      "placeholder": "Search by key or name",
+      "ariaLabel": "Search segments"
+    },
+    "noMatches": {
+      "title": "No matching segments",
+      "description": "Nothing matches “{{query}}”.",
+      "clear": "Clear search"
+    },
+    "columns": {
+      "conditions": "Conditions",
+      "usedBy": "Used by"
+    },
+    "notUsed": "Not used"
+  },
+  "new": {
+    "pageTitle": "New segment · Halyard",
+    "title": "New segment",
+    "submit": "Create segment",
+    "created": "Segment “{{key}}” created",
+    "createFailed": "Could not create the segment"
+  },
+  "detail": {
+    "pageTitle": "{{key}} · Segments · Halyard",
+    "updatedMeta": "updated {{time}}",
+    "unsavedChanges": "Unsaved changes",
+    "saveChanges": "Save changes",
+    "saved": "Segment saved",
+    "saveFailed": "Could not save the segment",
+    "deleted": "Segment “{{key}}” deleted",
+    "deleteFailed": "Could not delete the segment",
+    "actions": "Segment actions",
+    "deleteSegment": "Delete segment"
+  },
+  "editor": {
+    "key": {
+      "placeholder": "beta-testers",
+      "hintEdit": "The key is referenced by flag rules and cannot be changed.",
+      "hintCreate": "Letters, digits, \".\", \"_\" and \"-\". Flag rules reference the segment by this key."
+    },
+    "name": {
+      "placeholder": "Beta testers"
+    },
+    "description": {
+      "placeholder": "Optional"
+    },
+    "membership": {
+      "legend": "Membership",
+      "description": "A user belongs to this segment when they match the conditions below.",
+      "matchMode": "Match mode",
+      "all": "All conditions",
+      "any": "Any condition"
+    },
+    "conditions": {
+      "empty": "No conditions yet. A segment without conditions matches nobody.",
+      "and": "and",
+      "or": "or",
+      "add": "Add condition"
+    }
+  },
+  "deleteDialog": {
+    "inUseTitle": "Segment “{{key}}” is still in use",
+    "title": "Delete segment “{{key}}”?",
+    "inUseDescription_one": "{{count}} flag rule references this segment. Remove the segment condition from this rule first, then delete it.",
+    "inUseDescription_other": "{{count}} flag rules reference this segment. Remove the segment condition from these rules first, then delete it.",
+    "description": "This cannot be undone. No flag rules reference this segment.",
+    "confirm": "Delete segment"
+  },
+  "usages": {
+    "title": "Used by",
+    "empty": "No flag rules reference this segment yet.",
+    "summary": "{{flags}}, {{rules}}. Changes here apply to every one of them.",
+    "rule": "Rule {{number}}"
+  },
+  "describe": {
+    "noConditions": "No conditions",
+    "attributeFallback": "attribute",
+    "moreItems": "+{{count}} more",
+    "joinAll": " · ",
+    "joinAny": " or "
+  }
+}

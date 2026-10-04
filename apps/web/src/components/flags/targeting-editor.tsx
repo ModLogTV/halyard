@@ -3,13 +3,13 @@ import { validateEnvironmentConfig } from '@halyard/engine'
 import { CircleAlertIcon, PlusIcon } from 'lucide-react'
 import { AnimatePresence, MotionConfig, motion } from 'motion/react'
 import { type ReactNode, useId, useMemo } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { EnvBadge, type EnvironmentLike, envStyle } from '@/components/env/env-badge'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Empty, EmptyDescription, EmptyHeader } from '@/components/ui/empty'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { pluralize } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { RuleCard } from './rule-card'
 import { ServeEditor } from './serve-editor'
@@ -32,7 +32,11 @@ export interface TargetingProblems {
 
 const capitalise = (text: string) => text.charAt(0).toUpperCase() + text.slice(1)
 
-function sortProblems(config: FlagEnvironmentConfig, all: string[]): TargetingProblems {
+function sortProblems(
+  config: FlagEnvironmentConfig,
+  all: string[],
+  duplicateRuleIdMessage: string,
+): TargetingProblems {
   const rules: string[][] = (Array.isArray(config.rules) ? config.rules : []).map(() => [])
   const result: TargetingProblems = {
     all,
@@ -55,7 +59,7 @@ function sortProblems(config: FlagEnvironmentConfig, all: string[]): TargetingPr
     const duplicate = /^Rule id "(.*)" is used more than once$/s.exec(problem)
     if (duplicate) {
       config.rules.forEach((rule, index) => {
-        if (rule.id === duplicate[1]) rules[index]?.push('Another rule has the same id.')
+        if (rule.id === duplicate[1]) rules[index]?.push(duplicateRuleIdMessage)
       })
       continue
     }
@@ -79,11 +83,18 @@ export function useTargetingProblems(
   value: FlagEnvironmentConfig,
   segmentKeys: string[],
 ): TargetingProblems {
+  const { t } = useTranslation('flags')
+  const duplicateRuleIdMessage = t('targeting.duplicateRuleId')
   const keySignature = segmentKeys.join('\u0000')
   // biome-ignore lint/correctness/useExhaustiveDependencies: segmentKeys is tracked through its signature so callers may pass a fresh array every render
   return useMemo(
-    () => sortProblems(value, validateEnvironmentConfig(flag, value, segmentKeys)),
-    [flag, value, keySignature],
+    () =>
+      sortProblems(
+        value,
+        validateEnvironmentConfig(flag, value, segmentKeys),
+        duplicateRuleIdMessage,
+      ),
+    [flag, value, keySignature, duplicateRuleIdMessage],
   )
 }
 
@@ -116,6 +127,7 @@ export function TargetingEditor({
   onToggleRequest,
   className,
 }: TargetingEditorProps) {
+  const { t } = useTranslation(['flags', 'common'])
   const switchId = useId()
   const segmentKeys = useMemo(() => segments.map((segment) => segment.key), [segments])
   const problems = useTargetingProblems(flag, value, segmentKeys)
@@ -159,7 +171,7 @@ export function TargetingEditor({
           <Alert variant="destructive">
             <CircleAlertIcon aria-hidden="true" />
             <AlertTitle>
-              {pluralize(problems.summary.length, 'problem')} to fix before saving
+              {t('targeting.problemsTitle', { count: problems.summary.length })}
             </AlertTitle>
             <AlertDescription>
               <ul className="list-inside list-disc">
@@ -172,7 +184,7 @@ export function TargetingEditor({
         ) : null}
 
         <Section
-          title="Status"
+          title={t('targeting.status.title')}
           headerClassName={cn(environment.isProduction && 'hazard-stripes')}
           action={<EnvBadge env={environment} className="bg-card" />}
         >
@@ -182,20 +194,24 @@ export function TargetingEditor({
               checked={value.enabled}
               onCheckedChange={toggle}
               disabled={disabled}
-              aria-label={`${value.enabled ? 'Disable' : 'Enable'} ${flag.key} in ${environment.name}`}
+              aria-label={t(value.enabled ? 'envToggle.label.disable' : 'envToggle.label.enable', {
+                flagKey: flag.key,
+                environment: environment.name,
+              })}
               className="data-[state=checked]:bg-on"
             />
             <Label htmlFor={switchId} className="text-sm font-normal">
-              Flag is {value.enabled ? 'on' : 'off'} in{' '}
-              <span className="font-medium">{environment.name}</span>
+              <Trans
+                t={t}
+                i18nKey={value.enabled ? 'targeting.status.isOn' : 'targeting.status.isOff'}
+                values={{ environment: environment.name }}
+                components={[<span key="env" className="font-medium" />]}
+              />
             </Label>
           </div>
         </Section>
 
-        <Section
-          title="When off, serve"
-          description="Served while the flag is off. Rules and the default below are skipped."
-        >
+        <Section title={t('targeting.off.title')} description={t('targeting.off.description')}>
           <div className="max-w-sm">
             <VariantSelect
               variants={flag.variants}
@@ -203,7 +219,7 @@ export function TargetingEditor({
               value={value.offVariant}
               onValueChange={(offVariant) => onChange({ ...value, offVariant })}
               disabled={disabled}
-              aria-label="Variant served when the flag is off"
+              aria-label={t('targeting.off.variantLabel')}
               aria-invalid={problems.offVariant.length > 0}
             />
           </div>
@@ -211,11 +227,9 @@ export function TargetingEditor({
         </Section>
 
         <Section
-          title="Targeting rules"
+          title={t('targeting.rules.title')}
           description={
-            value.enabled
-              ? 'Evaluated top to bottom. The first rule that matches decides.'
-              : 'Not evaluated while the flag is off.'
+            value.enabled ? t('targeting.rules.descriptionOn') : t('targeting.rules.descriptionOff')
           }
           bare
         >
@@ -223,9 +237,7 @@ export function TargetingEditor({
             {value.rules.length === 0 ? (
               <Empty className="rounded-lg border p-5 md:p-5">
                 <EmptyHeader>
-                  <EmptyDescription>
-                    No targeting rules. Everyone who is not matched receives the default below.
-                  </EmptyDescription>
+                  <EmptyDescription>{t('targeting.rules.empty')}</EmptyDescription>
                 </EmptyHeader>
               </Empty>
             ) : (
@@ -267,22 +279,22 @@ export function TargetingEditor({
                 disabled={disabled}
               >
                 <PlusIcon aria-hidden="true" />
-                Add rule
+                {t('targeting.rules.add')}
               </Button>
             </div>
           </div>
         </Section>
 
         <Section
-          title="Default (fallthrough)"
-          description="Served when the flag is on and no rule matches."
+          title={t('targeting.fallthrough.title')}
+          description={t('targeting.fallthrough.description')}
         >
           <ServeEditor
             flag={flag}
             value={value.fallthrough}
             onChange={(fallthrough) => onChange({ ...value, fallthrough })}
             disabled={disabled}
-            label="Serve"
+            label={t('targeting.fallthrough.serveLabel')}
           />
           <ProblemList problems={problems.fallthrough} />
         </Section>

@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { CopyButton } from '@/components/settings/copy-button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -30,6 +31,7 @@ export function fetchSnippet(origin: string, environmentName: string, event: str
 }
 
 function Snippet({ code, label }: { code: string; label: string }) {
+  const { t } = useTranslation(['experiments', 'common'])
   return (
     <div className="relative">
       <section
@@ -43,7 +45,7 @@ function Snippet({ code, label }: { code: string; label: string }) {
         </pre>
       </section>
       <div className="absolute top-2 right-2">
-        <CopyButton value={code} label={`Copy ${label}`} />
+        <CopyButton value={code} label={t('snippet.copy', { label })} />
       </div>
     </div>
   )
@@ -58,16 +60,20 @@ export function ConversionSnippetCard({
   environmentName: string
   conversionEvent: string
 }) {
+  const { t } = useTranslation(['experiments', 'common'])
   const [origin, setOrigin] = useState(FALLBACK_ORIGIN)
   useEffect(() => setOrigin(window.location.origin), [])
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Send conversions</CardTitle>
+        <CardTitle>{t('snippet.title')}</CardTitle>
         <CardDescription>
-          Call the tracking endpoint when a user converts. Use the same{' '}
-          <span className="font-mono">targetingKey</span> as in the flag evaluation.
+          <Trans
+            t={t}
+            i18nKey="snippet.description"
+            components={[<span key="key" className="font-mono" />]}
+          />
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
@@ -79,27 +85,30 @@ export function ConversionSnippetCard({
           <TabsContent value="curl" className="mt-3">
             <Snippet
               code={curlSnippet(origin, environmentName, conversionEvent)}
-              label="cURL snippet"
+              label={t('snippet.curlLabel')}
             />
           </TabsContent>
           <TabsContent value="fetch" className="mt-3">
             <Snippet
               code={fetchSnippet(origin, environmentName, conversionEvent)}
-              label="JavaScript snippet"
+              label={t('snippet.javascriptLabel')}
             />
           </TabsContent>
         </Tabs>
         <p className="text-muted-foreground text-sm">
-          Replace the placeholder with an SDK key of the {environmentName} environment (see{' '}
-          <Link
-            to="/app/$projectSlug/settings/api-keys"
-            params={{ projectSlug }}
-            className="underline underline-offset-4 hover:text-foreground"
-          >
-            API keys
-          </Link>
-          ). To batch, send an array of up to 100 events in one request. Only the first conversion
-          per subject counts.
+          <Trans
+            t={t}
+            i18nKey="snippet.footer"
+            values={{ environment: environmentName }}
+            components={[
+              <Link
+                key="api-keys"
+                to="/app/$projectSlug/settings/api-keys"
+                params={{ projectSlug }}
+                className="underline underline-offset-4 hover:text-foreground"
+              />,
+            ]}
+          />
         </p>
       </CardContent>
     </Card>

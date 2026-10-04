@@ -1,1 +1,85 @@
-{}
+{
+  "list": {
+    "pageTitle": "Projects · Halyard",
+    "newProject": "New project",
+    "invitations": "Invitations",
+    "empty": {
+      "title": "No projects yet",
+      "description": "A project owns its flags, segments and environments. Create one to get started.",
+      "create": "Create a project"
+    }
+  },
+  "newProject": {
+    "pageTitle": "New project · Halyard",
+    "allProjects": "All projects",
+    "title": "Create a project",
+    "description": "Projects come with development, staging and production environments. You can rename or add environments later.",
+    "form": {
+      "namePlaceholder": "Checkout",
+      "slugLabel": "Slug",
+      "slugHint": "Used in URLs and the CLI. Lowercase letters, numbers and dashes.",
+      "optionalPlaceholder": "Optional",
+      "submit": "Create project"
+    },
+    "created": "Project “{{name}}” created",
+    "createFailed": "Could not create project"
+  },
+  "admin": {
+    "pageTitle": "Instance admin · Halyard",
+    "title": "Instance admin",
+    "description": "All accounts on this Halyard instance.",
+    "searchPlaceholder": "Search by email",
+    "searchAriaLabel": "Search accounts by email",
+    "empty": {
+      "noMatchTitle": "No matching accounts",
+      "noAccountsTitle": "No accounts",
+      "noMatchDescription": "No email contains “{{query}}”.",
+      "noAccountsDescription": "Nobody has signed up yet.",
+      "clearSearch": "Clear search"
+    },
+    "pagination": {
+      "ariaLabel": "Pagination",
+      "summary_one": "Page {{page}} of {{pageCount}} · {{count}} account",
+      "summary_other": "Page {{page}} of {{pageCount}} · {{count}} accounts",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "firstAdmin": {
+      "title": "Creating the first admin",
+      "description": "Accounts are created with the user role. An existing admin can promote others from the table above; the very first admin is set directly in the database.",
+      "step1": "Sign up, then run this against the Halyard database:",
+      "step2": "Sign out and back in to pick up the new role. Seeded development databases already include <0>admin@example.com</0> as an admin."
+    },
+    "table": {
+      "you": "you",
+      "banned": "Banned",
+      "noReason": "No reason given",
+      "userActions": "User actions",
+      "actionsFor": "Actions for {{name}}",
+      "ownAccount": "This is your account",
+      "makeAdmin": "Make admin",
+      "removeAdmin": "Remove admin",
+      "nowAdmin": "{{name}} is now an admin",
+      "noLongerAdmin": "{{name}} is no longer an admin",
+      "unban": "Unban",
+      "unbanned": "{{name}} was unbanned",
+      "ban": "Ban…",
+      "delete": "Delete user…"
+    },
+    "banDialog": {
+      "title": "Ban {{name}}?",
+      "description": "They are signed out immediately and cannot sign in again until unbanned. Their projects and data are kept.",
+      "reasonHint": "Shown only to instance admins.",
+      "submit": "Ban user",
+      "banned": "{{name}} was banned",
+      "failed": "Could not ban the user"
+    },
+    "deleteDialog": {
+      "title": "Delete {{name}}?",
+      "description": "This permanently deletes the account for {{email}}, including their sessions and project memberships. It cannot be undone.",
+      "submit": "Delete user",
+      "deleted": "{{name}} was deleted",
+      "failed": "Could not delete the user"
+    }
+  }
+}

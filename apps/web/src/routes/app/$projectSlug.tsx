@@ -3,8 +3,10 @@ import { useMemo } from 'react'
 import { useRegisterPaletteProject } from '@/components/command-palette'
 import { AppSidebar } from '@/components/layout/app-sidebar'
 import { Breadcrumbs } from '@/components/layout/breadcrumbs'
+import { SidebarToggle } from '@/components/layout/sidebar-toggle'
 import { Separator } from '@/components/ui/separator'
-import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
+import { translate } from '@/lib/i18n'
 import { getProject } from '@/server/functions/projects'
 
 const appRoute = getRouteApi('/app')
@@ -15,8 +17,12 @@ export const Route = createFileRoute('/app/$projectSlug')({
     if (!project) throw notFound()
     return { project }
   },
-  head: ({ loaderData }) => ({
-    meta: [{ title: `${loaderData?.project.name ?? 'Project'} · Halyard` }],
+  head: ({ loaderData, match }) => ({
+    meta: [
+      {
+        title: `${loaderData?.project.name ?? translate(match.context.locale)('common:labels.project')} · Halyard`,
+      },
+    ],
   }),
   component: ProjectLayout,
 })
@@ -48,7 +54,7 @@ function ProjectLayout() {
       <AppSidebar projects={projects} current={current} user={user} />
       <SidebarInset>
         <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger className="-ml-1" />
+          <SidebarToggle className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
           <Breadcrumbs projectName={project.name} projectSlug={project.slug} />
         </header>

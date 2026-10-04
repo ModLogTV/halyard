@@ -14,6 +14,7 @@ import {
   VariableIcon,
 } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
+import { useTranslation } from 'react-i18next'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -75,6 +76,7 @@ export function RuleCard({
   problems = [],
   className,
 }: RuleCardProps) {
+  const { t } = useTranslation(['flags', 'common'])
   const n = index + 1
   const { keys, add, remove } = useStableKeys(rule.conditions.length)
 
@@ -94,12 +96,12 @@ export function RuleCard({
       <Card
         className="gap-0 overflow-hidden py-0 shadow-xs"
         role="group"
-        aria-label={`Rule ${n}`}
+        aria-label={t('rule.label', { n })}
         data-invalid={problems.length > 0 || undefined}
       >
         <div className="flex items-center gap-2 border-b bg-muted/40 px-3 py-2">
           <Badge variant="secondary" className="tabular shrink-0 rounded-md font-mono">
-            Rule {n}
+            {t('rule.badge', { n })}
           </Badge>
           <Input
             value={rule.description ?? ''}
@@ -107,23 +109,23 @@ export function RuleCard({
               const { description: _omit, ...rest } = rule
               onChange(event.target.value ? { ...rest, description: event.target.value } : rest)
             }}
-            placeholder="Describe who this rule targets"
-            aria-label={`Rule ${n} description`}
+            placeholder={t('rule.descriptionPlaceholder')}
+            aria-label={t('rule.descriptionLabel', { n })}
             disabled={disabled}
             className="h-8 min-w-0 flex-1 border-transparent bg-transparent text-sm shadow-none hover:border-input focus-visible:bg-background dark:bg-transparent"
           />
           <div className="flex shrink-0 items-center">
             <IconButton
-              label={`Move rule ${n} up`}
-              tooltip="Move up"
+              label={t('rule.moveUpLabel', { n })}
+              tooltip={t('rule.moveUp')}
               disabled={disabled || index === 0}
               onClick={() => onMove('up')}
             >
               <ArrowUpIcon aria-hidden="true" />
             </IconButton>
             <IconButton
-              label={`Move rule ${n} down`}
-              tooltip="Move down"
+              label={t('rule.moveDownLabel', { n })}
+              tooltip={t('rule.moveDown')}
               disabled={disabled || index >= total - 1}
               onClick={() => onMove('down')}
             >
@@ -132,8 +134,8 @@ export function RuleCard({
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <IconButton
-                  label={`Remove rule ${n}`}
-                  tooltip="Remove rule"
+                  label={t('rule.removeLabel', { n })}
+                  tooltip={t('rule.remove')}
                   disabled={disabled}
                   className="hover:text-destructive"
                 >
@@ -142,15 +144,15 @@ export function RuleCard({
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Remove rule {n}?</AlertDialogTitle>
+                  <AlertDialogTitle>{t('rule.removeConfirmTitle', { n })}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Contexts it matched will fall through to the next rule.
+                    {t('rule.removeConfirmDescription')}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel>{t('common:actions.cancel')}</AlertDialogCancel>
                   <AlertDialogAction variant="destructive" onClick={onRemove}>
-                    Remove rule
+                    {t('rule.remove')}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -161,10 +163,8 @@ export function RuleCard({
         <div className="flex flex-col gap-2 px-3 py-3">
           {rule.conditions.length === 0 ? (
             <div className="flex items-center gap-3">
-              <ConditionLabel>If</ConditionLabel>
-              <p className="text-muted-foreground text-sm">
-                No conditions — this rule matches everyone.
-              </p>
+              <ConditionLabel>{t('rule.if')}</ConditionLabel>
+              <p className="text-muted-foreground text-sm">{t('rule.noConditions')}</p>
             </div>
           ) : (
             <ul className="relative flex flex-col gap-2">
@@ -179,7 +179,9 @@ export function RuleCard({
                     transition={ITEM_TRANSITION}
                     className="flex items-start gap-3"
                   >
-                    <ConditionLabel>{conditionIndex === 0 ? 'If' : 'and'}</ConditionLabel>
+                    <ConditionLabel>
+                      {conditionIndex === 0 ? t('rule.if') : t('rule.and')}
+                    </ConditionLabel>
                     <div className="min-w-0 flex-1">
                       <ConditionRow
                         condition={condition}
@@ -215,20 +217,20 @@ export function RuleCard({
                   className="-ml-2 text-muted-foreground"
                 >
                   <PlusIcon aria-hidden="true" />
-                  Add condition
+                  {t('rule.addCondition')}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
                 <DropdownMenuItem onSelect={() => addCondition('attribute')}>
                   <VariableIcon aria-hidden="true" />
-                  Attribute condition
+                  {t('rule.attributeCondition')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   disabled={segments.length === 0}
                   onSelect={() => addCondition('segment')}
                 >
                   <UsersIcon aria-hidden="true" />
-                  Segment condition
+                  {t('rule.segmentCondition')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -236,7 +238,7 @@ export function RuleCard({
         </div>
 
         <div className="flex items-start gap-3 border-t bg-muted/20 px-3 py-3">
-          <ConditionLabel className="pt-1.5">Serve</ConditionLabel>
+          <ConditionLabel className="pt-1.5">{t('rule.serve')}</ConditionLabel>
           <ServeEditor
             flag={flag}
             value={rule.serve}

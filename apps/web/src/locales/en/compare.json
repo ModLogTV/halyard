@@ -1,1 +1,147 @@
-{}
+{
+  "page": {
+    "description": "See how flags differ between environments.",
+    "summary_one": "{{count}} active flag across {{environments}}. Tinted cells differ from the {{baseline}} baseline.",
+    "summary_other": "{{count}} active flags across {{environments}}. Tinted cells differ from the {{baseline}} baseline.",
+    "footnote": "Cells compare on/off state, the default and the number of rules. Expand a row to see rule level differences.",
+    "search": {
+      "placeholder": "Search by key or name",
+      "ariaLabel": "Search flags",
+      "clear": "Clear search"
+    },
+    "onlyDifferences": "Only show differences",
+    "visibleCount_one": "{{shown}} of {{count}} flag",
+    "visibleCount_other": "{{shown}} of {{count}} flags",
+    "selected": "{{count}} selected",
+    "promoteSelected": "Promote selected",
+    "promoteDisabled": "Only editors and owners can promote flags",
+    "noFlags": {
+      "title": "No flags to compare",
+      "description": "Create a flag first. Then you can compare it across environments and promote its configuration.",
+      "create": "Create a flag"
+    },
+    "noEnvironments": {
+      "title": "Add a second environment",
+      "description": "Comparison needs at least two environments. Add one in the project settings.",
+      "manage": "Manage environments"
+    },
+    "allMatch": {
+      "title": "Every environment matches",
+      "description": "No flag differs from {{baseline}} in on/off state, default or rule count."
+    },
+    "noMatches": {
+      "title": "No flags match",
+      "description": "Try a different search."
+    },
+    "showAll": "Show all flags"
+  },
+  "copyFields": {
+    "enabled": {
+      "label": "Enabled",
+      "hint": "Whether the flag is on"
+    },
+    "offVariant": {
+      "label": "Off variant",
+      "hint": "Served while the flag is off"
+    },
+    "fallthrough": {
+      "label": "Default",
+      "hint": "Served when no rule matches"
+    },
+    "rules": {
+      "label": "Rules",
+      "hint": "All targeting rules, in order"
+    }
+  },
+  "serve": {
+    "noTraffic": "no traffic"
+  },
+  "changes": {
+    "enabled": "Enabled: {{from}} → {{to}}",
+    "offVariant": "Off variant: {{from}} → {{to}}",
+    "fallthrough": "Default: {{from}} → {{to}}",
+    "rulesUpdated_one": "Rules: {{count}} rule updated",
+    "rulesUpdated_other": "Rules: {{count}} rules updated",
+    "rulesCount": "Rules: {{from}} → {{to}}"
+  },
+  "matrix": {
+    "selectAll": "Select all visible flags",
+    "selectFlag": "Select {{flag}}",
+    "expandColumn": "Expand",
+    "expandFlag": "Expand {{flag}}",
+    "collapseFlag": "Collapse {{flag}}",
+    "expandTooltip": "Show full configuration",
+    "collapseTooltip": "Collapse details",
+    "baseline": "Baseline",
+    "differsFromBaseline": "(differs from {{baseline}})",
+    "noRules": "no rules",
+    "ruleSummary": "{{rules}} · v{{version}}"
+  },
+  "promote": {
+    "button": "Promote",
+    "label": "Promote {{flag}} from {{from}} to {{to}}",
+    "unavailableLabel": "{{label}} (unavailable: {{reason}})"
+  },
+  "detail": {
+    "loadFailed": "Could not load the flag",
+    "environmentConfiguration": "{{environment}} configuration",
+    "baseline": "Baseline",
+    "notConfigured": "Not configured in this environment.",
+    "statusOn": "On",
+    "statusOff": "Off",
+    "rulesCount": "Rules ({{count}})",
+    "noRules": "No rules",
+    "untitledRule": "Untitled rule",
+    "conditions_one": "{{count}} condition",
+    "conditions_other": "{{count}} conditions",
+    "bucketedBy": "Bucketed by <0>{{key}}</0>",
+    "versionLine": "Version {{version}} · updated {{time}}",
+    "differsFromBaseline": "Differs from baseline"
+  },
+  "dialog": {
+    "titleSingle": "Promote <0>{{flag}}</0>",
+    "titleMany_one": "Promote {{count}} flag",
+    "titleMany_other": "Promote {{count}} flags",
+    "description": "Copy configuration from one environment over another. Everything not selected below stays as it is.",
+    "from": "From",
+    "to": "To",
+    "fieldsLegend": "Fields to copy",
+    "productionHint": "Enabled is left out by default for production, so promoting never switches a flag on by surprise.",
+    "preview": "Preview",
+    "progress": "Progress",
+    "progressAriaLabel": "Promotion progress",
+    "withChanges": "{{promotable}} of {{total}} with changes",
+    "chooseDifferent": "Choose two different environments.",
+    "selectAtLeastOne": "Select at least one field to copy.",
+    "missingConfig": "This flag has no configuration in one of the environments.",
+    "noChanges": "No changes. {{to}} already matches {{from}} for the selected fields.",
+    "rawDiff": "Raw diff",
+    "confirmPrompt": "This changes live behaviour in <0/>. Type <1>{{key}}</1> to confirm.",
+    "promoting": "Promoting {{current}} of {{total}}",
+    "submitSingle": "Promote to {{environment}}",
+    "submitMany_one": "Promote {{count}} flag to {{environment}}",
+    "submitMany_other": "Promote {{count}} flags to {{environment}}",
+    "outcome": {
+      "promotedLabel": "Promoted",
+      "noChangesLabel": "No changes",
+      "failedLabel": "Failed",
+      "waitingLabel": "Waiting",
+      "pending": "Waiting",
+      "running": "Promoting",
+      "changed": "Promoted, now version {{version}}",
+      "unchanged": "Already matched, nothing changed",
+      "skipped": "No changes to promote"
+    },
+    "toast": {
+      "promotedSingle": "Promoted {{flag}} from {{from}} to {{to}}",
+      "alreadyMatched": "{{flag}} already matched in {{to}}",
+      "promotedMany_one": "Promoted {{count}} flag from {{from}} to {{to}}",
+      "promotedMany_other": "Promoted {{count}} flags from {{from}} to {{to}}",
+      "failed_one": "{{count}} flag could not be promoted",
+      "failed_other": "{{count}} flags could not be promoted",
+      "failedPartial_one": "{{count}} flag could not be promoted, {{succeeded}} succeeded",
+      "failedPartial_other": "{{count}} flags could not be promoted, {{succeeded}} succeeded"
+    },
+    "promotionFailed": "Promotion failed"
+  }
+}

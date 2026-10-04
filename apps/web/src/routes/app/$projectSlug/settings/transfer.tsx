@@ -2,10 +2,13 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useSettingsContext } from '@/components/settings/use-settings-context'
 import { ExportCard } from '@/components/transfer/export-card'
 import { ImportCard } from '@/components/transfer/import-card'
+import { translate } from '@/lib/i18n'
 
 export const Route = createFileRoute('/app/$projectSlug/settings/transfer')({
   staticData: { crumbKey: 'transfer' },
-  head: () => ({ meta: [{ title: 'Import & export · Halyard' }] }),
+  head: ({ match }) => ({
+    meta: [{ title: translate(match.context.locale)('settings:transfer.pageTitle') }],
+  }),
   component: TransferSettings,
 })
 

@@ -21,10 +21,12 @@ import {
 } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useMemo, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { AuditTimeline } from '@/components/audit'
 import { EnvBadge, EnvDot, envStyle } from '@/components/env/env-badge'
+import { HazardBand } from '@/components/env/hazard-band'
 import {
   FlagTypeBadge,
   TagInput,
@@ -72,6 +74,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { formatDateTime, formatRelativeTime } from '@/lib/format'
+import { translate } from '@/lib/i18n'
 import { assessStaleness, describeStaleReason } from '@/lib/stale'
 import { listFlagHistory } from '@/server/functions/audit-log'
 import {
@@ -110,6 +113,13 @@ export const Route = createFileRoute('/app/$projectSlug/flags/$flagKey')({
     if (!flag) throw notFound()
     return { flag, segments, history, pendingSchedules, crumb: flag.key }
   },
+  head: ({ match, params }) => ({
+    meta: [
+      {
+        title: translate(match.context.locale)('flags:detail.pageTitle', { key: params.flagKey }),
+      },
+    ],
+  }),
   pendingComponent: () => (
     <div className="flex flex-col gap-4 p-6" aria-busy="true">
       <Skeleton className="h-4 w-20" />
@@ -126,6 +136,7 @@ type FlagDetail = Awaited<ReturnType<typeof getFlag>>
 type EnvironmentDetail = FlagDetail['environments'][number]
 
 function FlagDetailPage() {
+  const { t, i18n } = useTranslation(['flags', 'common'])
   const { flag, segments, history, pendingSchedules } = Route.useLoaderData()
   const { project } = projectRoute.useLoaderData()
   const search = Route.useSearch()
@@ -165,7 +176,7 @@ function FlagDetailPage() {
       toast.success(success)
       await router.invalidate()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Something went wrong')
+      toast.error(error instanceof Error ? error.message : t('common:errors.generic'))
     }
   }
 
@@ -174,7 +185,7 @@ function FlagDetailPage() {
       <div>
         <Button asChild variant="ghost" size="sm" className="-ml-2 mb-2">
           <Link to="/app/$projectSlug/flags" params={{ projectSlug: project.slug }}>
-            <ArrowLeftIcon /> Flags
+            <ArrowLeftIcon /> {t('common:labels.flags')}
           </Link>
         </Button>
         <PageHeader
@@ -187,17 +198,19 @@ function FlagDetailPage() {
                     variant="ghost"
                     size="icon-sm"
                     onClick={copyKey}
-                    aria-label="Copy flag key"
+                    aria-label={t('detail.copyKeyLabel')}
                   >
                     {copied ? <CheckIcon className="text-on" /> : <CopyIcon />}
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>{copied ? 'Copied' : 'Copy key'}</TooltipContent>
+                <TooltipContent>
+                  {copied ? t('common:actions.copied') : t('detail.copyKey')}
+                </TooltipContent>
               </Tooltip>
               <FlagTypeBadge type={flag.type} />
               {flag.archivedAt ? (
                 <Badge variant="outline" className="gap-1 text-muted-foreground">
-                  <ArchiveIcon className="size-3" /> Archived
+                  <ArchiveIcon className="size-3" /> {t('common:states.archived')}
                 </Badge>
               ) : null}
             </span>
@@ -208,9 +221,9 @@ function FlagDetailPage() {
               {flag.description ? <span>{flag.description}</span> : null}
               {flag.tags.length > 0 ? (
                 <span className="flex flex-wrap gap-1 pt-1">
-                  {flag.tags.map((t) => (
-                    <Badge key={t} variant="secondary" className="font-normal">
-                      {t}
+                  {flag.tags.map((tag) => (
+                    <Badge key={tag} variant="secondary" className="font-normal">
+                      {tag}
                     </Badge>
                   ))}
                 </span>
@@ -221,17 +234,17 @@ function FlagDetailPage() {
             canEdit ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon" aria-label="Flag actions">
+                  <Button variant="outline" size="icon" aria-label={t('detail.actionsLabel')}>
                     <MoreHorizontalIcon />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => setEditing(true)}>
-                    <PencilIcon /> Edit details and variants
+                    <PencilIcon /> {t('detail.actions.edit')}
                   </DropdownMenuItem>
                   {flag.archivedAt ? null : (
                     <DropdownMenuItem onClick={() => setScheduling(true)}>
-                      <CalendarClockIcon /> Schedule a change…
+                      <CalendarClockIcon /> {t('detail.actions.schedule')}
                     </DropdownMenuItem>
                   )}
                   {flag.archivedAt ? (
@@ -240,27 +253,27 @@ function FlagDetailPage() {
                         run(
                           () =>
                             unarchiveFlag({ data: { projectId: project.id, flagKey: flag.key } }),
-                          'Flag restored',
+                          t('detail.toasts.restored'),
                         )
                       }
                     >
-                      <ArchiveRestoreIcon /> Restore from archive
+                      <ArchiveRestoreIcon /> {t('detail.actions.restore')}
                     </DropdownMenuItem>
                   ) : (
                     <DropdownMenuItem
                       onClick={() =>
                         run(
                           () => archiveFlag({ data: { projectId: project.id, flagKey: flag.key } }),
-                          'Flag archived',
+                          t('detail.toasts.archived'),
                         )
                       }
                     >
-                      <ArchiveIcon /> Archive
+                      <ArchiveIcon /> {t('common:actions.archive')}
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem variant="destructive" onClick={() => setConfirmDelete(true)}>
-                    <Trash2Icon /> Delete flag
+                    <Trash2Icon /> {t('detail.actions.delete')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -273,12 +286,13 @@ function FlagDetailPage() {
         <div className="flex items-start gap-3 rounded-lg border border-warning/50 bg-warning-soft p-3 text-sm">
           <TriangleAlertIcon className="mt-0.5 size-4 shrink-0" />
           <div>
-            <p className="font-medium">Cleanup candidate</p>
+            <p className="font-medium">{t('common:states.stale')}</p>
             <ul className="mt-1 list-disc pl-4 text-muted-foreground">
               {staleness.reasons.map((r) => {
                 const text = describeStaleReason(
                   r,
                   (id) => environments.find((e) => e.id === id)?.name ?? '?',
+                  t,
                 )
                 return <li key={text}>{text}</li>
               })}
@@ -292,18 +306,20 @@ function FlagDetailPage() {
           <CalendarClockIcon />
           <AlertDescription>
             <p>
-              {pendingSchedules.length === 1
-                ? '1 scheduled change pending for this flag'
-                : `${pendingSchedules.length} scheduled changes pending for this flag`}{' '}
-              —{' '}
-              <Link
-                to="/app/$projectSlug/schedules"
-                params={{ projectSlug: project.slug }}
-                search={{ flag: flag.key }}
-                className="font-medium text-foreground underline underline-offset-4"
-              >
-                view
-              </Link>
+              <Trans
+                t={t}
+                i18nKey="detail.pendingSchedules"
+                count={pendingSchedules.length}
+                components={[
+                  <Link
+                    key="view"
+                    to="/app/$projectSlug/schedules"
+                    params={{ projectSlug: project.slug }}
+                    search={{ flag: flag.key }}
+                    className="font-medium text-foreground underline underline-offset-4"
+                  />,
+                ]}
+              />
             </p>
           </AlertDescription>
         </Alert>
@@ -320,8 +336,8 @@ function FlagDetailPage() {
           }
         >
           <TabsList>
-            <TabsTrigger value="targeting">Targeting</TabsTrigger>
-            <TabsTrigger value="history">History</TabsTrigger>
+            <TabsTrigger value="targeting">{t('detail.tabs.targeting')}</TabsTrigger>
+            <TabsTrigger value="history">{t('common:labels.history')}</TabsTrigger>
           </TabsList>
           <TabsContent value="targeting" className="mt-4">
             <Tabs
@@ -344,7 +360,9 @@ function FlagDetailPage() {
                         className={`size-1.5 rounded-full ${config?.enabled ? 'bg-on' : 'bg-off'}`}
                         aria-hidden="true"
                       />
-                      <span className="sr-only">{config?.enabled ? 'on' : 'off'}</span>
+                      <span className="sr-only">
+                        {config?.enabled ? t('common:states.on') : t('common:states.off')}
+                      </span>
                     </TabsTrigger>
                   )
                 })}
@@ -376,7 +394,7 @@ function FlagDetailPage() {
         <aside className="flex flex-col gap-4">
           <Card>
             <CardHeader>
-              <CardTitle>Variants</CardTitle>
+              <CardTitle>{t('common:labels.variants')}</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-2">
               {flag.variants.map((v, i) => (
@@ -392,7 +410,7 @@ function FlagDetailPage() {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>Activity</CardTitle>
+              <CardTitle>{t('detail.activity.title')}</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 text-sm">
               {environments.map((env) => {
@@ -403,23 +421,28 @@ function FlagDetailPage() {
                     <div className="text-right text-xs text-muted-foreground">
                       {stat ? (
                         <>
-                          <div title={formatDateTime(stat.lastEvaluatedAt)}>
-                            {formatRelativeTime(stat.lastEvaluatedAt)}
+                          <div title={formatDateTime(stat.lastEvaluatedAt, i18n.language)}>
+                            {formatRelativeTime(stat.lastEvaluatedAt, { locale: i18n.language })}
                           </div>
                           <div className="tabular">
-                            {stat.evaluationCount.toLocaleString()} evaluations
+                            {t('table.evaluations', { count: stat.evaluationCount })}
                           </div>
                         </>
                       ) : (
-                        <div>Never evaluated</div>
+                        <div>{t('detail.activity.neverEvaluated')}</div>
                       )}
                     </div>
                   </div>
                 )
               })}
               <div className="border-t pt-3 text-xs text-muted-foreground">
-                Created {formatRelativeTime(flag.createdAt)} · Updated{' '}
-                {formatRelativeTime(flag.updatedAt)}
+                {t('common:labels.createdAt', {
+                  time: formatRelativeTime(flag.createdAt, { locale: i18n.language }),
+                })}{' '}
+                ·{' '}
+                {t('common:labels.updatedAt', {
+                  time: formatRelativeTime(flag.updatedAt, { locale: i18n.language }),
+                })}
               </div>
             </CardContent>
           </Card>
@@ -437,32 +460,30 @@ function FlagDetailPage() {
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete {flag.key}?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This removes the flag and its configuration in every environment. SDKs evaluating it
-              will receive their code default. Consider archiving instead if you want to keep the
-              history.
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t('detail.delete.title', { key: flag.key })}</AlertDialogTitle>
+            <AlertDialogDescription>{t('detail.delete.description')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('common:actions.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
               onClick={async () => {
                 try {
                   await deleteFlag({ data: { projectId: project.id, flagKey: flag.key } })
-                  toast.success(`Flag ${flag.key} deleted`)
+                  toast.success(t('detail.toasts.deleted', { key: flag.key }))
                   await router.invalidate()
                   await navigate({
                     to: '/app/$projectSlug/flags',
                     params: { projectSlug: project.slug },
                   })
                 } catch (error) {
-                  toast.error(error instanceof Error ? error.message : 'Could not delete the flag')
+                  toast.error(
+                    error instanceof Error ? error.message : t('detail.toasts.deleteFailed'),
+                  )
                 }
               }}
             >
-              Delete flag
+              {t('detail.actions.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -495,6 +516,7 @@ function EnvironmentEditor({
   segments: { key: string; name: string }[]
   disabled: boolean
 }) {
+  const { t } = useTranslation(['flags', 'common'])
   const router = useRouter()
   const initial = useMemo(() => toConfig(config), [config])
   const [draft, setDraft] = useState<FlagEnvironmentConfig>(initial)
@@ -513,10 +535,15 @@ function EnvironmentEditor({
       await toggleFlag({
         data: { projectId, flagKey: definition.key, environmentKey: environment.key, enabled },
       })
-      toast.success(`${definition.key} is now ${enabled ? 'on' : 'off'} in ${environment.name}`)
+      toast.success(
+        t(enabled ? 'list.toggledOn' : 'list.toggledOff', {
+          flagKey: definition.key,
+          environment: environment.name,
+        }),
+      )
       await router.invalidate()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Could not update the flag')
+      toast.error(error instanceof Error ? error.message : t('list.toggleFailed'))
     }
   }
 
@@ -536,10 +563,10 @@ function EnvironmentEditor({
           expectedVersion: config.version,
         },
       })
-      toast.success(`Targeting saved for ${environment.name}`)
+      toast.success(t('detail.targeting.saved', { environment: environment.name }))
       await router.invalidate()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Could not save targeting')
+      toast.error(error instanceof Error ? error.message : t('detail.targeting.saveFailed'))
     } finally {
       setSaving(false)
     }
@@ -549,8 +576,7 @@ function EnvironmentEditor({
     <div className="relative">
       {config.hasRunningExperiment ? (
         <div className="mb-4 rounded-lg border bg-info-soft p-3 text-sm">
-          An experiment is running on this flag in {environment.name}. Contexts that reach the
-          default are allocated by the experiment.
+          {t('detail.targeting.experimentRunning', { environment: environment.name })}
         </div>
       ) : null}
       <TargetingEditor
@@ -581,21 +607,21 @@ function EnvironmentEditor({
             >
               <div className="flex items-center gap-2 text-sm">
                 <EnvBadge env={environment} />
-                <span>Unsaved targeting changes</span>
+                <span>{t('detail.targeting.unsaved')}</span>
                 {!problems.isValid ? (
-                  <span className="text-destructive">· fix the problems above to save</span>
+                  <span className="text-destructive">· {t('detail.targeting.fixProblems')}</span>
                 ) : null}
               </div>
               <div className="flex items-center gap-2">
                 <Button variant="ghost" onClick={() => setDraft(initial)} disabled={saving}>
-                  Discard
+                  {t('common:actions.discard')}
                 </Button>
                 <Button
                   onClick={() => (environment.isProduction ? setConfirmSave(true) : save())}
                   disabled={!problems.isValid || saving}
                 >
                   {saving ? <Spinner /> : null}
-                  Save to {environment.name}
+                  {t('detail.targeting.saveTo', { environment: environment.name })}
                 </Button>
               </div>
             </div>
@@ -605,28 +631,33 @@ function EnvironmentEditor({
 
       <AlertDialog open={confirmSave} onOpenChange={setConfirmSave}>
         <AlertDialogContent style={envStyle(environment)}>
-          <div className="hazard-stripes -mx-6 -mt-6 mb-2 h-2 rounded-t-lg" aria-hidden="true" />
+          <HazardBand />
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
-              <TriangleAlertIcon className="size-5 text-(--env-color)" /> Save targeting to
-              production?
+              <TriangleAlertIcon className="size-5 text-(--env-color)" />{' '}
+              {t('detail.targeting.confirmSaveTitle')}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Rules for <span className="font-mono text-foreground">{definition.key}</span> change
-              immediately for everyone evaluating it in{' '}
-              <EnvBadge env={environment} className="align-middle" />. You can review the change
-              afterwards in the flag history.
+              <Trans
+                t={t}
+                i18nKey="detail.targeting.confirmSaveBody"
+                values={{ flagKey: definition.key }}
+                components={[
+                  <span key="key" className="font-mono text-foreground" />,
+                  <EnvBadge key="env" env={environment} className="align-middle" />,
+                ]}
+              />
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('common:actions.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 setConfirmSave(false)
                 void save()
               }}
             >
-              Save to production
+              {t('detail.targeting.confirmSaveAction')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -637,20 +668,32 @@ function EnvironmentEditor({
         onOpenChange={(open) => !open && setConfirmToggle(null)}
       >
         <AlertDialogContent style={envStyle(environment)}>
-          <div className="hazard-stripes -mx-6 -mt-6 mb-2 h-2 rounded-t-lg" aria-hidden="true" />
+          <HazardBand />
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <TriangleAlertIcon className="size-5 text-(--env-color)" />
-              {confirmToggle ? 'Enable' : 'Disable'} in production?
+              {confirmToggle
+                ? t('envToggle.confirm.enableTitle')
+                : t('envToggle.confirm.disableTitle')}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              <span className="font-mono text-foreground">{definition.key}</span> will be turned{' '}
-              <strong>{confirmToggle ? 'on' : 'off'}</strong> for everyone in production
-              immediately.
+              <Trans
+                t={t}
+                i18nKey={
+                  confirmToggle
+                    ? 'detail.targeting.confirmToggleBodyOn'
+                    : 'detail.targeting.confirmToggleBodyOff'
+                }
+                values={{ flagKey: definition.key }}
+                components={[
+                  <span key="key" className="font-mono text-foreground" />,
+                  <strong key="state" />,
+                ]}
+              />
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('common:actions.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 const next = confirmToggle
@@ -658,7 +701,9 @@ function EnvironmentEditor({
                 if (next !== null) void applyToggle(next)
               }}
             >
-              {confirmToggle ? 'Enable in production' : 'Disable in production'}
+              {confirmToggle
+                ? t('envToggle.confirm.enableAction')
+                : t('envToggle.confirm.disableAction')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -678,6 +723,7 @@ function EditFlagDialog({
   flag: FlagDetail
   projectId: string
 }) {
+  const { t } = useTranslation(['flags', 'common'])
   const router = useRouter()
   const [name, setName] = useState(flag.name)
   const [description, setDescription] = useState(flag.description ?? '')
@@ -713,11 +759,11 @@ function EditFlagDialog({
           patch: { name: name.trim(), description: description.trim() || null, tags, variants },
         },
       })
-      toast.success('Flag updated')
+      toast.success(t('detail.toasts.updated'))
       await router.invalidate()
       onOpenChange(false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not update the flag')
+      setError(err instanceof Error ? err.message : t('detail.edit.failed'))
     } finally {
       setPending(false)
     }
@@ -728,19 +774,16 @@ function EditFlagDialog({
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <form onSubmit={submit} noValidate>
           <DialogHeader>
-            <DialogTitle>Edit {flag.key}</DialogTitle>
-            <DialogDescription>
-              Variants referenced by a rule or default in any environment cannot be removed or
-              renamed.
-            </DialogDescription>
+            <DialogTitle>{t('detail.edit.title', { key: flag.key })}</DialogTitle>
+            <DialogDescription>{t('detail.edit.description')}</DialogDescription>
           </DialogHeader>
           <FieldGroup className="my-6">
             <Field>
-              <FieldLabel htmlFor="edit-name">Name</FieldLabel>
+              <FieldLabel htmlFor="edit-name">{t('common:labels.name')}</FieldLabel>
               <Input id="edit-name" value={name} onChange={(e) => setName(e.target.value)} />
             </Field>
             <Field>
-              <FieldLabel htmlFor="edit-description">Description</FieldLabel>
+              <FieldLabel htmlFor="edit-description">{t('common:labels.description')}</FieldLabel>
               <Textarea
                 id="edit-description"
                 rows={2}
@@ -749,16 +792,16 @@ function EditFlagDialog({
               />
             </Field>
             <Field>
-              <FieldLabel>Tags</FieldLabel>
+              <FieldLabel>{t('common:labels.tags')}</FieldLabel>
               <TagInput
-                aria-label="Tags"
+                aria-label={t('common:labels.tags')}
                 values={tags}
                 onChange={setTags}
-                placeholder="Add a tag and press Enter"
+                placeholder={t('new.form.tagsPlaceholder')}
               />
             </Field>
             <Field>
-              <FieldLabel>Variants</FieldLabel>
+              <FieldLabel>{t('common:labels.variants')}</FieldLabel>
               <VariantsEditor
                 type={flag.type}
                 value={variants}
@@ -771,11 +814,11 @@ function EditFlagDialog({
           </FieldGroup>
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t('common:actions.cancel')}
             </Button>
             <Button type="submit" disabled={pending || !variantsValid || !name.trim()}>
               {pending ? <Spinner /> : null}
-              Save changes
+              {t('detail.edit.submit')}
             </Button>
           </DialogFooter>
         </form>

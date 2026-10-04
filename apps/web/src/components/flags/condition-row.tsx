@@ -8,6 +8,7 @@ import type {
 import { validateCondition } from '@halyard/engine'
 import { MoreHorizontalIcon, Trash2Icon, UsersIcon, VariableIcon } from 'lucide-react'
 import { useId } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -29,7 +30,7 @@ import {
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
-import { coerceValue, OPERATOR_GROUPS, valueKind } from './operators'
+import { coerceValue, OPERATOR_GROUPS, OPERATOR_KEYS, valueKind } from './operators'
 import { TagInput } from './tag-input'
 import type { SegmentOption } from './types'
 
@@ -57,6 +58,7 @@ export function ConditionRow({
   disabled,
   index,
 }: ConditionRowProps) {
+  const { t } = useTranslation('flags')
   const n = index + 1
   return (
     <div className="flex min-w-0 flex-wrap items-start gap-2">
@@ -88,14 +90,14 @@ export function ConditionRow({
                   variant="ghost"
                   size="icon-sm"
                   className="ml-auto text-muted-foreground"
-                  aria-label={`Condition ${n} actions`}
+                  aria-label={t('conditions.actionsLabel', { n })}
                   disabled={disabled}
                 >
                   <MoreHorizontalIcon aria-hidden="true" />
                 </Button>
               </DropdownMenuTrigger>
             </TooltipTrigger>
-            <TooltipContent>Condition actions</TooltipContent>
+            <TooltipContent>{t('conditions.actions')}</TooltipContent>
           </Tooltip>
           <DropdownMenuContent align="end">
             {condition.type === 'attribute' ? (
@@ -104,20 +106,20 @@ export function ConditionRow({
                 onSelect={() => onChange({ type: 'segment', segmentKey: '' })}
               >
                 <UsersIcon aria-hidden="true" />
-                Switch to segment condition
+                {t('conditions.switchToSegment')}
               </DropdownMenuItem>
             ) : (
               <DropdownMenuItem
                 onSelect={() => onChange({ type: 'attribute', attribute: '', operator: 'eq' })}
               >
                 <VariableIcon aria-hidden="true" />
-                Switch to attribute condition
+                {t('conditions.switchToAttribute')}
               </DropdownMenuItem>
             )}
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive" onSelect={onRemove}>
               <Trash2Icon aria-hidden="true" />
-              Remove condition
+              {t('conditions.remove')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -139,6 +141,7 @@ function AttributeFields({
   disabled?: boolean
   n: number
 }) {
+  const { t } = useTranslation('flags')
   const listId = useId()
   const options = Array.from(new Set(['targetingKey', ...suggestions]))
   const kind = valueKind(condition.operator)
@@ -172,8 +175,8 @@ function AttributeFields({
           value={condition.attribute}
           onChange={(event) => patch({ attribute: event.target.value })}
           list={listId}
-          placeholder="Attribute"
-          aria-label={`Condition ${n} attribute`}
+          placeholder={t('conditions.attributePlaceholder')}
+          aria-label={t('conditions.attributeLabel', { n })}
           spellCheck={false}
           autoComplete="off"
           disabled={disabled}
@@ -194,17 +197,17 @@ function AttributeFields({
         <SelectTrigger
           size="sm"
           className="w-44 shrink-0 text-xs"
-          aria-label={`Condition ${n} operator`}
+          aria-label={t('conditions.operatorLabel', { n })}
         >
           <SelectValue />
         </SelectTrigger>
         <SelectContent position="popper">
           {OPERATOR_GROUPS.map((group) => (
-            <SelectGroup key={group.label}>
-              <SelectLabel>{group.label}</SelectLabel>
+            <SelectGroup key={group.key}>
+              <SelectLabel>{t(`conditions.operatorGroups.${group.key}`)}</SelectLabel>
               {group.operators.map((operator) => (
                 <SelectItem key={operator.value} value={operator.value}>
-                  {operator.label}
+                  {t(`conditions.operators.${OPERATOR_KEYS[operator.value]}`)}
                 </SelectItem>
               ))}
             </SelectGroup>
@@ -214,14 +217,14 @@ function AttributeFields({
 
       {kind === 'none' ? (
         <span className="flex h-8 flex-1 items-center text-muted-foreground text-xs">
-          No value needed
+          {t('conditions.noValueNeeded')}
         </span>
       ) : kind === 'list' ? (
         <TagInput
           values={Array.isArray(value) ? value.map(stringify) : []}
           onChange={(values) => patch({ value: values })}
           disabled={disabled}
-          aria-label={`Condition ${n} values`}
+          aria-label={t('conditions.valuesLabel', { n })}
           className="min-w-48 flex-1"
         />
       ) : kind === 'number' ? (
@@ -234,7 +237,7 @@ function AttributeFields({
             patch({ value: raw === '' ? undefined : Number(raw) })
           }}
           placeholder="0"
-          aria-label={`Condition ${n} value`}
+          aria-label={t('conditions.valueLabel', { n })}
           disabled={disabled}
           className={cn(MONO_FIELD, 'min-w-32 flex-1')}
         />
@@ -246,8 +249,14 @@ function AttributeFields({
               const raw = event.target.value
               patch({ value: raw === '' ? undefined : raw })
             }}
-            placeholder={kind === 'version' ? '1.2.3' : kind === 'regex' ? '^beta-.*$' : 'Value'}
-            aria-label={`Condition ${n} value`}
+            placeholder={
+              kind === 'version'
+                ? '1.2.3'
+                : kind === 'regex'
+                  ? '^beta-.*$'
+                  : t('conditions.valuePlaceholder')
+            }
+            aria-label={t('conditions.valueLabel', { n })}
             aria-invalid={valueInvalid || undefined}
             spellCheck={false}
             autoComplete="off"
@@ -292,6 +301,7 @@ function BooleanToggle({
   n: number
   disabled?: boolean
 }) {
+  const { t } = useTranslation('flags')
   const current = typeof value === 'boolean' ? String(value) : ''
   return (
     <ToggleGroup
@@ -300,7 +310,7 @@ function BooleanToggle({
       size="sm"
       value={current}
       disabled={disabled}
-      aria-label={`Condition ${n}: match as boolean`}
+      aria-label={t('conditions.booleanLabel', { n })}
       onValueChange={(next) => {
         if (next === 'true' || next === 'false') onChange(next === 'true')
         else onChange(String(value).trim().toLowerCase())
@@ -329,6 +339,7 @@ function SegmentFields({
   disabled?: boolean
   n: number
 }) {
+  const { t } = useTranslation('flags')
   const known = segments.some((segment) => segment.key === condition.segmentKey)
   return (
     <>
@@ -338,7 +349,7 @@ function SegmentFields({
         size="sm"
         value={condition.negate ? 'not' : 'in'}
         disabled={disabled}
-        aria-label={`Condition ${n} membership`}
+        aria-label={t('conditions.membershipLabel', { n })}
         onValueChange={(next) => {
           if (!next) return
           const { negate: _omit, ...rest } = condition
@@ -346,10 +357,10 @@ function SegmentFields({
         }}
       >
         <ToggleGroupItem value="in" className="h-8 px-2.5 text-xs">
-          is in
+          {t('conditions.membership.in')}
         </ToggleGroupItem>
         <ToggleGroupItem value="not" className="h-8 px-2.5 text-xs">
-          is not in
+          {t('conditions.membership.notIn')}
         </ToggleGroupItem>
       </ToggleGroup>
 
@@ -361,9 +372,9 @@ function SegmentFields({
         <SelectTrigger
           size="sm"
           className="min-w-48 flex-1 text-xs"
-          aria-label={`Condition ${n} segment`}
+          aria-label={t('conditions.segmentLabel', { n })}
         >
-          <SelectValue placeholder="Select a segment" />
+          <SelectValue placeholder={t('conditions.segmentPlaceholder')} />
         </SelectTrigger>
         <SelectContent position="popper">
           {segments.map((segment) => (
@@ -377,7 +388,7 @@ function SegmentFields({
           {condition.segmentKey && !known ? (
             <SelectItem value={condition.segmentKey} disabled>
               <span className="font-mono text-destructive text-xs">
-                {condition.segmentKey} (missing)
+                {t('conditions.missingSegment', { key: condition.segmentKey })}
               </span>
             </SelectItem>
           ) : null}

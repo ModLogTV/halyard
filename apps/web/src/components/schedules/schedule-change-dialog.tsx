@@ -2,8 +2,10 @@ import { type FlagType, type Serve, type Variant, WEIGHT_TOLERANCE } from '@haly
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { TriangleAlertIcon } from 'lucide-react'
 import { type FormEvent, useEffect, useMemo, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { EnvBadge, EnvDot, envStyle } from '@/components/env/env-badge'
+import { HazardBand } from '@/components/env/hazard-band'
 import { FlagTypeBadge, ServeEditor, sumWeights, VariantSelect } from '@/components/flags'
 import { errorMessage } from '@/components/settings/form-utils'
 import {
@@ -84,6 +86,7 @@ export interface ScheduleChangeDialogProps {
 
 type Mode = 'single' | 'staged'
 type Action = 'on' | 'off' | 'serve'
+const ACTIONS: Action[] = ['on', 'off', 'serve']
 
 export function ScheduleChangeDialog({
   open,
@@ -129,6 +132,7 @@ function ScheduleForm({
   environmentKey?: string
   onDone: () => void
 }) {
+  const { t, i18n } = useTranslation(['schedules', 'common'])
   const { project } = projectRoute.useLoaderData()
   const router = useRouter()
   const now = useNow(15_000)
@@ -163,12 +167,12 @@ function ScheduleForm({
         if (!cancelled) setFlags(list.filter((f) => !f.archivedAt))
       })
       .catch((error) => {
-        if (!cancelled) setLoadError(errorMessage(error, 'Could not load flags'))
+        if (!cancelled) setLoadError(errorMessage(error, t('dialog.loadFlagsFailed')))
       })
     return () => {
       cancelled = true
     }
-  }, [lockedFlag, project.id])
+  }, [lockedFlag, project.id, t])
 
   const flag = flags?.find((f) => f.key === flagKey)
   const env = environments.find((e) => e.key === envKey)
@@ -187,26 +191,28 @@ function ScheduleForm({
 
   // Validation -------------------------------------------------------------
   const nowMs = now.getTime()
-  const timeError = at.getTime() <= nowMs ? 'Pick a time in the future' : undefined
+  const timeError = at.getTime() <= nowMs ? t('validation.timeInFuture') : undefined
   const serveError = (() => {
     if (action !== 'serve' || !flag) return undefined
     if (serve.type === 'variant') {
-      return flag.variants.some((v) => v.key === serve.variant) ? undefined : 'Choose a variant'
+      return flag.variants.some((v) => v.key === serve.variant)
+        ? undefined
+        : t('dialog.chooseVariantError')
     }
     return Math.abs(sumWeights(serve.variations) - 100) <= WEIGHT_TOLERANCE
       ? undefined
-      : 'Weights must add up to 100%'
+      : t('dialog.weightsError')
   })()
-  const stepProblems = validateSteps(steps, nowMs)
+  const stepProblems = validateSteps(steps, t, nowMs)
   const stepsValid = stepProblems.every((p) => !p.at && !p.percentage)
   const rampError =
     mode === 'staged' && flag && flag.variants.length < 2
-      ? 'A staged rollout needs a flag with two or more variants'
+      ? t('dialog.rampNeedsVariants')
       : mode === 'staged' && flag && !flag.variants.some((v) => v.key === rampVariant)
-        ? 'Choose the variant to ramp up'
+        ? t('dialog.rampChooseVariant')
         : undefined
-  const flagError = !flag ? 'Choose a flag' : undefined
-  const envError = !env ? 'Choose an environment' : undefined
+  const flagError = !flag ? t('dialog.chooseFlagError') : undefined
+  const envError = !env ? t('dialog.chooseEnvironmentError') : undefined
 
   const valid =
     !flagError &&
@@ -232,7 +238,7 @@ function ScheduleForm({
             change: action === 'serve' ? { fallthrough: serve } : { enabled: action === 'on' },
           },
         })
-        toast.success(`Change scheduled for ${formatFullDateTime(at)}`)
+        toast.success(t('dialog.toastScheduled', { time: formatFullDateTime(at, i18n.language) }))
       } else {
         await createStagedRollout({
           data: {
@@ -241,12 +247,12 @@ function ScheduleForm({
             steps: steps.map((s) => ({ percentage: Number(s.percentage), at: s.at })),
           },
         })
-        toast.success(`Staged rollout scheduled in ${steps.length} steps`)
+        toast.success(t('dialog.toastStagedScheduled', { count: steps.length }))
       }
       await router.invalidate()
       onDone()
     } catch (error) {
-      setServerError(errorMessage(error, 'Could not schedule the change'))
+      setServerError(errorMessage(error, t('dialog.scheduleFailed')))
     } finally {
       setPending(false)
     }
@@ -267,23 +273,21 @@ function ScheduleForm({
     <>
       <form onSubmit={onSubmit} noValidate className="contents">
         <DialogHeader>
-          <DialogTitle>Schedule a change</DialogTitle>
-          <DialogDescription>
-            It runs once at the time you pick, even when several replicas are running.
-          </DialogDescription>
+          <DialogTitle>{t('dialog.title')}</DialogTitle>
+          <DialogDescription>{t('dialog.description')}</DialogDescription>
         </DialogHeader>
 
         <Tabs value={mode} onValueChange={(value) => setMode(value as Mode)}>
           <TabsList className="w-full">
-            <TabsTrigger value="single">Single change</TabsTrigger>
-            <TabsTrigger value="staged">Staged rollout</TabsTrigger>
+            <TabsTrigger value="single">{t('dialog.modeSingle')}</TabsTrigger>
+            <TabsTrigger value="staged">{t('dialog.modeStaged')}</TabsTrigger>
           </TabsList>
         </Tabs>
 
         <FieldGroup>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field data-invalid={showErrors && flagError ? true : undefined}>
-              <FieldLabel htmlFor="schedule-flag">Flag</FieldLabel>
+              <FieldLabel htmlFor="schedule-flag">{t('common:labels.flag')}</FieldLabel>
               {flags === null && !loadError ? (
                 <Skeleton className="h-9 w-full" />
               ) : (
@@ -293,7 +297,7 @@ function ScheduleForm({
                     className="w-full"
                     aria-invalid={(showErrors && Boolean(flagError)) || undefined}
                   >
-                    <SelectValue placeholder="Choose a flag" />
+                    <SelectValue placeholder={t('dialog.chooseFlag')} />
                   </SelectTrigger>
                   <SelectContent position="popper" className="max-h-72">
                     {(flags ?? []).map((f) => (
@@ -312,10 +316,10 @@ function ScheduleForm({
             </Field>
 
             <Field data-invalid={showErrors && envError ? true : undefined}>
-              <FieldLabel htmlFor="schedule-env">Environment</FieldLabel>
+              <FieldLabel htmlFor="schedule-env">{t('common:labels.environment')}</FieldLabel>
               <Select value={envKey} onValueChange={chooseEnvironment}>
                 <SelectTrigger id="schedule-env" className="w-full">
-                  <SelectValue placeholder="Choose an environment" />
+                  <SelectValue placeholder={t('dialog.chooseEnvironment')} />
                 </SelectTrigger>
                 <SelectContent position="popper">
                   {environments.map((e) => (
@@ -323,7 +327,9 @@ function ScheduleForm({
                       <EnvDot env={e} />
                       {e.name}
                       {e.isProduction ? (
-                        <span className="text-muted-foreground text-xs">production</span>
+                        <span className="text-muted-foreground text-xs">
+                          {t('common:states.production').toLowerCase()}
+                        </span>
                       ) : null}
                     </SelectItem>
                   ))}
@@ -339,11 +345,8 @@ function ScheduleForm({
             >
               <TriangleAlertIcon className="mt-0.5 size-4 shrink-0 text-(--env-color)" />
               <div>
-                <p className="font-medium">This runs in production</p>
-                <p className="text-muted-foreground">
-                  Nobody will be at the keyboard when it runs, so double-check the change and the
-                  time. You can cancel it up until then.
-                </p>
+                <p className="font-medium">{t('dialog.productionTitle')}</p>
+                <p className="text-muted-foreground">{t('dialog.productionBody')}</p>
               </div>
             </div>
           ) : null}
@@ -351,19 +354,13 @@ function ScheduleForm({
           {mode === 'single' ? (
             <>
               <FieldSet>
-                <FieldLegend variant="label">What should change</FieldLegend>
+                <FieldLegend variant="label">{t('dialog.whatChanges')}</FieldLegend>
                 <RadioGroup
                   value={action}
                   onValueChange={(value) => setAction(value as Action)}
                   className="grid gap-2 sm:grid-cols-3"
                 >
-                  {(
-                    [
-                      ['on', 'Turn on', 'Enable the flag'],
-                      ['off', 'Turn off', 'Serve the off variant'],
-                      ['serve', 'Change default', 'Set what everyone else gets'],
-                    ] as const
-                  ).map(([value, title, hint]) => (
+                  {ACTIONS.map((value) => (
                     <label
                       key={value}
                       htmlFor={`schedule-action-${value}`}
@@ -375,8 +372,12 @@ function ScheduleForm({
                         className="mt-0.5"
                       />
                       <span className="flex flex-col gap-0.5">
-                        <span className="font-medium text-sm">{title}</span>
-                        <span className="text-muted-foreground text-xs">{hint}</span>
+                        <span className="font-medium text-sm">
+                          {t(`dialog.action.${value}.title`)}
+                        </span>
+                        <span className="text-muted-foreground text-xs">
+                          {t(`dialog.action.${value}.hint`)}
+                        </span>
                       </span>
                     </label>
                   ))}
@@ -389,26 +390,30 @@ function ScheduleForm({
                     flag={flag}
                     value={serve}
                     onChange={setServe}
-                    label="Default for everyone else"
+                    label={t('dialog.defaultForEveryone')}
                   />
                   {showErrors && serveError ? <FieldError>{serveError}</FieldError> : null}
                 </Field>
               ) : null}
 
               <Field data-invalid={timeError ? true : undefined}>
-                <FieldLabel htmlFor="schedule-at">When</FieldLabel>
+                <FieldLabel htmlFor="schedule-at">{t('dialog.when')}</FieldLabel>
                 <DateTimePicker
                   id="schedule-at"
                   value={at}
                   onChange={setAt}
                   invalid={Boolean(timeError)}
-                  aria-label="Run at"
+                  aria-label={t('dialog.runAt')}
                 />
                 {timeError ? (
                   <FieldError>{timeError}</FieldError>
                 ) : (
                   <FieldDescription>
-                    Runs {formatFullDateTime(at)} ({formatDelta(at, now)}) · {localTimeZone()}
+                    {t('dialog.runsAt', {
+                      time: formatFullDateTime(at, i18n.language),
+                      delta: formatDelta(at, now, i18n.language),
+                      timeZone: localTimeZone(t('dialog.localTime')),
+                    })}
                   </FieldDescription>
                 )}
               </Field>
@@ -416,7 +421,7 @@ function ScheduleForm({
           ) : (
             <>
               <Field data-invalid={rampError ? true : undefined}>
-                <FieldLabel htmlFor="schedule-variant">Variant to ramp up</FieldLabel>
+                <FieldLabel htmlFor="schedule-variant">{t('dialog.rampVariant')}</FieldLabel>
                 <VariantSelect
                   id="schedule-variant"
                   variants={flag?.variants ?? []}
@@ -424,18 +429,15 @@ function ScheduleForm({
                   value={rampVariant}
                   onValueChange={setRampVariant}
                   disabled={!flag}
-                  placeholder={flag ? 'Choose a variant' : 'Choose a flag first'}
+                  placeholder={flag ? t('dialog.chooseVariant') : t('dialog.chooseFlagFirst')}
                   aria-invalid={Boolean(rampError) || undefined}
                 />
                 {rampError && (showErrors || flag) ? <FieldError>{rampError}</FieldError> : null}
-                <FieldDescription>
-                  Each step turns the flag on and gives this variant the percentage; the other
-                  variants share the rest. People who already have it keep it as it grows.
-                </FieldDescription>
+                <FieldDescription>{t('dialog.rampHelp')}</FieldDescription>
               </Field>
 
               <Field>
-                <FieldLabel>Steps</FieldLabel>
+                <FieldLabel>{t('dialog.steps')}</FieldLabel>
                 <StagedStepsEditor
                   steps={steps}
                   onChange={setSteps}
@@ -446,22 +448,26 @@ function ScheduleForm({
                 />
                 <FieldDescription>
                   {firstStepAt
-                    ? `Starts ${formatFullDateTime(firstStepAt)} (${formatDelta(firstStepAt, now)}) · ${localTimeZone()}`
-                    : 'Add at least one step.'}
+                    ? t('dialog.startsAt', {
+                        time: formatFullDateTime(firstStepAt, i18n.language),
+                        delta: formatDelta(firstStepAt, now, i18n.language),
+                        timeZone: localTimeZone(t('dialog.localTime')),
+                      })
+                    : t('dialog.addAtLeastOneStep')}
                 </FieldDescription>
               </Field>
             </>
           )}
 
           <Field>
-            <FieldLabel htmlFor="schedule-note">Note</FieldLabel>
+            <FieldLabel htmlFor="schedule-note">{t('dialog.note')}</FieldLabel>
             <Textarea
               id="schedule-note"
               rows={2}
               maxLength={1000}
               value={note}
               onChange={(event) => setNote(event.target.value)}
-              placeholder="Why is this scheduled? (optional)"
+              placeholder={t('dialog.notePlaceholder')}
             />
           </Field>
 
@@ -470,41 +476,59 @@ function ScheduleForm({
 
         <DialogFooter>
           <Button type="button" variant="ghost" onClick={onDone} disabled={pending}>
-            Cancel
+            {t('common:actions.cancel')}
           </Button>
           <Button type="submit" disabled={pending || (showErrors && !valid)}>
             {pending ? <Spinner /> : null}
-            {mode === 'single' ? 'Schedule change' : 'Schedule rollout'}
+            {mode === 'single' ? t('dialog.submitSingle') : t('dialog.submitStaged')}
           </Button>
         </DialogFooter>
       </form>
 
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent style={env ? envStyle(env) : undefined}>
-          <div className="hazard-stripes -mx-6 -mt-6 mb-2 h-2 rounded-t-lg" aria-hidden="true" />
+          <HazardBand />
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
-              <TriangleAlertIcon className="size-5 text-(--env-color)" /> Schedule in production?
+              <TriangleAlertIcon className="size-5 text-(--env-color)" /> {t('dialog.confirmTitle')}
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div>
-                {mode === 'single' ? 'This change' : `This ${steps.length}-step rollout`} of{' '}
-                <span className="font-mono text-foreground">{flag?.key}</span> will change what
-                everyone evaluating it in{' '}
-                {env ? <EnvBadge env={env} className="align-middle" /> : null} gets, starting{' '}
-                {formatDelta(mode === 'single' ? at : (firstStepAt ?? at), now)}.
+                <Trans
+                  t={t}
+                  i18nKey={
+                    mode === 'single' ? 'dialog.confirmBodySingle' : 'dialog.confirmBodyStaged'
+                  }
+                  values={{
+                    ...(mode === 'staged' ? { count: steps.length } : {}),
+                    flag: flag?.key ?? '',
+                    delta: formatDelta(
+                      mode === 'single' ? at : (firstStepAt ?? at),
+                      now,
+                      i18n.language,
+                    ),
+                  }}
+                  components={[
+                    <span key="flag" className="font-mono text-foreground" />,
+                    env ? (
+                      <EnvBadge key="env" env={env} className="align-middle" />
+                    ) : (
+                      <span key="env" />
+                    ),
+                  ]}
+                />
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Go back</AlertDialogCancel>
+            <AlertDialogCancel>{t('common:actions.goBack')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 setConfirmOpen(false)
                 void submit()
               }}
             >
-              Schedule in production
+              {t('dialog.confirmAction')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

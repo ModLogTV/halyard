@@ -1,5 +1,7 @@
+import type { TFunction } from 'i18next'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import type { ReactNode } from 'react'
+import { type ReactNode, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import { VariantValue, variantColor } from '@/components/flags'
 import { Badge } from '@/components/ui/badge'
@@ -28,19 +30,45 @@ import {
   MIN_EXPOSURES_PER_VARIANT,
   type VariantResult,
 } from '@/server/experiments/stats'
-import {
-  type FlagOption,
-  formatCount,
-  formatLiftPoints,
-  formatPValue,
-  formatRateWithInterval,
-  formatRelativeLift,
-} from './utils'
+import type { FlagOption } from './utils'
 import { VerdictBadge } from './verdict-badge'
 
 const MotionRow = motion.create(TableRow)
 
-const chartConfig = { rate: { label: 'Conversion rate' } } satisfies ChartConfig
+type ResultsT = TFunction<['experiments', 'common']>
+
+/** Number formats for the viewer's language: counts, rates (0..1), lift in points, relative lift and p-values. */
+function createFormats(locale: string) {
+  const digits = { minimumFractionDigits: 1, maximumFractionDigits: 1 }
+  const count = new Intl.NumberFormat(locale)
+  const rate = new Intl.NumberFormat(locale, { style: 'percent', ...digits })
+  const points = new Intl.NumberFormat(locale, { ...digits, signDisplay: 'exceptZero' })
+  const relative = new Intl.NumberFormat(locale, {
+    style: 'percent',
+    ...digits,
+    signDisplay: 'exceptZero',
+  })
+  const absolutePoints = new Intl.NumberFormat(locale, digits)
+  const p = new Intl.NumberFormat(locale, { minimumFractionDigits: 3, maximumFractionDigits: 3 })
+  const tick = new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 1 })
+  return {
+    count: (value: number) => count.format(value),
+    rate: (value: number) => rate.format(value),
+    /** Lift in percentage points, signed, without the unit. */
+    points: (value: number) => points.format(value * 100),
+    absolutePoints: (value: number) => absolutePoints.format(Math.abs(value * 100)),
+    relative: (value: number) => relative.format(value),
+    pValue: (value: number) => (value < 0.001 ? `< ${p.format(0.001)}` : p.format(value)),
+    pMinimum: () => p.format(0.001),
+    tick: (value: number) => tick.format(value / 100),
+  }
+}
+type Formats = ReturnType<typeof createFormats>
+
+function useFormats(): Formats {
+  const { i18n } = useTranslation()
+  return useMemo(() => createFormats(i18n.language), [i18n.language])
+}
 
 function lookup(flag: FlagOption, variant: string) {
   const index = flag.variants.findIndex((v) => v.key === variant)
@@ -52,33 +80,52 @@ function lookup(flag: FlagOption, variant: string) {
 }
 
 /** One sentence per treatment variant; the headline for "not enough data" comes first. */
-export function summarize(results: ExperimentResults): string[] {
+export function summarize(results: ExperimentResults, t: ResultsT, locale?: string): string[] {
+  const f = createFormats(locale ?? 'en')
   const treatments = results.variants.filter((v) => !v.isControl)
   if (treatments.length === 0) return []
   const control = results.variants.find((v) => v.isControl)
+  const controlName = control?.variant ?? t('badges.control')
   const lowSample = treatments.every((v) => v.verdict === 'insufficient-data')
   if (lowSample) {
     const minExposures = Math.min(...results.variants.map((v) => v.exposures))
     if (minExposures < MIN_EXPOSURES_PER_VARIANT) {
       return [
-        `Not enough data yet: ${formatCount(minExposures)} of ${MIN_EXPOSURES_PER_VARIANT} minimum exposures per variant.`,
+        t('results.summary.needMoreExposures', {
+          current: f.count(minExposures),
+          minimum: MIN_EXPOSURES_PER_VARIANT,
+        }),
       ]
     }
     const minConversions = Math.min(...results.variants.map((v) => v.conversions))
     return [
-      `Not enough data yet: ${formatCount(minConversions)} of ${MIN_CONVERSIONS_PER_VARIANT} minimum conversions per variant.`,
+      t('results.summary.needMoreConversions', {
+        current: f.count(minConversions),
+        minimum: MIN_CONVERSIONS_PER_VARIANT,
+      }),
     ]
   }
   return treatments.map((v) => {
     if (v.verdict === 'insufficient-data' || v.lift === null || v.pValue === null) {
-      return `${v.variant}: not enough data yet (${formatCount(v.exposures)} exposures, ${formatCount(v.conversions)} conversions).`
+      return t('results.summary.variantNotEnough', {
+        variant: v.variant,
+        exposures: f.count(v.exposures),
+        conversions: f.count(v.conversions),
+      })
     }
-    const p = `p ${v.pValue < 0.001 ? '< 0.001' : `= ${formatPValue(v.pValue)}`}`
+    const p =
+      v.pValue < 0.001
+        ? t('results.summary.pLessThan', { value: f.pMinimum() })
+        : t('results.summary.pEquals', { value: f.pValue(v.pValue) })
     if (v.verdict === 'no-difference') {
-      return `${v.variant} shows no significant difference from ${control?.variant ?? 'control'} (${p}).`
+      return t('results.summary.noDifference', { variant: v.variant, control: controlName, p })
     }
-    const points = `${Math.abs(v.lift * 100).toFixed(1)} pp ${v.lift > 0 ? 'better' : 'worse'}`
-    return `${v.variant} converts ${points} than ${control?.variant ?? 'control'}, ${p} — significant.`
+    return t(v.lift > 0 ? 'results.summary.better' : 'results.summary.worse', {
+      variant: v.variant,
+      control: controlName,
+      points: f.absolutePoints(v.lift),
+      p,
+    })
   })
 }
 
@@ -89,21 +136,25 @@ function liftClass(lift: number): string {
 }
 
 function LiftCell({ result }: { result: VariantResult }) {
-  if (result.isControl) return <span className="text-muted-foreground">baseline</span>
+  const { t } = useTranslation(['experiments', 'common'])
+  const f = useFormats()
+  if (result.isControl) {
+    return <span className="text-muted-foreground">{t('results.baseline')}</span>
+  }
   if (result.lift === null) return <span className="text-muted-foreground">—</span>
   return (
     <span className={cn('tabular font-medium', liftClass(result.lift))}>
-      {formatLiftPoints(result.lift)}
+      {t('results.points', { value: f.points(result.lift) })}
       {result.relativeLift !== null ? (
-        <span className="ml-1 font-normal opacity-80">
-          ({formatRelativeLift(result.relativeLift)})
-        </span>
+        <span className="ml-1 font-normal opacity-80">({f.relative(result.relativeLift)})</span>
       ) : null}
     </span>
   )
 }
 
 function SampleProgress({ result, flag }: { result: VariantResult; flag: FlagOption }) {
+  const { t } = useTranslation(['experiments', 'common'])
+  const f = useFormats()
   const { index, value, found } = lookup(flag, result.variant)
   const exposures = Math.min(100, (result.exposures / MIN_EXPOSURES_PER_VARIANT) * 100)
   const conversions = Math.min(100, (result.conversions / MIN_CONVERSIONS_PER_VARIANT) * 100)
@@ -118,26 +169,26 @@ function SampleProgress({ result, flag }: { result: VariantResult; flag: FlagOpt
       />
       <div className="flex flex-col gap-1">
         <div className="flex justify-between text-muted-foreground text-xs">
-          <span>Exposures</span>
+          <span>{t('labels.exposures')}</span>
           <span className="tabular">
-            {formatCount(result.exposures)} / {MIN_EXPOSURES_PER_VARIANT}
+            {f.count(result.exposures)} / {MIN_EXPOSURES_PER_VARIANT}
           </span>
         </div>
         <Progress
           value={exposures}
-          aria-label={`${result.variant} exposures toward the minimum sample`}
+          aria-label={t('results.progress.exposuresAria', { variant: result.variant })}
         />
       </div>
       <div className="flex flex-col gap-1">
         <div className="flex justify-between text-muted-foreground text-xs">
-          <span>Conversions</span>
+          <span>{t('labels.conversions')}</span>
           <span className="tabular">
-            {formatCount(result.conversions)} / {MIN_CONVERSIONS_PER_VARIANT}
+            {f.count(result.conversions)} / {MIN_CONVERSIONS_PER_VARIANT}
           </span>
         </div>
         <Progress
           value={conversions}
-          aria-label={`${result.variant} conversions toward the minimum sample`}
+          aria-label={t('results.progress.conversionsAria', { variant: result.variant })}
         />
       </div>
     </li>
@@ -155,19 +206,27 @@ interface ChartDatum {
 }
 
 function ChartTip({ active, payload }: { active?: boolean; payload?: { payload: ChartDatum }[] }) {
+  const { t } = useTranslation(['experiments', 'common'])
+  const f = useFormats()
   const d = active ? payload?.[0]?.payload : undefined
   if (!d) return null
   return (
     <div className="grid min-w-40 gap-1 rounded-lg border bg-background px-2.5 py-1.5 text-xs shadow-xl">
       <span className="font-mono font-medium">{d.variant}</span>
       <span className="tabular">
-        {d.rate.toFixed(1)}%{' '}
+        {f.rate(d.rate / 100)}{' '}
         <span className="text-muted-foreground">
-          ({d.low.toFixed(1)}–{d.high.toFixed(1)}%, 95% interval)
+          {t('results.chart.interval', {
+            low: f.rate(d.low / 100),
+            high: f.rate(d.high / 100),
+          })}
         </span>
       </span>
       <span className="tabular text-muted-foreground">
-        {formatCount(d.conversions)} of {formatCount(d.exposures)} converted
+        {t('results.chart.converted', {
+          conversions: f.count(d.conversions),
+          exposures: f.count(d.exposures),
+        })}
       </span>
     </div>
   )
@@ -212,6 +271,9 @@ function IntervalShape({ x = 0, y = 0, width = 0, height = 0, payload }: Interva
 }
 
 function RateChart({ results, flag }: { results: ExperimentResults; flag: FlagOption }) {
+  const { t, i18n } = useTranslation(['experiments', 'common'])
+  const f = useFormats()
+  const chartConfig = { rate: { label: t('results.chart.rateLabel') } } satisfies ChartConfig
   const data: ChartDatum[] = results.variants.map((v) => {
     const rate = v.conversionRate * 100
     const low = (v.confidenceInterval?.lower ?? v.conversionRate) * 100
@@ -226,7 +288,11 @@ function RateChart({ results, flag }: { results: ExperimentResults; flag: FlagOp
       fill: variantColor(lookup(flag, v.variant).index),
     }
   })
-  const label = `Conversion rate per variant: ${data.map((d) => `${d.variant} ${d.rate.toFixed(1)}%`).join(', ')}`
+  const label = t('results.chart.ariaLabel', {
+    summary: new Intl.ListFormat(i18n.language, { style: 'short', type: 'unit' }).format(
+      data.map((d) => `${d.variant} ${f.rate(d.rate / 100)}`),
+    ),
+  })
   return (
     <div role="img" aria-label={label}>
       <ChartContainer
@@ -252,7 +318,7 @@ function RateChart({ results, flag }: { results: ExperimentResults; flag: FlagOp
           <XAxis
             type="number"
             domain={[0, Math.max(5, Math.ceil(Math.max(...data.map((d) => d.high)) * 1.1))]}
-            tickFormatter={(v: number) => `${v}%`}
+            tickFormatter={(v: number) => f.tick(v)}
             tickLine={false}
             axisLine={false}
           />
@@ -276,19 +342,18 @@ export interface ResultsCardProps {
 }
 
 export function ResultsCard({ results, flag, actions }: ResultsCardProps) {
+  const { t, i18n } = useTranslation(['experiments', 'common'])
+  const f = useFormats()
   const reduceMotion = useReducedMotion()
-  const sentences = summarize(results)
+  const sentences = summarize(results, t, i18n.language)
   const belowMinimum = results.variants.filter((v) => !v.minimumSampleReached)
   const noExposures = results.totalExposures === 0
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Results</CardTitle>
-        <CardDescription>
-          Each variant is compared with the control using a two-proportion z-test. Conversions count
-          once per subject.
-        </CardDescription>
+        <CardTitle>{t('results.title')}</CardTitle>
+        <CardDescription>{t('results.description')}</CardDescription>
         {actions ? <CardAction>{actions}</CardAction> : null}
       </CardHeader>
       <CardContent className="flex flex-col gap-6">
@@ -296,13 +361,13 @@ export function ResultsCard({ results, flag, actions }: ResultsCardProps) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Variant</TableHead>
-                <TableHead className="text-right">Exposures</TableHead>
-                <TableHead className="text-right">Conversions</TableHead>
-                <TableHead className="text-right">Conversion rate (95% interval)</TableHead>
-                <TableHead className="text-right">Lift vs control</TableHead>
-                <TableHead className="text-right">p-value</TableHead>
-                <TableHead>Verdict</TableHead>
+                <TableHead>{t('common:labels.variant')}</TableHead>
+                <TableHead className="text-right">{t('labels.exposures')}</TableHead>
+                <TableHead className="text-right">{t('labels.conversions')}</TableHead>
+                <TableHead className="text-right">{t('results.columns.rate')}</TableHead>
+                <TableHead className="text-right">{t('results.columns.lift')}</TableHead>
+                <TableHead className="text-right">{t('results.columns.pValue')}</TableHead>
+                <TableHead>{t('results.columns.verdict')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -327,21 +392,19 @@ export function ResultsCard({ results, flag, actions }: ResultsCardProps) {
                           />
                           {v.isControl ? (
                             <Badge variant="outline" className="text-muted-foreground">
-                              control
+                              {t('badges.control')}
                             </Badge>
                           ) : null}
                         </span>
                       </TableCell>
-                      <TableCell className="tabular text-right">
-                        {formatCount(v.exposures)}
-                      </TableCell>
-                      <TableCell className="tabular text-right">
-                        {formatCount(v.conversions)}
-                      </TableCell>
+                      <TableCell className="tabular text-right">{f.count(v.exposures)}</TableCell>
+                      <TableCell className="tabular text-right">{f.count(v.conversions)}</TableCell>
                       <TableCell className="tabular text-right whitespace-nowrap">
                         {v.exposures === 0
                           ? '—'
-                          : formatRateWithInterval(v.conversionRate, v.confidenceInterval)}
+                          : v.confidenceInterval
+                            ? `${f.rate(v.conversionRate)} (${f.rate(v.confidenceInterval.lower)}–${f.rate(v.confidenceInterval.upper)})`
+                            : f.rate(v.conversionRate)}
                       </TableCell>
                       <TableCell className="text-right whitespace-nowrap">
                         <LiftCell result={v} />
@@ -350,7 +413,7 @@ export function ResultsCard({ results, flag, actions }: ResultsCardProps) {
                         {v.pValue === null ? (
                           <span className="text-muted-foreground">—</span>
                         ) : (
-                          formatPValue(v.pValue)
+                          f.pValue(v.pValue)
                         )}
                       </TableCell>
                       <TableCell>
@@ -366,8 +429,7 @@ export function ResultsCard({ results, flag, actions }: ResultsCardProps) {
 
         {noExposures ? (
           <p className="rounded-lg border border-dashed p-4 text-center text-muted-foreground text-sm">
-            No exposures yet. They appear once contexts reaching the flag's default are evaluated
-            while the experiment is running.
+            {t('results.noExposures')}
           </p>
         ) : (
           <RateChart results={results} flag={flag} />
@@ -383,7 +445,7 @@ export function ResultsCard({ results, flag, actions }: ResultsCardProps) {
 
         {belowMinimum.length > 0 ? (
           <div className="flex flex-col gap-2">
-            <p className="font-medium text-sm">Progress toward the minimum sample</p>
+            <p className="font-medium text-sm">{t('results.progress.title')}</p>
             <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {belowMinimum.map((v) => (
                 <SampleProgress key={v.variant} result={v} flag={flag} />

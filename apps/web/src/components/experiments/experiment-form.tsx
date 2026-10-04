@@ -1,6 +1,7 @@
 import { isValidKey, type RolloutVariation } from '@halyard/engine'
 import { TriangleAlertIcon } from 'lucide-react'
 import { type FormEvent, type ReactNode, useMemo, useState } from 'react'
+import { Trans, useTranslation } from 'react-i18next'
 import { EnvBadge, EnvDot, envStyle } from '@/components/env/env-badge'
 import { evenSplit, FlagTypeBadge, VariantValue } from '@/components/flags'
 import { Button } from '@/components/ui/button'
@@ -69,6 +70,7 @@ export function ExperimentForm({
   actions,
   onSubmit,
 }: ExperimentFormProps) {
+  const { t } = useTranslation(['experiments', 'common'])
   const editing = mode === 'edit'
   const initialFlag = flags.find((f) => f.key === initial?.flagKey)
   const [flagKey, setFlagKey] = useState(initialFlag?.key ?? '')
@@ -119,9 +121,9 @@ export function ExperimentForm({
   const complete = allocationIsComplete(allocation)
 
   const problems: string[] = []
-  if (flag && positive.length < 2) problems.push('Give at least two variants a weight above 0.')
+  if (flag && positive.length < 2) problems.push(t('form.problems.needTwoVariants'))
   if (flag && positive.length >= 2 && !controlValid) {
-    problems.push('The control variant needs a weight above 0.')
+    problems.push(t('form.problems.controlNeedsWeight'))
   }
 
   const canSubmit =
@@ -154,7 +156,7 @@ export function ExperimentForm({
       <FieldGroup>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field>
-            <FieldLabel htmlFor="experiment-flag">Flag</FieldLabel>
+            <FieldLabel htmlFor="experiment-flag">{t('common:labels.flag')}</FieldLabel>
             {editing && flag ? (
               <div className="flex h-9 items-center gap-2 rounded-md border bg-muted/40 px-3 text-sm">
                 <span className="truncate font-mono">{flag.key}</span>
@@ -163,7 +165,7 @@ export function ExperimentForm({
             ) : (
               <Select value={flagKey || undefined} onValueChange={changeFlag}>
                 <SelectTrigger id="experiment-flag" className="w-full min-w-0">
-                  <SelectValue placeholder="Choose a flag">
+                  <SelectValue placeholder={t('form.chooseFlag')}>
                     {flag ? (
                       <span className="flex min-w-0 items-center gap-2">
                         <span className="truncate font-mono text-xs">{flag.key}</span>
@@ -196,12 +198,12 @@ export function ExperimentForm({
                 </SelectContent>
               </Select>
             )}
-            <FieldDescription>
-              The experiment splits contexts that reach this flag's default.
-            </FieldDescription>
+            <FieldDescription>{t('form.flagHelp')}</FieldDescription>
           </Field>
           <Field>
-            <FieldLabel htmlFor="experiment-environment">Environment</FieldLabel>
+            <FieldLabel htmlFor="experiment-environment">
+              {t('common:labels.environment')}
+            </FieldLabel>
             {editing && environment ? (
               <div className="flex h-9 items-center">
                 <EnvBadge env={environment} />
@@ -209,7 +211,7 @@ export function ExperimentForm({
             ) : (
               <Select value={environmentKey || undefined} onValueChange={setEnvironmentKey}>
                 <SelectTrigger id="experiment-environment" className="w-full min-w-0">
-                  <SelectValue placeholder="Choose an environment">
+                  <SelectValue placeholder={t('form.chooseEnvironment')}>
                     {environment ? (
                       <span className="flex items-center gap-2">
                         <EnvDot env={environment} />
@@ -238,22 +240,20 @@ export function ExperimentForm({
           >
             <TriangleAlertIcon className="mt-0.5 size-4 shrink-0 text-(--env-color)" />
             <p>
-              <span className="font-medium">Experiments in production affect real users.</span>{' '}
-              <span className="text-muted-foreground">
-                Nothing changes until you start it, and you will be asked to confirm.
-              </span>
+              <span className="font-medium">{t('form.productionTitle')}</span>{' '}
+              <span className="text-muted-foreground">{t('form.productionBody')}</span>
             </p>
           </div>
         ) : null}
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Field>
-            <FieldLabel htmlFor="experiment-name">Name</FieldLabel>
+            <FieldLabel htmlFor="experiment-name">{t('common:labels.name')}</FieldLabel>
             <Input
               id="experiment-name"
               value={name}
               autoFocus={!editing}
-              placeholder="New payment flow"
+              placeholder={t('form.namePlaceholder')}
               onChange={(e) => {
                 setName(e.target.value)
                 if (!keyTouched) setKey(keyify(e.target.value))
@@ -261,7 +261,7 @@ export function ExperimentForm({
             />
           </Field>
           <Field>
-            <FieldLabel htmlFor="experiment-key">Key</FieldLabel>
+            <FieldLabel htmlFor="experiment-key">{t('common:labels.key')}</FieldLabel>
             <Input
               id="experiment-key"
               value={key}
@@ -274,26 +274,24 @@ export function ExperimentForm({
                 setKey(keyify(e.target.value))
               }}
             />
-            {editing ? null : (
-              <FieldDescription>Unique in the project. Cannot be changed later.</FieldDescription>
-            )}
+            {editing ? null : <FieldDescription>{t('form.keyHelp')}</FieldDescription>}
           </Field>
         </div>
 
         <Field>
-          <FieldLabel htmlFor="experiment-hypothesis">Hypothesis</FieldLabel>
+          <FieldLabel htmlFor="experiment-hypothesis">{t('form.hypothesis.label')}</FieldLabel>
           <Textarea
             id="experiment-hypothesis"
             rows={3}
             value={hypothesis}
             maxLength={2000}
-            placeholder="If we show the new payment flow, checkout conversion increases because…"
+            placeholder={t('form.hypothesis.placeholder')}
             onChange={(e) => setHypothesis(e.target.value)}
           />
         </Field>
 
         <Field>
-          <FieldLabel>Allocation</FieldLabel>
+          <FieldLabel>{t('form.allocation.label')}</FieldLabel>
           {flag ? (
             <AllocationEditor
               flag={flag}
@@ -303,17 +301,15 @@ export function ExperimentForm({
             />
           ) : (
             <p className="rounded-lg border border-dashed p-4 text-center text-muted-foreground text-sm">
-              Choose a flag to split its variants.
+              {t('form.allocation.chooseFlag')}
             </p>
           )}
-          <FieldDescription>
-            Percent of contexts that see each variant. The weights must add up to 100.
-          </FieldDescription>
+          <FieldDescription>{t('form.allocation.help')}</FieldDescription>
         </Field>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Field>
-            <FieldLabel htmlFor="experiment-control">Control variant</FieldLabel>
+            <FieldLabel htmlFor="experiment-control">{t('form.control.label')}</FieldLabel>
             <Select
               value={controlValid ? controlVariant : undefined}
               onValueChange={setControlVariant}
@@ -324,7 +320,7 @@ export function ExperimentForm({
                 className="w-full min-w-0"
                 aria-invalid={Boolean(flag) && positive.length >= 2 && !controlValid}
               >
-                <SelectValue placeholder="Select the control" />
+                <SelectValue placeholder={t('form.control.placeholder')} />
               </SelectTrigger>
               <SelectContent position="popper">
                 {controlOptions.map(({ variant, index }) => (
@@ -339,10 +335,10 @@ export function ExperimentForm({
                 ))}
               </SelectContent>
             </Select>
-            <FieldDescription>Every other variant is compared with this one.</FieldDescription>
+            <FieldDescription>{t('form.control.help')}</FieldDescription>
           </Field>
           <Field>
-            <FieldLabel htmlFor="experiment-event">Conversion event</FieldLabel>
+            <FieldLabel htmlFor="experiment-event">{t('labels.conversionEvent')}</FieldLabel>
             <Input
               id="experiment-event"
               value={conversionEvent}
@@ -352,8 +348,11 @@ export function ExperimentForm({
               onChange={(e) => setConversionEvent(e.target.value)}
             />
             <FieldDescription>
-              The <span className="font-mono">event</span> name your app sends to the tracking
-              endpoint when a user converts.
+              <Trans
+                t={t}
+                i18nKey="form.conversionEventHelp"
+                components={[<span key="event" className="font-mono" />]}
+              />
             </FieldDescription>
           </Field>
         </div>

@@ -1,1 +1,320 @@
-{}
+{
+  "stale": {
+    "anEnvironment": "einer Umgebung",
+    "reasons": {
+      "neverEvaluated_one": "Seit {{count}} Tag nie ausgewertet",
+      "neverEvaluated_other": "Seit {{count}} Tagen nie ausgewertet",
+      "notEvaluated_one": "Seit {{count}} Tag nicht in {{environment}} ausgewertet",
+      "notEvaluated_other": "Seit {{count}} Tagen nicht in {{environment}} ausgewertet",
+      "singleVariant_one": "Lieferte seit {{count}} Tag an alle in {{environment}} \"{{variant}}\"",
+      "singleVariant_other": "Lieferte seit {{count}} Tagen an alle in {{environment}} \"{{variant}}\"",
+      "noVariant": "nichts"
+    }
+  },
+  "iconButton": {
+    "unavailable": "{{label}} (nicht verfügbar: {{reason}})"
+  },
+  "tagInput": {
+    "placeholder": "Wert eingeben, Enter drücken",
+    "remove": "{{value}} entfernen"
+  },
+  "variantSelect": {
+    "placeholder": "Variante wählen",
+    "missing": "{{value}} (fehlt)"
+  },
+  "rolloutBar": {
+    "noTraffic": "kein Traffic zugewiesen"
+  },
+  "flagTypeBadge": {
+    "short": {
+      "boolean": "bool",
+      "string": "str",
+      "number": "num",
+      "json": "json"
+    }
+  },
+  "envToggle": {
+    "label": {
+      "enable": "{{flagKey}} in {{environment}} aktivieren",
+      "disable": "{{flagKey}} in {{environment}} deaktivieren"
+    },
+    "confirm": {
+      "enableTitle": "In der Produktion aktivieren?",
+      "disableTitle": "In der Produktion deaktivieren?",
+      "enableAction": "In der Produktion aktivieren",
+      "disableAction": "In der Produktion deaktivieren",
+      "bodyOn": "<0>{{flagKey}}</0> wird für alle, die es in <2/> auswerten, <1>eingeschaltet</1>. Die Änderung gilt sofort.",
+      "bodyOff": "<0>{{flagKey}}</0> wird für alle, die es in <2/> auswerten, <1>ausgeschaltet</1>. Die Änderung gilt sofort."
+    }
+  },
+  "envBadge": {
+    "production": "Produktion"
+  },
+  "serve": {
+    "modeLabel": "Ausspielmodus",
+    "modeLabelNamed": "Modus für {{label}}",
+    "modes": {
+      "variant": "Variante",
+      "rollout": "Prozentualer Rollout"
+    },
+    "variantLabel": "Variante",
+    "variantLabelNamed": "Variante für {{label}}",
+    "missingVariant": "{{variant}} (fehlt)",
+    "weightFor": "Gewichtung für {{variant}}",
+    "balanced": "Die Gewichtungen ergeben 100 %.",
+    "unbalancedUnder": "Die Gewichtungen ergeben {{total}}. Füge {{diff}} hinzu, um 100 % zu erreichen.",
+    "unbalancedOver": "Die Gewichtungen ergeben {{total}}. Entferne {{diff}}, um 100 % zu erreichen.",
+    "splitEvenly": "Gleichmäßig aufteilen",
+    "advanced": "Erweitert",
+    "bucketBy": "Bucket nach",
+    "bucketByHelp": "Kontexte mit demselben Wert landen immer im selben Bucket. Standard ist der Targeting-Schlüssel."
+  },
+  "conditions": {
+    "actionsLabel": "Aktionen für Bedingung {{n}}",
+    "actions": "Bedingungsaktionen",
+    "switchToSegment": "Zu Segmentbedingung wechseln",
+    "switchToAttribute": "Zu Attributbedingung wechseln",
+    "remove": "Bedingung entfernen",
+    "attributePlaceholder": "Attribut",
+    "attributeLabel": "Attribut von Bedingung {{n}}",
+    "operatorLabel": "Operator von Bedingung {{n}}",
+    "noValueNeeded": "Kein Wert nötig",
+    "valuesLabel": "Werte von Bedingung {{n}}",
+    "valueLabel": "Wert von Bedingung {{n}}",
+    "valuePlaceholder": "Wert",
+    "booleanLabel": "Bedingung {{n}}: als Boolean vergleichen",
+    "membershipLabel": "Zugehörigkeit von Bedingung {{n}}",
+    "segmentLabel": "Segment von Bedingung {{n}}",
+    "segmentPlaceholder": "Segment wählen",
+    "missingSegment": "{{key}} (fehlt)",
+    "membership": {
+      "in": "ist in",
+      "notIn": "ist nicht in"
+    },
+    "operatorGroups": {
+      "equality": "Gleichheit",
+      "lists": "Listen",
+      "strings": "Zeichenketten",
+      "numbers": "Zahlen",
+      "versions": "Versionen",
+      "presence": "Vorhandensein"
+    },
+    "operators": {
+      "eq": "ist",
+      "neq": "ist nicht",
+      "in": "ist eines von",
+      "notIn": "ist keines von",
+      "contains": "enthält",
+      "notContains": "enthält nicht",
+      "startsWith": "beginnt mit",
+      "endsWith": "endet mit",
+      "regex": "entspricht Regex",
+      "gt": ">",
+      "gte": "≥",
+      "lt": "<",
+      "lte": "≤",
+      "semverEq": "semver =",
+      "semverGt": "semver >",
+      "semverGte": "semver ≥",
+      "semverLt": "semver <",
+      "semverLte": "semver ≤",
+      "exists": "existiert",
+      "notExists": "existiert nicht"
+    }
+  },
+  "rule": {
+    "label": "Regel {{n}}",
+    "badge": "Regel {{n}}",
+    "descriptionPlaceholder": "Beschreibe, wen diese Regel anspricht",
+    "descriptionLabel": "Beschreibung von Regel {{n}}",
+    "moveUpLabel": "Regel {{n}} nach oben",
+    "moveUp": "Nach oben",
+    "moveDownLabel": "Regel {{n}} nach unten",
+    "moveDown": "Nach unten",
+    "removeLabel": "Regel {{n}} entfernen",
+    "remove": "Regel entfernen",
+    "removeConfirmTitle": "Regel {{n}} entfernen?",
+    "removeConfirmDescription": "Kontexte, die sie getroffen hat, fallen zur nächsten Regel durch.",
+    "if": "Wenn",
+    "and": "und",
+    "noConditions": "Keine Bedingungen – diese Regel trifft auf alle zu.",
+    "addCondition": "Bedingung hinzufügen",
+    "attributeCondition": "Attributbedingung",
+    "segmentCondition": "Segmentbedingung",
+    "serve": "Ausspielen"
+  },
+  "targeting": {
+    "duplicateRuleId": "Eine andere Regel hat dieselbe ID.",
+    "problemsTitle_one": "{{count}} Problem vor dem Speichern beheben",
+    "problemsTitle_other": "{{count}} Probleme vor dem Speichern beheben",
+    "status": {
+      "title": "Status",
+      "isOn": "Flag ist in <0>{{environment}}</0> an",
+      "isOff": "Flag ist in <0>{{environment}}</0> aus"
+    },
+    "off": {
+      "title": "Wenn aus, ausspielen",
+      "description": "Wird ausgespielt, solange das Flag aus ist. Regeln und der Standard unten werden übersprungen.",
+      "variantLabel": "Variante, die bei ausgeschaltetem Flag ausgespielt wird"
+    },
+    "rules": {
+      "title": "Targeting-Regeln",
+      "descriptionOn": "Von oben nach unten ausgewertet. Die erste passende Regel entscheidet.",
+      "descriptionOff": "Wird nicht ausgewertet, solange das Flag aus ist.",
+      "empty": "Keine Targeting-Regeln. Alle, auf die keine Regel zutrifft, erhalten den Standard unten.",
+      "add": "Regel hinzufügen"
+    },
+    "fallthrough": {
+      "title": "Standard (Fallthrough)",
+      "description": "Wird ausgespielt, wenn das Flag an ist und keine Regel zutrifft.",
+      "serveLabel": "Ausspielen"
+    }
+  },
+  "variants": {
+    "nameColumn": "Name (optional)",
+    "removeReasonLocked": "Wird von einer aktiven Konfiguration verwendet. Entferne sie zuerst aus dem Targeting.",
+    "removeReasonMinimum_one": "Ein Flag braucht mindestens {{count}} Variante.",
+    "removeReasonMinimum_other": "Ein Flag braucht mindestens {{count}} Varianten.",
+    "keyLabel": "Schlüssel von Variante {{n}}",
+    "nameLabel": "Name von Variante {{n}}",
+    "namePlaceholder": "Anzeigename",
+    "removeLabel": "Variante {{name}} entfernen",
+    "remove": "Variante entfernen",
+    "booleanHint": "Boolean-Flags haben immer zwei Varianten, <0>true</0> und <1>false</1>. Du kannst sie umbenennen.",
+    "add": "Variante hinzufügen",
+    "problemsTitle_one": "{{count}} Problem mit Varianten",
+    "problemsTitle_other": "{{count}} Probleme mit Varianten",
+    "valueLabel": "Wert von Variante {{n}}",
+    "booleanValueLabel": "{{label}}: {{value}}",
+    "valuePlaceholder": "Wert",
+    "invalidJson": "Ungültiges JSON"
+  },
+  "table": {
+    "toggleDisabledArchived": "Archivierte Flags können nicht umgeschaltet werden",
+    "toggleDisabledRole": "Nur Bearbeiter und Eigentümer können Flags umschalten",
+    "noRules": "keine Regeln",
+    "lastEvaluated": "Zuletzt ausgewertet {{time}}",
+    "evaluations_one": "{{count, number}} Auswertung",
+    "evaluations_other": "{{count, number}} Auswertungen"
+  },
+  "list": {
+    "pageTitle": "Flags · Halyard",
+    "title": "Flags",
+    "description": "{{flags}} aktiv in {{environments}}.",
+    "newFlag": "Neues Flag",
+    "toggledOn": "{{flagKey}} ist jetzt in {{environment}} an",
+    "toggledOff": "{{flagKey}} ist jetzt in {{environment}} aus",
+    "toggleFailed": "Das Flag konnte nicht aktualisiert werden",
+    "filters": {
+      "searchPlaceholder": "Nach Schlüssel, Name oder Tag suchen",
+      "searchLabel": "Flags durchsuchen",
+      "staleLabel": "Nur Aufräumkandidaten anzeigen",
+      "stale": "Aufräumkandidaten",
+      "staleHelp": "Flags, die seit {{staleDays}} Tagen nicht ausgewertet wurden oder seit {{singleVariantDays}} Tagen nur eine Variante liefern",
+      "archivedLabel": "Archivierte Flags einschließen",
+      "button": "Filter",
+      "buttonActive_one": "Filter, {{count}} aktiv",
+      "buttonActive_other": "Filter, {{count}} aktiv",
+      "searchFilters": "Nach Typ, Tag oder Zustand filtern…",
+      "noFilterMatches": "Kein passender Filter",
+      "typeGroup": "Typ",
+      "tagGroup": "Tags",
+      "showGroup": "Anzeigen",
+      "archived": "Archivierte einschließen",
+      "removeFilter": "Filter {{filter}} entfernen",
+      "clearAll": "Alle Filter zurücksetzen"
+    },
+    "empty": {
+      "title": "Noch keine Flags",
+      "description": "Erstelle dein erstes Flag. Es startet in jeder Umgebung ausgeschaltet, also ändert sich nichts, bis du es einschaltest.",
+      "create": "Flag erstellen"
+    },
+    "noMatches": {
+      "title": "Keine Flags passen zu diesen Filtern",
+      "description": "Versuche eine andere Suche oder setze die Filter zurück."
+    }
+  },
+  "new": {
+    "pageTitle": "Neues Flag · Halyard",
+    "title": "Neues Flag",
+    "description": "Ein Flag wird einmal pro Projekt definiert und in jeder Umgebung separat konfiguriert. Es startet überall ausgeschaltet.",
+    "created": "Flag {{key}} erstellt",
+    "createFailed": "Das Flag konnte nicht erstellt werden",
+    "definition": {
+      "title": "Definition",
+      "description": "Schlüssel und Typ können nach dem Erstellen nicht mehr geändert werden."
+    },
+    "variants": {
+      "title": "Typ und Varianten",
+      "description": "Varianten sind die Werte, zu denen ein Flag aufgelöst werden kann."
+    },
+    "types": {
+      "boolean": "An oder aus. Die häufigste Art von Flag.",
+      "string": "Einer von mehreren Textwerten, zum Beispiel ein Banner-Text.",
+      "number": "Einer von mehreren Zahlenwerten, zum Beispiel ein Limit.",
+      "json": "Strukturierte Konfigurationsobjekte."
+    },
+    "form": {
+      "namePlaceholder": "Neuer Bezahlvorgang",
+      "keyHelp": "Wird im Code und in der API verwendet. Buchstaben, Ziffern, Punkte, Binde- und Unterstriche. Ein Präfix nach Bereich (zum Beispiel <0>checkout.</0>) hält die Liste übersichtlich.",
+      "descriptionPlaceholder": "Was steuert dieses Flag, und wann kann es entfernt werden?",
+      "tagsPlaceholder": "Tag hinzufügen und Enter drücken",
+      "serveWhenOff": "Ausspielen wenn aus",
+      "serveWhenOffHelp": "Wird zurückgegeben, solange das Flag deaktiviert ist.",
+      "defaultWhenOn": "Standard wenn an",
+      "defaultWhenOnHelp": "Wird zurückgegeben, wenn keine Targeting-Regel zutrifft.",
+      "submit": "Flag erstellen"
+    }
+  },
+  "detail": {
+    "pageTitle": "{{key}} · Flags · Halyard",
+    "copyKeyLabel": "Flag-Schlüssel kopieren",
+    "copyKey": "Schlüssel kopieren",
+    "actionsLabel": "Flag-Aktionen",
+    "actions": {
+      "edit": "Details und Varianten bearbeiten",
+      "schedule": "Änderung planen…",
+      "restore": "Aus dem Archiv wiederherstellen",
+      "delete": "Flag löschen"
+    },
+    "pendingSchedules_one": "{{count}} geplante Änderung steht für dieses Flag aus – <0>anzeigen</0>",
+    "pendingSchedules_other": "{{count}} geplante Änderungen stehen für dieses Flag aus – <0>anzeigen</0>",
+    "tabs": {
+      "targeting": "Targeting"
+    },
+    "activity": {
+      "title": "Aktivität",
+      "neverEvaluated": "Nie ausgewertet"
+    },
+    "delete": {
+      "title": "{{key}} löschen?",
+      "description": "Das Flag und seine Konfiguration werden in jeder Umgebung entfernt. SDKs, die es auswerten, erhalten ihren Code-Standard. Archiviere es stattdessen, wenn du den Verlauf behalten willst."
+    },
+    "toasts": {
+      "restored": "Flag wiederhergestellt",
+      "archived": "Flag archiviert",
+      "deleted": "Flag {{key}} gelöscht",
+      "deleteFailed": "Das Flag konnte nicht gelöscht werden",
+      "updated": "Flag aktualisiert"
+    },
+    "targeting": {
+      "saved": "Targeting für {{environment}} gespeichert",
+      "saveFailed": "Targeting konnte nicht gespeichert werden",
+      "experimentRunning": "Auf diesem Flag läuft in {{environment}} ein Experiment. Kontexte, die den Standard erreichen, werden vom Experiment zugeteilt.",
+      "unsaved": "Ungespeicherte Targeting-Änderungen",
+      "fixProblems": "behebe die Probleme oben, um zu speichern",
+      "saveTo": "In {{environment}} speichern",
+      "confirmSaveTitle": "Targeting in der Produktion speichern?",
+      "confirmSaveBody": "Die Regeln für <0>{{flagKey}}</0> ändern sich sofort für alle, die es in <1/> auswerten. Du kannst die Änderung danach im Flag-Verlauf prüfen.",
+      "confirmSaveAction": "In der Produktion speichern",
+      "confirmToggleBodyOn": "<0>{{flagKey}}</0> wird für alle in der Produktion sofort <1>eingeschaltet</1>.",
+      "confirmToggleBodyOff": "<0>{{flagKey}}</0> wird für alle in der Produktion sofort <1>ausgeschaltet</1>."
+    },
+    "edit": {
+      "title": "{{key}} bearbeiten",
+      "description": "Varianten, auf die eine Regel oder ein Standard in irgendeiner Umgebung verweist, können nicht entfernt oder umbenannt werden.",
+      "failed": "Das Flag konnte nicht aktualisiert werden",
+      "submit": "Änderungen speichern"
+    }
+  }
+}

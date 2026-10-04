@@ -1,4 +1,10 @@
-import { createFileRoute, getRouteApi, Link, useNavigate } from '@tanstack/react-router'
+import {
+  createFileRoute,
+  type ErrorComponentProps,
+  getRouteApi,
+  Link,
+  useNavigate,
+} from '@tanstack/react-router'
 import {
   FlaskConicalIcon,
   MoreHorizontalIcon,
@@ -8,6 +14,7 @@ import {
   Trash2Icon,
 } from 'lucide-react'
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 import { EnvBadge } from '@/components/env/env-badge'
 import {
@@ -45,6 +52,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { formatDateTime, formatRelativeTime } from '@/lib/format'
+import { translate } from '@/lib/i18n'
 import { listExperiments } from '@/server/functions/experiments'
 
 const projectRoute = getRouteApi('/app/$projectSlug')
@@ -63,34 +71,36 @@ export const Route = createFileRoute('/app/$projectSlug/experiments/')({
     })
     return { experiments }
   },
+  head: ({ match }) => ({
+    meta: [{ title: translate(match.context.locale)('experiments:list.pageTitle') }],
+  }),
   pendingComponent: ExperimentsPending,
-  errorComponent: ({ error, reset }) => (
+  errorComponent: ExperimentsError,
+  component: ExperimentsPage,
+})
+
+function ExperimentsError({ error, reset }: ErrorComponentProps) {
+  const { t } = useTranslation(['experiments', 'common'])
+  return (
     <div className="p-6">
       <Empty className="border border-dashed">
         <EmptyHeader>
-          <EmptyTitle>Could not load experiments</EmptyTitle>
+          <EmptyTitle>{t('list.loadFailedTitle')}</EmptyTitle>
           <EmptyDescription>
-            {error instanceof Error ? error.message : 'Something went wrong.'}
+            {error instanceof Error ? error.message : t('common:errors.generic')}
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <Button variant="outline" onClick={reset}>
-            Try again
+            {t('common:actions.tryAgain')}
           </Button>
         </EmptyContent>
       </Empty>
     </div>
-  ),
-  component: ExperimentsPage,
-})
+  )
+}
 
 const SKELETON_ROWS = ['a', 'b', 'c', 'd']
-const FILTER_LABELS: Record<Filter, string> = {
-  all: 'All',
-  running: 'Running',
-  draft: 'Draft',
-  stopped: 'Stopped',
-}
 
 function ExperimentsPending() {
   return (
@@ -116,6 +126,7 @@ function ExperimentsPending() {
 }
 
 function ExperimentsPage() {
+  const { t, i18n } = useTranslation(['experiments', 'common'])
   const { experiments } = Route.useLoaderData()
   const { project } = projectRoute.useLoaderData()
   const search = Route.useSearch()
@@ -139,23 +150,27 @@ function ExperimentsPage() {
     for (const e of experiments) out[e.status] += 1
     return out
   }, [experiments])
+  const filterLabel = (f: Filter) =>
+    f === 'all'
+      ? t('common:states.all')
+      : f === 'running'
+        ? t('common:states.running')
+        : f === 'draft'
+          ? t('common:states.draft')
+          : t('status.stopped')
   const visible = filter === 'all' ? experiments : experiments.filter((e) => e.status === filter)
 
   const newButton = canEdit ? (
     <Button asChild>
       <Link to="/app/$projectSlug/experiments/new" params={{ projectSlug: project.slug }}>
-        <PlusIcon /> New experiment
+        <PlusIcon /> {t('list.newButton')}
       </Link>
     </Button>
   ) : null
 
   return (
     <div className="flex flex-col gap-4 p-6">
-      <PageHeader
-        title="Experiments"
-        description="Split traffic between flag variants and measure which one converts better."
-        actions={newButton}
-      />
+      <PageHeader title={t('list.title')} description={t('list.description')} actions={newButton} />
 
       {experiments.length === 0 ? (
         <Empty className="border border-dashed">
@@ -163,11 +178,8 @@ function ExperimentsPage() {
             <EmptyMedia variant="icon">
               <FlaskConicalIcon />
             </EmptyMedia>
-            <EmptyTitle>No experiments yet</EmptyTitle>
-            <EmptyDescription>
-              An experiment splits the users who reach a flag's default across its variants, counts
-              who converts afterwards, and tells you whether the difference is real.
-            </EmptyDescription>
+            <EmptyTitle>{t('list.empty.title')}</EmptyTitle>
+            <EmptyDescription>{t('list.empty.description')}</EmptyDescription>
           </EmptyHeader>
           {canEdit ? <EmptyContent>{newButton}</EmptyContent> : null}
         </Empty>
@@ -185,7 +197,7 @@ function ExperimentsPage() {
             <TabsList>
               {FILTERS.map((f) => (
                 <TabsTrigger key={f} value={f}>
-                  {FILTER_LABELS[f]}
+                  {filterLabel(f)}
                   <span className="tabular text-muted-foreground text-xs">{counts[f]}</span>
                 </TabsTrigger>
               ))}
@@ -195,12 +207,12 @@ function ExperimentsPage() {
           {visible.length === 0 ? (
             <Empty className="border border-dashed">
               <EmptyHeader>
-                <EmptyTitle>No {FILTER_LABELS[filter].toLowerCase()} experiments</EmptyTitle>
-                <EmptyDescription>Pick another filter to see the rest.</EmptyDescription>
+                <EmptyTitle>{t(`list.noFiltered.${filter}`)}</EmptyTitle>
+                <EmptyDescription>{t('list.noFiltered.description')}</EmptyDescription>
               </EmptyHeader>
               <EmptyContent>
                 <Button variant="outline" onClick={() => navigate({ search: {}, replace: true })}>
-                  Show all
+                  {t('list.showAll')}
                 </Button>
               </EmptyContent>
             </Empty>
@@ -209,15 +221,15 @@ function ExperimentsPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Experiment</TableHead>
-                    <TableHead>Flag</TableHead>
-                    <TableHead>Environment</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Exposures</TableHead>
-                    <TableHead className="text-right">Conversions</TableHead>
-                    <TableHead>Started</TableHead>
+                    <TableHead>{t('common:labels.experiment')}</TableHead>
+                    <TableHead>{t('common:labels.flag')}</TableHead>
+                    <TableHead>{t('common:labels.environment')}</TableHead>
+                    <TableHead>{t('common:labels.status')}</TableHead>
+                    <TableHead className="text-right">{t('labels.exposures')}</TableHead>
+                    <TableHead className="text-right">{t('labels.conversions')}</TableHead>
+                    <TableHead>{t('labels.started')}</TableHead>
                     <TableHead className="w-10">
-                      <span className="sr-only">Actions</span>
+                      <span className="sr-only">{t('common:labels.actions')}</span>
                     </TableHead>
                   </TableRow>
                 </TableHeader>
@@ -269,21 +281,23 @@ function ExperimentsPage() {
                           <ExperimentStatusBadge status={status} />
                         </TableCell>
                         <TableCell className="tabular text-right">
-                          {experiment.counts.exposures.toLocaleString()}
+                          {experiment.counts.exposures.toLocaleString(i18n.language)}
                         </TableCell>
                         <TableCell className="tabular text-right">
-                          {experiment.counts.conversions.toLocaleString()}
+                          {experiment.counts.conversions.toLocaleString(i18n.language)}
                         </TableCell>
                         <TableCell className="whitespace-nowrap text-muted-foreground text-sm">
                           {experiment.startedAt ? (
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <time dateTime={new Date(experiment.startedAt).toISOString()}>
-                                  {formatRelativeTime(experiment.startedAt)}
+                                  {formatRelativeTime(experiment.startedAt, {
+                                    locale: i18n.language,
+                                  })}
                                 </time>
                               </TooltipTrigger>
                               <TooltipContent>
-                                {formatDateTime(experiment.startedAt)}
+                                {formatDateTime(experiment.startedAt, i18n.language)}
                               </TooltipContent>
                             </Tooltip>
                           ) : (
@@ -297,7 +311,7 @@ function ExperimentsPage() {
                                 <Button
                                   variant="ghost"
                                   size="icon-sm"
-                                  aria-label={`Actions for ${experiment.key}`}
+                                  aria-label={t('list.actionsAriaLabel', { key: experiment.key })}
                                 >
                                   <MoreHorizontalIcon />
                                 </Button>
@@ -305,12 +319,12 @@ function ExperimentsPage() {
                               <DropdownMenuContent align="end">
                                 {status === 'draft' ? (
                                   <DropdownMenuItem onClick={() => request('start', target)}>
-                                    <PlayIcon /> Start
+                                    <PlayIcon /> {t('common:actions.start')}
                                   </DropdownMenuItem>
                                 ) : null}
                                 {status === 'running' ? (
                                   <DropdownMenuItem onClick={() => request('stop', target)}>
-                                    <SquareIcon /> Stop
+                                    <SquareIcon /> {t('common:actions.stop')}
                                   </DropdownMenuItem>
                                 ) : null}
                                 {status !== 'running' ? (
@@ -320,7 +334,7 @@ function ExperimentsPage() {
                                       variant="destructive"
                                       onClick={() => request('delete', target)}
                                     >
-                                      <Trash2Icon /> Delete
+                                      <Trash2Icon /> {t('common:actions.delete')}
                                     </DropdownMenuItem>
                                   </>
                                 ) : null}

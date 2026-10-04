@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { MotionConfig, motion } from 'motion/react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { EnvBadge } from '@/components/env/env-badge'
 import { ConfirmDialog } from '@/components/settings/confirm-dialog'
@@ -16,7 +17,7 @@ import { EnvironmentDialog } from '@/components/settings/environment-dialog'
 import { errorMessage } from '@/components/settings/form-utils'
 import { HintedButton, IconButton } from '@/components/settings/hinted-button'
 import { SettingsSection } from '@/components/settings/settings-section'
-import { OWNER_ONLY_MESSAGE, useSettingsContext } from '@/components/settings/use-settings-context'
+import { useSettingsContext } from '@/components/settings/use-settings-context'
 import { Badge } from '@/components/ui/badge'
 import {
   Empty,
@@ -27,16 +28,20 @@ import {
   EmptyTitle,
 } from '@/components/ui/empty'
 import { Item, ItemActions, ItemContent } from '@/components/ui/item'
+import { translate } from '@/lib/i18n'
 import { deleteEnvironment, reorderEnvironments } from '@/server/functions/environments'
 import type { Environment } from '@/server/services/environments'
 
 export const Route = createFileRoute('/app/$projectSlug/settings/environments')({
   staticData: { crumbKey: 'environments' },
-  head: () => ({ meta: [{ title: 'Environments · Halyard' }] }),
+  head: ({ match }) => ({
+    meta: [{ title: translate(match.context.locale)('settings:environments.pageTitle') }],
+  }),
   component: EnvironmentsSettings,
 })
 
 function EnvironmentsSettings() {
+  const { t } = useTranslation(['settings', 'common'])
   const router = useRouter()
   const { project, isOwner } = useSettingsContext()
   const environments = [...project.environments].sort((a, b) => a.sortOrder - b.sortOrder)
@@ -60,7 +65,7 @@ function EnvironmentsSettings() {
       await reorderEnvironments({ data: { projectId: project.id, environmentIds: ids } })
       await router.invalidate()
     } catch (error) {
-      toast.error(errorMessage(error, 'Could not reorder the environments'))
+      toast.error(errorMessage(error, t('environments.reorderFailed')))
     } finally {
       setMoving(false)
     }
@@ -68,14 +73,14 @@ function EnvironmentsSettings() {
 
   return (
     <SettingsSection
-      title="Environments"
-      description="Environments hold separate flag configuration and SDK keys. The order here is the order used across the app."
+      title={t('common:labels.environments')}
+      description={t('environments.description')}
       actions={
         <HintedButton
           onClick={() => setCreateOpen(true)}
-          disabledReason={isOwner ? undefined : OWNER_ONLY_MESSAGE}
+          disabledReason={isOwner ? undefined : t('shared.ownerOnly')}
         >
-          <PlusIcon /> Add environment
+          <PlusIcon /> {t('environments.add')}
         </HintedButton>
       }
     >
@@ -85,17 +90,15 @@ function EnvironmentsSettings() {
             <EmptyMedia variant="icon">
               <LayersIcon />
             </EmptyMedia>
-            <EmptyTitle>No environments</EmptyTitle>
-            <EmptyDescription>
-              Flags are configured per environment. Add one to start evaluating flags.
-            </EmptyDescription>
+            <EmptyTitle>{t('environments.empty.title')}</EmptyTitle>
+            <EmptyDescription>{t('environments.empty.description')}</EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
             <HintedButton
               onClick={() => setCreateOpen(true)}
-              disabledReason={isOwner ? undefined : OWNER_ONLY_MESSAGE}
+              disabledReason={isOwner ? undefined : t('shared.ownerOnly')}
             >
-              <PlusIcon /> Add environment
+              <PlusIcon /> {t('environments.add')}
             </HintedButton>
           </EmptyContent>
         </Empty>
@@ -120,27 +123,33 @@ function EnvironmentsSettings() {
                       />
                       <span className="font-mono">{env.color}</span>
                     </span>
-                    {env.isProduction ? <Badge variant="secondary">Production</Badge> : null}
+                    {env.isProduction ? (
+                      <Badge variant="secondary">{t('common:states.production')}</Badge>
+                    ) : null}
                   </ItemContent>
                   <ItemActions>
                     <IconButton
-                      label={`Move ${env.name} up`}
+                      label={t('environments.moveUp', { name: env.name })}
                       onClick={() => move(index, -1)}
                       disabledReason={
-                        !isOwner ? OWNER_ONLY_MESSAGE : index === 0 ? 'Already first' : undefined
+                        !isOwner
+                          ? t('shared.ownerOnly')
+                          : index === 0
+                            ? t('environments.alreadyFirst')
+                            : undefined
                       }
                       disabled={moving}
                     >
                       <ArrowUpIcon />
                     </IconButton>
                     <IconButton
-                      label={`Move ${env.name} down`}
+                      label={t('environments.moveDown', { name: env.name })}
                       onClick={() => move(index, 1)}
                       disabledReason={
                         !isOwner
-                          ? OWNER_ONLY_MESSAGE
+                          ? t('shared.ownerOnly')
                           : index === environments.length - 1
-                            ? 'Already last'
+                            ? t('environments.alreadyLast')
                             : undefined
                       }
                       disabled={moving}
@@ -148,17 +157,17 @@ function EnvironmentsSettings() {
                       <ArrowDownIcon />
                     </IconButton>
                     <IconButton
-                      label={`Edit ${env.name}`}
+                      label={t('environments.edit', { name: env.name })}
                       onClick={() => {
                         setEditing(env)
                         setEditOpen(true)
                       }}
-                      disabledReason={isOwner ? undefined : OWNER_ONLY_MESSAGE}
+                      disabledReason={isOwner ? undefined : t('shared.ownerOnly')}
                     >
                       <PencilIcon />
                     </IconButton>
                     <IconButton
-                      label={`Delete ${env.name}`}
+                      label={t('environments.deleteAria', { name: env.name })}
                       className="text-destructive hover:text-destructive"
                       onClick={() => {
                         setDeleting(env)
@@ -166,9 +175,9 @@ function EnvironmentsSettings() {
                       }}
                       disabledReason={
                         !isOwner
-                          ? OWNER_ONLY_MESSAGE
+                          ? t('shared.ownerOnly')
                           : environments.length <= 1
-                            ? 'A project must keep at least one environment'
+                            ? t('environments.keepOne')
                             : undefined
                       }
                     >
@@ -192,20 +201,17 @@ function EnvironmentsSettings() {
       <ConfirmDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
-        title={`Delete ${deleting?.name ?? 'environment'}?`}
-        description={
-          <>
-            The flag configuration and the SDK keys of this environment are removed. Applications
-            using those keys stop receiving flags. This cannot be undone.
-          </>
-        }
-        confirmLabel="Delete environment"
+        title={t('environments.delete.title', {
+          name: deleting?.name ?? t('common:labels.environment'),
+        })}
+        description={t('environments.delete.description')}
+        confirmLabel={t('environments.delete.confirm')}
         onConfirm={async () => {
           if (!deleting) return
           await deleteEnvironment({
             data: { projectId: project.id, environmentId: deleting.id },
           })
-          toast.success(`Environment "${deleting.name}" deleted`)
+          toast.success(t('environments.delete.deleted', { name: deleting.name }))
           await router.invalidate()
         }}
       />

@@ -1,16 +1,17 @@
+import { useTranslation } from 'react-i18next'
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { HEX_COLOR_PATTERN } from '@/server/schemas/common'
 
 export const ENVIRONMENT_COLOR_PRESETS = [
-  { name: 'Blue', value: '#3b82f6' },
-  { name: 'Amber', value: '#f59e0b' },
-  { name: 'Red', value: '#ef4444' },
-  { name: 'Green', value: '#22c55e' },
-  { name: 'Violet', value: '#8b5cf6' },
-  { name: 'Pink', value: '#ec4899' },
-  { name: 'Teal', value: '#14b8a6' },
-  { name: 'Slate', value: '#64748b' },
+  { name: 'blue', value: '#3b82f6' },
+  { name: 'amber', value: '#f59e0b' },
+  { name: 'red', value: '#ef4444' },
+  { name: 'green', value: '#22c55e' },
+  { name: 'violet', value: '#8b5cf6' },
+  { name: 'pink', value: '#ec4899' },
+  { name: 'teal', value: '#14b8a6' },
+  { name: 'slate', value: '#64748b' },
 ] as const
 
 export const DEFAULT_ENVIRONMENT_COLOR = '#64748b'
@@ -29,6 +30,7 @@ export function ColorField({
   invalid?: boolean
   disabled?: boolean
 }) {
+  const { t } = useTranslation('settings')
   const valid = HEX_COLOR_PATTERN.test(value)
   const preset = ENVIRONMENT_COLOR_PRESETS.find((p) => p.value === value.toLowerCase())
 
@@ -38,7 +40,7 @@ export function ColorField({
         <InputGroupAddon>
           <input
             type="color"
-            aria-label="Pick a colour"
+            aria-label={t('environments.colorField.pick')}
             value={valid ? value.toLowerCase() : DEFAULT_ENVIRONMENT_COLOR}
             onChange={(event) => onChange(event.target.value)}
             disabled={disabled}
@@ -68,15 +70,15 @@ export function ColorField({
           if (next) onChange(next)
         }}
         disabled={disabled}
-        aria-label="Preset colours"
+        aria-label={t('environments.colorField.presets')}
         className="flex-wrap"
       >
         {ENVIRONMENT_COLOR_PRESETS.map((p) => (
           <ToggleGroupItem
             key={p.value}
             value={p.value}
-            aria-label={p.name}
-            title={p.name}
+            aria-label={t(`environments.colorField.${p.name}`)}
+            title={t(`environments.colorField.${p.name}`)}
             className="size-8 min-w-8 rounded-md px-0 data-[state=on]:border-ring data-[state=on]:ring-[3px] data-[state=on]:ring-ring/30"
           >
             <span

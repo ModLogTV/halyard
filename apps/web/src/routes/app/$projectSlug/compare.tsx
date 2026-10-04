@@ -8,6 +8,7 @@ import {
   XIcon,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
 import {
   type CompareEnvironment,
@@ -30,7 +31,6 @@ import {
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Toggle } from '@/components/ui/toggle'
-import { pluralize } from '@/lib/format'
 import { listFlags } from '@/server/functions/flags'
 
 const projectRoute = getRouteApi('/app/$projectSlug')
@@ -86,6 +86,7 @@ interface DialogState {
 }
 
 function ComparePage() {
+  const { t } = useTranslation(['compare', 'common'])
   const { flags } = Route.useLoaderData()
   const { project } = projectRoute.useLoaderData()
   const search = Route.useSearch()
@@ -155,29 +156,26 @@ function ComparePage() {
     )
   }
 
-  const promoteDisabledReason = canPromote ? undefined : 'Only editors and owners can promote flags'
+  const promoteDisabledReason = canPromote ? undefined : t('page.promoteDisabled')
   const selectedCount = rows.filter((f) => selected.has(f.key)).length
 
   if (flags.length === 0) {
     return (
       <div className="flex flex-col gap-4 p-6">
-        <PageHeader title="Compare" description="See how flags differ between environments." />
+        <PageHeader title={t('common:labels.compare')} description={t('page.description')} />
         <Empty className="border border-dashed">
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <FlagIcon />
             </EmptyMedia>
-            <EmptyTitle>No flags to compare</EmptyTitle>
-            <EmptyDescription>
-              Create a flag first. Then you can compare it across environments and promote its
-              configuration.
-            </EmptyDescription>
+            <EmptyTitle>{t('page.noFlags.title')}</EmptyTitle>
+            <EmptyDescription>{t('page.noFlags.description')}</EmptyDescription>
           </EmptyHeader>
           {canPromote ? (
             <EmptyContent>
               <Button asChild>
                 <Link to="/app/$projectSlug/flags/new" params={{ projectSlug: project.slug }}>
-                  <PlusIcon /> Create a flag
+                  <PlusIcon /> {t('page.noFlags.create')}
                 </Link>
               </Button>
             </EmptyContent>
@@ -190,16 +188,14 @@ function ComparePage() {
   if (environments.length < 2 || !baseline) {
     return (
       <div className="flex flex-col gap-4 p-6">
-        <PageHeader title="Compare" description="See how flags differ between environments." />
+        <PageHeader title={t('common:labels.compare')} description={t('page.description')} />
         <Empty className="border border-dashed">
           <EmptyHeader>
             <EmptyMedia variant="icon">
               <GitCompareArrowsIcon />
             </EmptyMedia>
-            <EmptyTitle>Add a second environment</EmptyTitle>
-            <EmptyDescription>
-              Comparison needs at least two environments. Add one in the project settings.
-            </EmptyDescription>
+            <EmptyTitle>{t('page.noEnvironments.title')}</EmptyTitle>
+            <EmptyDescription>{t('page.noEnvironments.description')}</EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
             <Button asChild variant="outline">
@@ -207,7 +203,7 @@ function ComparePage() {
                 to="/app/$projectSlug/settings/environments"
                 params={{ projectSlug: project.slug }}
               >
-                Manage environments
+                {t('page.noEnvironments.manage')}
               </Link>
             </Button>
           </EmptyContent>
@@ -219,8 +215,12 @@ function ComparePage() {
   return (
     <div className="flex flex-col gap-4 p-6">
       <PageHeader
-        title="Compare"
-        description={`${pluralize(flags.length, 'active flag')} across ${pluralize(environments.length, 'environment')}. Tinted cells differ from the ${baseline.name} baseline.`}
+        title={t('common:labels.compare')}
+        description={t('page.summary', {
+          count: flags.length,
+          environments: t('common:counts.environments', { count: environments.length }),
+          baseline: baseline.name,
+        })}
       />
 
       <div className="flex flex-wrap items-center gap-2">
@@ -229,10 +229,10 @@ function ComparePage() {
             <SearchIcon />
           </InputGroupAddon>
           <InputGroupInput
-            placeholder="Search by key or name"
+            placeholder={t('page.search.placeholder')}
             value={search.q ?? ''}
             onChange={(e) => setSearch({ q: e.target.value || undefined })}
-            aria-label="Search flags"
+            aria-label={t('page.search.ariaLabel')}
           />
         </InputGroup>
         <Toggle
@@ -240,27 +240,27 @@ function ComparePage() {
           size="sm"
           pressed={!showAll}
           onPressedChange={(pressed) => setSearch({ all: pressed ? undefined : true })}
-          aria-label="Only show differences"
+          aria-label={t('page.onlyDifferences')}
           className="data-[state=on]:bg-warning-soft"
         >
-          Only show differences
+          {t('page.onlyDifferences')}
         </Toggle>
         <span className="tabular text-xs text-muted-foreground">
-          {filtered.length} of {flags.length} flags
+          {t('page.visibleCount', { shown: filtered.length, count: flags.length })}
         </span>
         {search.q ? (
           <Button variant="ghost" size="sm" onClick={() => setSearch({ q: undefined })}>
-            <XIcon /> Clear search
+            <XIcon /> {t('page.search.clear')}
           </Button>
         ) : null}
         <div className="ml-auto flex items-center gap-2">
           {selectedCount > 0 ? (
             <>
               <span className="tabular text-sm text-muted-foreground">
-                {selectedCount} selected
+                {t('page.selected', { count: selectedCount })}
               </span>
               <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>
-                Clear
+                {t('common:actions.clear')}
               </Button>
               <Button
                 size="sm"
@@ -268,7 +268,7 @@ function ComparePage() {
                 onClick={promoteSelected}
                 title={promoteDisabledReason}
               >
-                <ArrowUpFromLineIcon /> Promote selected
+                <ArrowUpFromLineIcon /> {t('page.promoteSelected')}
               </Button>
             </>
           ) : null}
@@ -282,12 +282,12 @@ function ComparePage() {
               <SearchIcon />
             </EmptyMedia>
             <EmptyTitle>
-              {!showAll && !search.q ? 'Every environment matches' : 'No flags match'}
+              {!showAll && !search.q ? t('page.allMatch.title') : t('page.noMatches.title')}
             </EmptyTitle>
             <EmptyDescription>
               {!showAll && !search.q
-                ? `No flag differs from ${baseline.name} in on/off state, default or rule count.`
-                : 'Try a different search.'}
+                ? t('page.allMatch.description', { baseline: baseline.name })
+                : t('page.noMatches.description')}
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
@@ -300,7 +300,7 @@ function ComparePage() {
                 })
               }
             >
-              Show all flags
+              {t('page.showAll')}
             </Button>
           </EmptyContent>
         </Empty>
@@ -320,10 +320,7 @@ function ComparePage() {
           onPromote={(flagKey, from, to) => openDialog([flagKey], from, to)}
         />
       )}
-      <p className="text-xs text-muted-foreground">
-        Cells compare on/off state, the default and the number of rules. Expand a row to see rule
-        level differences.
-      </p>
+      <p className="text-xs text-muted-foreground">{t('page.footnote')}</p>
 
       {dialog ? (
         <PromoteDialog

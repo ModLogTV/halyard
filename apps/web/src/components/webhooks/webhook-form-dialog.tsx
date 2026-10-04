@@ -1,5 +1,6 @@
 import { useRouter } from '@tanstack/react-router'
 import { type FormEvent, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 import { errorMessage, firstError } from '@/components/settings/form-utils'
 import { Button } from '@/components/ui/button'
@@ -67,6 +68,7 @@ function WebhookForm({
   onDone: () => void
   onCreated?: (revealed: RevealedSecret) => void
 }) {
+  const { t } = useTranslation(['settings', 'common'])
   const router = useRouter()
   const editing = webhook !== null
   const [name, setName] = useState(webhook?.name ?? '')
@@ -77,9 +79,9 @@ function WebhookForm({
   const [pending, setPending] = useState(false)
   const [serverError, setServerError] = useState<string | null>(null)
 
-  const nameError = name.trim() ? undefined : 'Enter a name'
+  const nameError = name.trim() ? undefined : t('webhooks.form.nameRequired')
   const urlError = firstError(webhookUrlSchema, url)
-  const eventsError = events.length === 0 ? 'Choose at least one event' : undefined
+  const eventsError = events.length === 0 ? t('webhooks.form.eventsRequired') : undefined
   const secretError =
     !editing && secret.trim() ? firstError(webhookSecretSchema, secret.trim()) : undefined
   const hasErrors = Boolean(nameError || urlError || eventsError || secretError)
@@ -100,7 +102,7 @@ function WebhookForm({
         }
         if (Object.keys(patch).length > 0) {
           await updateWebhook({ data: { projectId, webhookId: webhook.id, patch } })
-          toast.success('Webhook updated')
+          toast.success(t('webhooks.form.updated'))
           await router.invalidate()
         }
         onDone()
@@ -119,7 +121,7 @@ function WebhookForm({
         onCreated?.({ kind: 'created', name: created.name, secret: created.secret })
       }
     } catch (error) {
-      setServerError(errorMessage(error, 'Could not save the webhook'))
+      setServerError(errorMessage(error, t('webhooks.form.saveFailed')))
     } finally {
       setPending(false)
     }
@@ -128,19 +130,19 @@ function WebhookForm({
   return (
     <form onSubmit={onSubmit} noValidate className="contents">
       <DialogHeader>
-        <DialogTitle>{editing ? `Edit ${webhook.name}` : 'Add webhook'}</DialogTitle>
-        <DialogDescription>
-          Halyard sends a signed POST request to the URL whenever one of the chosen events happens.
-        </DialogDescription>
+        <DialogTitle>
+          {editing ? t('webhooks.form.editTitle', { name: webhook.name }) : t('webhooks.add')}
+        </DialogTitle>
+        <DialogDescription>{t('webhooks.form.description')}</DialogDescription>
       </DialogHeader>
       <FieldGroup>
         <Field data-invalid={submitted && nameError ? true : undefined}>
-          <FieldLabel htmlFor="webhook-name">Name</FieldLabel>
+          <FieldLabel htmlFor="webhook-name">{t('common:labels.name')}</FieldLabel>
           <Input
             id="webhook-name"
             value={name}
             onChange={(event) => setName(event.target.value)}
-            placeholder="Deploy bot"
+            placeholder={t('webhooks.form.namePlaceholder')}
             maxLength={100}
             autoComplete="off"
             aria-invalid={(submitted && Boolean(nameError)) || undefined}
@@ -149,7 +151,7 @@ function WebhookForm({
           {submitted && nameError ? <FieldError>{nameError}</FieldError> : null}
         </Field>
         <Field data-invalid={submitted && urlError ? true : undefined}>
-          <FieldLabel htmlFor="webhook-url">URL</FieldLabel>
+          <FieldLabel htmlFor="webhook-url">{t('common:labels.url')}</FieldLabel>
           <Input
             id="webhook-url"
             type="url"
@@ -165,11 +167,11 @@ function WebhookForm({
           {submitted && urlError ? (
             <FieldError>{urlError}</FieldError>
           ) : (
-            <FieldDescription>Must start with http:// or https://.</FieldDescription>
+            <FieldDescription>{t('webhooks.form.urlHint')}</FieldDescription>
           )}
         </Field>
         <Field data-invalid={submitted && eventsError ? true : undefined}>
-          <FieldLabel>Events</FieldLabel>
+          <FieldLabel>{t('common:labels.events')}</FieldLabel>
           <EventPicker
             value={events}
             onChange={setEvents}
@@ -181,7 +183,10 @@ function WebhookForm({
         {editing ? null : (
           <Field data-invalid={secretError ? true : undefined}>
             <FieldLabel htmlFor="webhook-secret">
-              Signing secret <span className="font-normal text-muted-foreground">(optional)</span>
+              {t('webhooks.form.secretLabel')}{' '}
+              <span className="font-normal text-muted-foreground">
+                ({t('common:states.optional')})
+              </span>
             </FieldLabel>
             <Input
               id="webhook-secret"
@@ -191,16 +196,13 @@ function WebhookForm({
               autoComplete="new-password"
               spellCheck={false}
               className="font-mono text-sm"
-              placeholder="Leave empty to generate one"
+              placeholder={t('webhooks.form.secretPlaceholder')}
               aria-invalid={Boolean(secretError) || undefined}
             />
             {secretError ? (
               <FieldError>{secretError}</FieldError>
             ) : (
-              <FieldDescription>
-                Halyard generates a secure random secret and shows it once after you create the
-                webhook. Only set your own if your receiver already has one (16 characters or more).
-              </FieldDescription>
+              <FieldDescription>{t('webhooks.form.secretHint')}</FieldDescription>
             )}
           </Field>
         )}
@@ -208,11 +210,11 @@ function WebhookForm({
       </FieldGroup>
       <DialogFooter>
         <Button type="button" variant="ghost" onClick={onDone} disabled={pending}>
-          Cancel
+          {t('common:actions.cancel')}
         </Button>
         <Button type="submit" disabled={pending || (submitted && hasErrors)}>
           {pending ? <Spinner /> : null}
-          {editing ? 'Save changes' : 'Add webhook'}
+          {editing ? t('shared.saveChanges') : t('webhooks.add')}
         </Button>
       </DialogFooter>
     </form>

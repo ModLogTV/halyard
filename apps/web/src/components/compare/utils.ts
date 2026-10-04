@@ -6,8 +6,12 @@ import type {
   Serve,
   Variant,
 } from '@halyard/engine'
+import type { TFunction } from 'i18next'
 import type { EnvironmentLike } from '@/components/env/env-badge'
-import { formatPercent, pluralize } from '@/lib/format'
+import { formatPercent } from '@/lib/format'
+
+/** `t` as returned by `useTranslation(['compare', 'common'])`. */
+export type CompareT = TFunction<['compare', 'common']>
 
 export interface CompareEnvironment extends EnvironmentLike {
   id: string
@@ -21,11 +25,12 @@ export type EnvConfig = Pick<
 
 export type CopyField = 'enabled' | 'offVariant' | 'fallthrough' | 'rules'
 
-export const COPY_FIELDS: { key: CopyField; label: string; hint: string }[] = [
-  { key: 'enabled', label: 'Enabled', hint: 'Whether the flag is on' },
-  { key: 'offVariant', label: 'Off variant', hint: 'Served while the flag is off' },
-  { key: 'fallthrough', label: 'Default', hint: 'Served when no rule matches' },
-  { key: 'rules', label: 'Rules', hint: 'All targeting rules, in order' },
+/** Fields that can be copied; labels live in `compare:copyFields.<key>.label|hint`. */
+export const COPY_FIELDS: { key: CopyField }[] = [
+  { key: 'enabled' },
+  { key: 'offVariant' },
+  { key: 'fallthrough' },
+  { key: 'rules' },
 ]
 
 /** Fields copied by default: everything, except `enabled` when the target is production. */
@@ -82,11 +87,11 @@ export function rulesEqual(a: Rule[], b: Rule[]): boolean {
 }
 
 /** "on 10% / off 90%" for a rollout, the variant key for a fixed serve. */
-export function describeServe(serve: Serve): string {
+export function describeServe(serve: Serve, t: CompareT): string {
   if (serve.type === 'variant') return serve.variant
   const active = serve.variations.filter((v) => v.weight > 0)
   if (active.length === 1 && active[0]) return `${active[0].variant} 100%`
-  if (active.length === 0) return 'no traffic'
+  if (active.length === 0) return t('serve.noTraffic')
   return active.map((v) => `${v.variant} ${formatPercent(v.weight)}`).join(' / ')
 }
 
@@ -100,25 +105,32 @@ export function describeChanges(
   source: EnvConfig,
   target: EnvConfig,
   fields: CopyField[],
+  t: CompareT,
 ): ChangeLine[] {
   const selected = new Set(fields)
   const lines: ChangeLine[] = []
   if (selected.has('enabled') && source.enabled !== target.enabled) {
     lines.push({
       field: 'enabled',
-      text: `Enabled: ${target.enabled ? 'on' : 'off'} → ${source.enabled ? 'on' : 'off'}`,
+      text: t('changes.enabled', {
+        from: t(target.enabled ? 'common:states.on' : 'common:states.off'),
+        to: t(source.enabled ? 'common:states.on' : 'common:states.off'),
+      }),
     })
   }
   if (selected.has('offVariant') && source.offVariant !== target.offVariant) {
     lines.push({
       field: 'offVariant',
-      text: `Off variant: ${target.offVariant} → ${source.offVariant}`,
+      text: t('changes.offVariant', { from: target.offVariant, to: source.offVariant }),
     })
   }
   if (selected.has('fallthrough') && !same(source.fallthrough, target.fallthrough)) {
     lines.push({
       field: 'fallthrough',
-      text: `Default: ${describeServe(target.fallthrough)} → ${describeServe(source.fallthrough)}`,
+      text: t('changes.fallthrough', {
+        from: describeServe(target.fallthrough, t),
+        to: describeServe(source.fallthrough, t),
+      }),
     })
   }
   if (selected.has('rules') && !rulesEqual(source.rules, target.rules)) {
@@ -126,8 +138,8 @@ export function describeChanges(
       field: 'rules',
       text:
         source.rules.length === target.rules.length
-          ? `Rules: ${pluralize(source.rules.length, 'rule')} updated`
-          : `Rules: ${target.rules.length} → ${source.rules.length}`,
+          ? t('changes.rulesUpdated', { count: source.rules.length })
+          : t('changes.rulesCount', { from: target.rules.length, to: source.rules.length }),
     })
   }
   return lines
