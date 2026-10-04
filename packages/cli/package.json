@@ -12,10 +12,11 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && node -e \"require('fs').chmodSync('dist/cli.js', 0o755)\"",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
-    "dev": "bun run src/cli.ts"
+    "dev": "bun run src/cli.ts",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@halyard/engine": "workspace:*"
@@ -24,5 +25,15 @@
     "@types/node": "^24.0.0",
     "typescript": "^5.9.3",
     "vitest": "^5.0.3"
-  }
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "feature-flags",
+    "openfeature",
+    "halyard",
+    "cli",
+    "typescript"
+  ]
 }
