@@ -1,20 +1,10 @@
-import {
-  createFileRoute,
-  getRouteApi,
-  useNavigate,
-  useRouter,
-} from '@tanstack/react-router'
+import { createFileRoute, getRouteApi, useNavigate, useRouter } from '@tanstack/react-router'
 import { CalendarClockIcon, PlusIcon, SearchIcon } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { z } from 'zod'
 import { EnvDot } from '@/components/env/env-badge'
 import { PageHeader } from '@/components/layout/page-header'
-import {
-  ScheduleChangeDialog,
-  ScheduleTimeline,
-  useMounted,
-  useNow,
-} from '@/components/schedules'
+import { ScheduleChangeDialog, ScheduleTimeline, useMounted, useNow } from '@/components/schedules'
 import type { TimelineFlagInfo } from '@/components/schedules/schedule-timeline'
 import { HintedButton } from '@/components/settings/hinted-button'
 import { Button } from '@/components/ui/button'
@@ -127,10 +117,7 @@ function SchedulesPage() {
     () => [...project.environments].sort((a, b) => a.sortOrder - b.sortOrder),
     [project.environments],
   )
-  const environmentMap = useMemo(
-    () => new Map(environments.map((e) => [e.key, e])),
-    [environments],
-  )
+  const environmentMap = useMemo(() => new Map(environments.map((e) => [e.key, e])), [environments])
   const flagMap = useMemo(
     () =>
       new Map<string, TimelineFlagInfo>(
@@ -212,8 +199,8 @@ function SchedulesPage() {
             <EmptyTitle>Nothing scheduled</EmptyTitle>
             <EmptyDescription>
               Schedule a flag to turn on or off, or to change its default, at a time you choose. A
-              staged rollout ramps a variant up in steps, for example 10 % tomorrow morning, then
-              25 %, 50 % and 100 % over the next days.
+              staged rollout ramps a variant up in steps, for example 10 % tomorrow morning, then 25
+              %, 50 % and 100 % over the next days.
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>{scheduleButton}</EmptyContent>
@@ -319,13 +306,11 @@ function SchedulesPage() {
         </>
       )}
 
-      {dialogOpen ? (
-        <ScheduleChangeDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          environmentKey={search.env}
-        />
-      ) : null}
+      <ScheduleChangeDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        environmentKey={search.env}
+      />
     </div>
   )
 }

@@ -93,7 +93,7 @@ export function ScheduleChangeDialog({
 }: ScheduleChangeDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl [&>*]:min-w-0">
         <ScheduleForm
           flag={flag}
           environmentKey={environmentKey}
@@ -287,11 +287,7 @@ function ScheduleForm({
               {flags === null && !loadError ? (
                 <Skeleton className="h-9 w-full" />
               ) : (
-                <Select
-                  value={flagKey || undefined}
-                  onValueChange={chooseFlag}
-                  disabled={Boolean(lockedFlag)}
-                >
+                <Select value={flagKey} onValueChange={chooseFlag} disabled={Boolean(lockedFlag)}>
                   <SelectTrigger
                     id="schedule-flag"
                     className="w-full"
@@ -317,7 +313,7 @@ function ScheduleForm({
 
             <Field data-invalid={showErrors && envError ? true : undefined}>
               <FieldLabel htmlFor="schedule-env">Environment</FieldLabel>
-              <Select value={envKey || undefined} onValueChange={chooseEnvironment}>
+              <Select value={envKey} onValueChange={chooseEnvironment}>
                 <SelectTrigger id="schedule-env" className="w-full">
                   <SelectValue placeholder="Choose an environment" />
                 </SelectTrigger>

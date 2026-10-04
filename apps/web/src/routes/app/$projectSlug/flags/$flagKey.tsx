@@ -11,6 +11,7 @@ import {
   ArchiveIcon,
   ArchiveRestoreIcon,
   ArrowLeftIcon,
+  CalendarClockIcon,
   CheckIcon,
   CopyIcon,
   MoreHorizontalIcon,
@@ -33,6 +34,8 @@ import {
   VariantValue,
 } from '@/components/flags'
 import { PageHeader } from '@/components/layout/page-header'
+import { ScheduleChangeDialog } from '@/components/schedules'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -80,6 +83,7 @@ import {
   updateFlag,
   updateFlagEnvironment,
 } from '@/server/functions/flags'
+import { listScheduledChanges } from '@/server/functions/scheduled-changes'
 import { listSegments } from '@/server/functions/segments'
 
 const projectRoute = getRouteApi('/app/$projectSlug')
@@ -92,16 +96,19 @@ export const Route = createFileRoute('/app/$projectSlug/flags/$flagKey')({
   loader: async ({ params, parentMatchPromise }) => {
     const parent = await parentMatchPromise
     const projectId = parent.loaderData!.project.id
-    const [flag, segments, history] = await Promise.all([
+    const [flag, segments, history, pendingSchedules] = await Promise.all([
       getFlag({ data: { projectId, flagKey: params.flagKey } }).catch(() => null),
       listSegments({ data: { projectId } }),
       listFlagHistory({ data: { projectId, flagKey: params.flagKey, limit: 50 } }).catch(() => ({
         items: [],
         nextCursor: null,
       })),
+      listScheduledChanges({
+        data: { projectId, flagKey: params.flagKey, status: 'pending' },
+      }).catch(() => []),
     ])
     if (!flag) throw notFound()
-    return { flag, segments, history, crumb: flag.key }
+    return { flag, segments, history, pendingSchedules, crumb: flag.key }
   },
   pendingComponent: () => (
     <div className="flex flex-col gap-4 p-6" aria-busy="true">
@@ -119,7 +126,7 @@ type FlagDetail = Awaited<ReturnType<typeof getFlag>>
 type EnvironmentDetail = FlagDetail['environments'][number]
 
 function FlagDetailPage() {
-  const { flag, segments, history } = Route.useLoaderData()
+  const { flag, segments, history, pendingSchedules } = Route.useLoaderData()
   const { project } = projectRoute.useLoaderData()
   const search = Route.useSearch()
   const navigate = useNavigate({ from: Route.fullPath })
@@ -127,6 +134,7 @@ function FlagDetailPage() {
   const canEdit = project.role !== 'viewer'
   const [copied, setCopied] = useState(false)
   const [editing, setEditing] = useState(false)
+  const [scheduling, setScheduling] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   const environments = useMemo(
@@ -221,6 +229,11 @@ function FlagDetailPage() {
                   <DropdownMenuItem onClick={() => setEditing(true)}>
                     <PencilIcon /> Edit details and variants
                   </DropdownMenuItem>
+                  {flag.archivedAt ? null : (
+                    <DropdownMenuItem onClick={() => setScheduling(true)}>
+                      <CalendarClockIcon /> Schedule a change…
+                    </DropdownMenuItem>
+                  )}
                   {flag.archivedAt ? (
                     <DropdownMenuItem
                       onClick={() =>
@@ -272,6 +285,28 @@ function FlagDetailPage() {
             </ul>
           </div>
         </div>
+      ) : null}
+
+      {pendingSchedules.length > 0 ? (
+        <Alert>
+          <CalendarClockIcon />
+          <AlertDescription>
+            <p>
+              {pendingSchedules.length === 1
+                ? '1 scheduled change pending for this flag'
+                : `${pendingSchedules.length} scheduled changes pending for this flag`}{' '}
+              —{' '}
+              <Link
+                to="/app/$projectSlug/schedules"
+                params={{ projectSlug: project.slug }}
+                search={{ flag: flag.key }}
+                className="font-medium text-foreground underline underline-offset-4"
+              >
+                view
+              </Link>
+            </p>
+          </AlertDescription>
+        </Alert>
       ) : null}
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_280px]">
@@ -392,6 +427,12 @@ function FlagDetailPage() {
       </div>
 
       <EditFlagDialog open={editing} onOpenChange={setEditing} flag={flag} projectId={project.id} />
+      <ScheduleChangeDialog
+        open={scheduling}
+        onOpenChange={setScheduling}
+        flag={flag}
+        environmentKey={activeEnv?.key}
+      />
 
       <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <AlertDialogContent>

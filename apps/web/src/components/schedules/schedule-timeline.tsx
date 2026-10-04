@@ -283,9 +283,7 @@ function ScheduleRow({
         >
           {formatTimeOfDay(date)}
         </time>
-        <span className="block text-muted-foreground text-xs">
-          {formatDelta(date, now)}
-        </span>
+        <span className="block text-muted-foreground text-xs">{formatDelta(date, now)}</span>
       </div>
       <ItemContent className="min-w-0 basis-64">
         <div className="flex flex-wrap items-center gap-2">
