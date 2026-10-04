@@ -79,7 +79,8 @@ async function main() {
     const original = readFileSync(manifestPath, 'utf8')
     const prepared = preparePublishManifest(manifest, versions)
     const args = ['npm', 'publish', '--access', String(prepared.publishConfig?.access ?? 'public')]
-    if (prepared.publishConfig?.provenance && process.env.CI) args.push('--provenance')
+    // Provenance needs a CI identity (OIDC); local publishes run without it.
+    if (process.env.CI) args.push('--provenance')
     if (dryRun) args.push('--dry-run')
 
     console.log(`Publishing ${tag}${dryRun ? ' (dry run)' : ''}`)
