@@ -1,0 +1,47 @@
+# Halyard production setup with Docker Compose.
+#
+#   cp .env.example .env     # then set POSTGRES_PASSWORD and BETTER_AUTH_SECRET
+#   docker compose up -d
+#   docker compose logs -f halyard
+#
+# Terminate TLS in front of the app (Caddy, Traefik, nginx) and set
+# BETTER_AUTH_URL in .env to the public https:// URL users open.
+# See ../../docs/deployment.md for configuration, upgrades and backups.
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: halyard
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: halyard
+    volumes:
+      - halyard-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U halyard -d halyard"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  halyard:
+    image: ghcr.io/modlogtv/halyard:${HALYARD_VERSION:-latest}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${HALYARD_PORT:-3000}:3000"
+    environment:
+      DATABASE_URL: postgresql://halyard:${POSTGRES_PASSWORD}@postgres:5432/halyard
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET in .env}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
+      AUTH_SIGNUP_MODE: ${AUTH_SIGNUP_MODE:-invite}
+      WEBHOOK_BLOCK_PRIVATE_NETWORKS: ${WEBHOOK_BLOCK_PRIVATE_NETWORKS:-false}
+      METRICS_TOKEN: ${METRICS_TOKEN:-}
+    read_only: true
+    tmpfs:
+      - /tmp
+
+volumes:
+  halyard-pgdata:

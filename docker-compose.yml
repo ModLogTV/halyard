@@ -11,7 +11,7 @@ services:
     volumes:
       - halyard-pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U halyard -d halyard"]
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U halyard -d halyard"]
       interval: 5s
       timeout: 5s
       retries: 10

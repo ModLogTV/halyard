@@ -118,10 +118,12 @@ docker run -p 3000:3000 \
   -e DATABASE_URL=postgresql://halyard:halyard@db:5432/halyard \
   -e BETTER_AUTH_SECRET=$(openssl rand -base64 32) \
   -e BETTER_AUTH_URL=https://flags.example.com \
-  ghcr.io/<owner>/halyard:latest
+  ghcr.io/modlogtv/halyard:latest
 ```
 
-Configuration is documented in [`.env.example`](.env.example) and [docs/deployment.md](docs/deployment.md).
+The first account created on a fresh instance becomes the admin; afterwards sign-up is invite-only by
+default. A ready-to-run Compose setup lives in [`deploy/compose`](deploy/compose). Configuration is
+documented in [`.env.example`](.env.example) and [docs/deployment.md](docs/deployment.md).
 
 ## Documentation
 
@@ -135,6 +137,7 @@ Configuration is documented in [`.env.example`](.env.example) and [docs/deployme
 - [CLI](docs/cli.md)
 - [UI translations](apps/web/src/locales/README.md)
 - [Contributing](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
 
 ## License
 

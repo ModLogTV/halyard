@@ -2,7 +2,7 @@
 #
 # Minimal install (external Postgres, chart-managed Secret):
 #   helm install halyard ./deploy/helm/halyard \
-#     --set image.repository=ghcr.io/<owner>/halyard \
+#     --set image.repository=ghcr.io/modlogtv/halyard \
 #     --set database.url=postgresql://user:pass@host:5432/halyard \
 #     --set auth.secret="$(openssl rand -base64 32)" \
 #     --set auth.url=https://flags.example.com
@@ -14,8 +14,8 @@ replicaCount: 1
 
 image:
   # Registry path of the published image (the release workflow pushes to
-  # ghcr.io/<github-owner>/<repo>). Replace "your-org/halyard" accordingly.
-  repository: ghcr.io/your-org/halyard
+  # ghcr.io/modlogtv/halyard and rewrites this value when packaging the chart).
+  repository: ghcr.io/modlogtv/halyard
   # Defaults to the chart appVersion when empty.
   tag: ""
   pullPolicy: IfNotPresent
@@ -74,6 +74,9 @@ config:
   # addresses (WEBHOOK_BLOCK_PRIVATE_NETWORKS). Recommended on multi-tenant instances;
   # leave false when webhooks must reach services inside the cluster.
   webhookBlockPrivateNetworks: false
+  # Who may create accounts (AUTH_SIGNUP_MODE). "invite": the first account becomes the
+  # instance admin, afterwards only invited email addresses can sign up. "open": anybody.
+  signupMode: invite
 
 # Additional environment variables, rendered as-is into the container `env`.
 extraEnv: []
