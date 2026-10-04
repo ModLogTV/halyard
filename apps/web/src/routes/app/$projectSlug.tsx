@@ -1,4 +1,6 @@
 import { createFileRoute, getRouteApi, notFound, Outlet } from '@tanstack/react-router'
+import { useMemo } from 'react'
+import { useRegisterPaletteProject } from '@/components/command-palette'
 import { AppSidebar } from '@/components/layout/app-sidebar'
 import { Breadcrumbs } from '@/components/layout/breadcrumbs'
 import { Separator } from '@/components/ui/separator'
@@ -27,8 +29,19 @@ function ProjectLayout() {
     id: project.id,
     name: project.name,
     slug: project.slug,
-    role: 'viewer',
+    role: project.role,
   }
+  const paletteProject = useMemo(
+    () => ({
+      id: project.id,
+      name: project.name,
+      slug: project.slug,
+      role: project.role,
+      environments: [...project.environments].sort((a, b) => a.sortOrder - b.sortOrder),
+    }),
+    [project],
+  )
+  useRegisterPaletteProject(paletteProject)
 
   return (
     <SidebarProvider>

@@ -15,7 +15,10 @@ export const Route = createFileRoute('/metrics')({
         if (token) {
           const header = request.headers.get('authorization') ?? ''
           if (header !== `Bearer ${token}`) {
-            return new Response('Unauthorized', { status: 401, headers: { 'WWW-Authenticate': 'Bearer' } })
+            return new Response('Unauthorized', {
+              status: 401,
+              headers: { 'WWW-Authenticate': 'Bearer' },
+            })
           }
         }
         const body = await registry.metrics()

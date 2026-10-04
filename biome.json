@@ -9,7 +9,8 @@
       "!**/.output",
       "!**/routeTree.gen.ts",
       "!**/drizzle/meta",
-      "!**/src/components/ui/**"
+      "!**/src/components/ui",
+      "!**/src/styles.css"
     ]
   },
   "formatter": {

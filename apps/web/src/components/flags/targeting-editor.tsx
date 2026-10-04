@@ -183,6 +183,7 @@ export function TargetingEditor({
               checked={value.enabled}
               onCheckedChange={toggle}
               disabled={disabled}
+              aria-label={`${value.enabled ? 'Disable' : 'Enable'} ${flag.key} in ${environment.name}`}
               className="data-[state=checked]:bg-on"
             />
             <Label htmlFor={switchId} className="text-sm font-normal">

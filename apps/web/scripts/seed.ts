@@ -8,10 +8,10 @@
  */
 import { eq, sql } from 'drizzle-orm'
 import { db } from '../src/db'
-import { flagEvaluationStats, organization, user } from '../src/db/schema'
+import { flagEvaluationStats, flags, organization, user } from '../src/db/schema'
 import { auth } from '../src/lib/auth'
-import type { ProjectActorWithHeaders, UserActorWithHeaders } from '../src/server/services/authz'
 import { createManagementKey, createSdkKey } from '../src/server/services/api-keys'
+import type { ProjectActorWithHeaders, UserActorWithHeaders } from '../src/server/services/authz'
 import { createFlag, updateFlagEnvironment } from '../src/server/services/flags'
 import { createProject } from '../src/server/services/projects'
 import { createSegment } from '../src/server/services/segments'
@@ -47,7 +47,9 @@ const admin = await ensureUser(ADMIN)
 await db.update(user).set({ role: 'admin' }).where(eq(user.id, admin.userId))
 const owner = await ensureUser(OWNER)
 
-const existingProject = await db.query.organization.findFirst({ where: eq(organization.slug, 'acme') })
+const existingProject = await db.query.organization.findFirst({
+  where: eq(organization.slug, 'acme'),
+})
 if (existingProject) {
   console.log('Project "acme" already exists, nothing to seed.')
   process.exit(0)
@@ -64,7 +66,9 @@ const env = (key: string) => {
   if (!e) throw new Error(`missing environment ${key}`)
   return e
 }
-await auth.api.addMember({ body: { organizationId: project.id, userId: admin.userId, role: 'editor' } })
+await auth.api.addMember({
+  body: { organizationId: project.id, userId: admin.userId, role: 'editor' },
+})
 
 // Segments --------------------------------------------------------------------
 await createSegment(actor, {
@@ -81,7 +85,9 @@ await createSegment(actor, {
   name: 'Internal users',
   description: 'Everyone with a company email address.',
   match: 'all',
-  conditions: [{ type: 'attribute', attribute: 'email', operator: 'ends_with', value: '@acme.example' }],
+  conditions: [
+    { type: 'attribute', attribute: 'email', operator: 'ends_with', value: '@acme.example' },
+  ],
 })
 await createSegment(actor, {
   projectId: project.id,
@@ -222,7 +228,9 @@ await updateFlagEnvironment(actor, {
       {
         id: crypto.randomUUID(),
         description: 'Large screens get more results',
-        conditions: [{ type: 'attribute', attribute: 'viewportWidth', operator: 'gte', value: 1440 }],
+        conditions: [
+          { type: 'attribute', attribute: 'viewportWidth', operator: 'gte', value: 1440 },
+        ],
         serve: { type: 'variant', variant: 'large' },
       },
     ],
@@ -237,7 +245,10 @@ await createFlag(actor, {
   type: 'json',
   variants: [
     { key: 'classic', value: { layout: 'single-row', items: ['bold', 'italic', 'link'] } },
-    { key: 'compact', value: { layout: 'floating', items: ['bold', 'italic', 'link', 'code', 'ai'] } },
+    {
+      key: 'compact',
+      value: { layout: 'floating', items: ['bold', 'italic', 'link', 'code', 'ai'] },
+    },
   ],
   tags: ['editor'],
   offVariant: 'classic',
@@ -292,13 +303,24 @@ await updateFlagEnvironment(actor, {
 })
 
 // Evaluation stats to demonstrate stale flag detection -------------------------
-const flagRows = await db.query.flags.findMany({ where: (f, { eq }) => eq(f.projectId, project.id) })
+const flagRows = await db.query.flags.findMany({
+  where: (f, { eq }) => eq(f.projectId, project.id),
+})
 const flagId = (key: string) => {
   const f = flagRows.find((x) => x.key === key)
   if (!f) throw new Error(`missing flag ${key}`)
   return f.id
 }
 const daysAgo = (n: number) => new Date(Date.now() - n * 24 * 3600 * 1000)
+// Backdate two flags so the staleness thresholds apply to them.
+await db
+  .update(flags)
+  .set({ createdAt: daysAgo(120) })
+  .where(eq(flags.id, flagId('legacy.export-csv')))
+await db
+  .update(flags)
+  .set({ createdAt: daysAgo(60) })
+  .where(eq(flags.id, flagId('editor.toolbar-config')))
 await db.insert(flagEvaluationStats).values([
   {
     flagId: flagId('checkout.new-payment-flow'),
@@ -329,10 +351,18 @@ await db.insert(flagEvaluationStats).values([
 // API keys ----------------------------------------------------------------------
 const keys: string[] = []
 for (const e of project.environments) {
-  const created = await createSdkKey(actor, { projectId: project.id, environmentId: e.id, name: `${e.name} SDK key` })
+  const created = await createSdkKey(actor, {
+    projectId: project.id,
+    environmentId: e.id,
+    name: `${e.name} SDK key`,
+  })
   keys.push(`  ${e.key.padEnd(12)} ${created.key}`)
 }
-const management = await createManagementKey(actor, { projectId: project.id, name: 'CLI', access: 'write' })
+const management = await createManagementKey(actor, {
+  projectId: project.id,
+  name: 'CLI',
+  access: 'write',
+})
 
 await db.execute(sql`select 1`)
 console.log(`

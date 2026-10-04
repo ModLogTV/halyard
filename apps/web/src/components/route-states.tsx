@@ -13,7 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 export function DefaultPending() {
   return (
-    <div className="flex flex-col gap-4 p-6" aria-busy="true" aria-label="Loading">
+    <div className="flex flex-col gap-4 p-6" aria-busy="true">
       <Skeleton className="h-7 w-48" />
       <Skeleton className="h-4 w-80" />
       <div className="mt-4 grid gap-3">

@@ -1,4 +1,5 @@
-import { useNavigate } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
+import { useNavigate, useRouter } from '@tanstack/react-router'
 import {
   CalendarClockIcon,
   ColumnsIcon,
@@ -8,6 +9,8 @@ import {
   HistoryIcon,
   MoonIcon,
   PlusIcon,
+  PowerIcon,
+  PowerOffIcon,
   SettingsIcon,
   SunIcon,
   TerminalSquareIcon,
@@ -22,7 +25,21 @@ import {
   useMemo,
   useState,
 } from 'react'
+import { toast } from 'sonner'
+import type { EnvironmentLike } from '@/components/env/env-badge'
+import { EnvDot } from '@/components/env/env-badge'
+import { FlagTypeBadge } from '@/components/flags/flag-type-badge'
 import { useTheme } from '@/components/theme-provider'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import {
   CommandDialog,
   CommandEmpty,
@@ -33,58 +50,70 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from '@/components/ui/command'
-
-interface PaletteContextValue {
-  open: boolean
-  setOpen: (open: boolean) => void
-}
-
-const PaletteContext = createContext<PaletteContextValue>({ open: false, setOpen: () => {} })
-
-export function useCommandPalette() {
-  return useContext(PaletteContext)
-}
+import { listFlags, toggleFlag } from '@/server/functions/flags'
+import { listSegments } from '@/server/functions/segments'
 
 export interface PaletteProject {
   id: string
   name: string
   slug: string
+  role: string
+  environments: (EnvironmentLike & { id: string })[]
 }
 
-export interface PaletteFlag {
-  key: string
-  name: string
-  type: string
+interface PaletteContextValue {
+  open: boolean
+  setOpen: (open: boolean) => void
+  registerProject: (project: PaletteProject | null) => void
 }
 
-export interface PaletteSegment {
+const PaletteContext = createContext<PaletteContextValue>({
+  open: false,
+  setOpen: () => {},
+  registerProject: () => {},
+})
+
+export function useCommandPalette() {
+  return useContext(PaletteContext)
+}
+
+/** Project layouts call this so the palette can search flags and segments of the current project. */
+export function useRegisterPaletteProject(project: PaletteProject) {
+  const { registerProject } = useContext(PaletteContext)
+  useEffect(() => {
+    registerProject(project)
+    return () => registerProject(null)
+  }, [project, registerProject])
+}
+
+interface FlagEntry {
   key: string
   name: string
+  type: 'boolean' | 'string' | 'number' | 'json'
+  archivedAt: Date | string | null
+  environments: { environmentId: string; environmentKey: string; enabled: boolean }[]
 }
 
 /**
- * Command palette (⌘K / Ctrl+K). Navigation entries are always available;
- * project specific entries (flags, segments) are supplied by the project layout.
+ * Command palette (⌘K / Ctrl+K): jump to projects, flags, segments and pages, and
+ * toggle a flag per environment without leaving the current screen.
  */
 export function CommandPaletteProvider({
   children,
   projects,
-  currentProject,
-  flags = [],
-  segments = [],
-  renderFlagActions,
 }: {
   children: ReactNode
-  projects: PaletteProject[]
-  currentProject?: PaletteProject
-  flags?: PaletteFlag[]
-  segments?: PaletteSegment[]
-  /** Renders quick actions (e.g. toggles per environment) for a selected flag. */
-  renderFlagActions?: (flag: PaletteFlag, close: () => void) => ReactNode
+  projects: { id: string; name: string; slug: string }[]
 }) {
   const [open, setOpen] = useState(false)
-  const [selectedFlag, setSelectedFlag] = useState<PaletteFlag | null>(null)
+  const [project, setProject] = useState<PaletteProject | null>(null)
+  const [selectedFlag, setSelectedFlag] = useState<FlagEntry | null>(null)
+  const [confirmToggle, setConfirmToggle] = useState<{
+    env: PaletteProject['environments'][number]
+    enabled: boolean
+  } | null>(null)
   const navigate = useNavigate()
+  const router = useRouter()
   const { setTheme } = useTheme()
 
   useEffect(() => {
@@ -111,9 +140,42 @@ export function CommandPaletteProvider({
     [close, navigate],
   )
 
-  const value = useMemo(() => ({ open, setOpen }), [open])
+  const registerProject = useCallback((next: PaletteProject | null) => setProject(next), [])
+  const value = useMemo(() => ({ open, setOpen, registerProject }), [open, registerProject])
 
-  const slug = currentProject?.slug
+  const data = useQuery({
+    queryKey: ['palette', project?.id],
+    enabled: open && Boolean(project),
+    staleTime: 15_000,
+    queryFn: async () => {
+      const projectId = project!.id
+      const [flags, segments] = await Promise.all([
+        listFlags({ data: { projectId } }),
+        listSegments({ data: { projectId } }),
+      ])
+      return { flags: flags as FlagEntry[], segments }
+    },
+  })
+
+  const slug = project?.slug
+  const canToggle = project ? project.role !== 'viewer' : false
+
+  async function applyToggle(
+    flag: FlagEntry,
+    env: PaletteProject['environments'][number],
+    enabled: boolean,
+  ) {
+    if (!project) return
+    try {
+      await toggleFlag({
+        data: { projectId: project.id, flagKey: flag.key, environmentKey: env.key, enabled },
+      })
+      toast.success(`${flag.key} is now ${enabled ? 'on' : 'off'} in ${env.name}`)
+      await Promise.all([router.invalidate(), data.refetch()])
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Could not update the flag')
+    }
+  }
 
   return (
     <PaletteContext.Provider value={value}>
@@ -124,13 +186,56 @@ export function CommandPaletteProvider({
         title="Command palette"
         description="Search flags, segments and pages"
       >
-        {selectedFlag && renderFlagActions ? (
+        {selectedFlag && project ? (
           <>
             <CommandInput placeholder={`Actions for ${selectedFlag.key}`} />
             <CommandList>
               <CommandEmpty>No actions.</CommandEmpty>
               <CommandGroup heading={selectedFlag.name}>
-                {renderFlagActions(selectedFlag, close)}
+                <CommandItem
+                  onSelect={() =>
+                    go('/app/$projectSlug/flags/$flagKey', {
+                      projectSlug: project.slug,
+                      flagKey: selectedFlag.key,
+                    })
+                  }
+                >
+                  <FlagIcon /> Open flag
+                </CommandItem>
+                {canToggle
+                  ? project.environments.map((env) => {
+                      const state = selectedFlag.environments.find(
+                        (e) => e.environmentId === env.id,
+                      )
+                      if (!state) return null
+                      const next = !state.enabled
+                      return (
+                        <CommandItem
+                          key={env.id}
+                          value={`toggle ${env.name} ${next ? 'on' : 'off'}`}
+                          onSelect={() => {
+                            if (env.isProduction) setConfirmToggle({ env, enabled: next })
+                            else void applyToggle(selectedFlag, env, next)
+                          }}
+                        >
+                          {next ? (
+                            <PowerIcon className="text-on" />
+                          ) : (
+                            <PowerOffIcon className="text-muted-foreground" />
+                          )}
+                          Turn {next ? 'on' : 'off'} in
+                          <span className="inline-flex items-center gap-1.5">
+                            <EnvDot env={env} /> {env.name}
+                          </span>
+                          {env.isProduction ? (
+                            <CommandShortcut className="font-sans normal-case">
+                              production
+                            </CommandShortcut>
+                          ) : null}
+                        </CommandItem>
+                      )
+                    })
+                  : null}
               </CommandGroup>
               <CommandSeparator />
               <CommandGroup>
@@ -142,35 +247,31 @@ export function CommandPaletteProvider({
           <>
             <CommandInput placeholder="Type a flag key, segment, page or command…" />
             <CommandList>
-              <CommandEmpty>No results found.</CommandEmpty>
-              {slug && flags.length > 0 ? (
+              <CommandEmpty>{data.isLoading ? 'Loading…' : 'No results found.'}</CommandEmpty>
+              {slug && data.data && data.data.flags.length > 0 ? (
                 <CommandGroup heading="Flags">
-                  {flags.slice(0, 50).map((flag) => (
-                    <CommandItem
-                      key={flag.key}
-                      value={`flag ${flag.key} ${flag.name}`}
-                      onSelect={() => {
-                        if (renderFlagActions) setSelectedFlag(flag)
-                        else
-                          go('/app/$projectSlug/flags/$flagKey', {
-                            projectSlug: slug,
-                            flagKey: flag.key,
-                          })
-                      }}
-                    >
-                      <FlagIcon />
-                      <span className="font-mono text-xs">{flag.key}</span>
-                      <span className="truncate text-muted-foreground">{flag.name}</span>
-                      <CommandShortcut className="font-sans normal-case">
-                        {flag.type}
-                      </CommandShortcut>
-                    </CommandItem>
-                  ))}
+                  {data.data.flags
+                    .filter((f) => !f.archivedAt)
+                    .slice(0, 50)
+                    .map((flag) => (
+                      <CommandItem
+                        key={flag.key}
+                        value={`flag ${flag.key} ${flag.name}`}
+                        onSelect={() => setSelectedFlag(flag)}
+                      >
+                        <FlagIcon />
+                        <span className="font-mono text-xs">{flag.key}</span>
+                        <span className="truncate text-muted-foreground">{flag.name}</span>
+                        <CommandShortcut>
+                          <FlagTypeBadge type={flag.type} />
+                        </CommandShortcut>
+                      </CommandItem>
+                    ))}
                 </CommandGroup>
               ) : null}
-              {slug && segments.length > 0 ? (
+              {slug && data.data && data.data.segments.length > 0 ? (
                 <CommandGroup heading="Segments">
-                  {segments.slice(0, 20).map((segment) => (
+                  {data.data.segments.slice(0, 20).map((segment) => (
                     <CommandItem
                       key={segment.key}
                       value={`segment ${segment.key} ${segment.name}`}
@@ -195,11 +296,13 @@ export function CommandPaletteProvider({
                   >
                     <FlagIcon /> Flags
                   </CommandItem>
-                  <CommandItem
-                    onSelect={() => go('/app/$projectSlug/flags/new', { projectSlug: slug })}
-                  >
-                    <PlusIcon /> New flag
-                  </CommandItem>
+                  {canToggle ? (
+                    <CommandItem
+                      onSelect={() => go('/app/$projectSlug/flags/new', { projectSlug: slug })}
+                    >
+                      <PlusIcon /> New flag
+                    </CommandItem>
+                  ) : null}
                   <CommandItem
                     onSelect={() => go('/app/$projectSlug/segments', { projectSlug: slug })}
                   >
@@ -238,13 +341,13 @@ export function CommandPaletteProvider({
                 </CommandGroup>
               ) : null}
               <CommandGroup heading="Projects">
-                {projects.map((project) => (
+                {projects.map((p) => (
                   <CommandItem
-                    key={project.id}
-                    value={`project ${project.name} ${project.slug}`}
-                    onSelect={() => go('/app/$projectSlug', { projectSlug: project.slug })}
+                    key={p.id}
+                    value={`project ${p.name} ${p.slug}`}
+                    onSelect={() => go('/app/$projectSlug', { projectSlug: p.slug })}
                   >
-                    <FolderIcon /> {project.name}
+                    <FolderIcon /> {p.name}
                   </CommandItem>
                 ))}
                 <CommandItem onSelect={() => go('/app/new')}>
@@ -274,6 +377,34 @@ export function CommandPaletteProvider({
           </>
         )}
       </CommandDialog>
+
+      <AlertDialog open={confirmToggle !== null} onOpenChange={(o) => !o && setConfirmToggle(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmToggle?.enabled ? 'Enable' : 'Disable'} in production?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              <span className="font-mono text-foreground">{selectedFlag?.key}</span> will be turned{' '}
+              <strong>{confirmToggle?.enabled ? 'on' : 'off'}</strong> for everyone in{' '}
+              {confirmToggle?.env.name} immediately.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                const pending = confirmToggle
+                setConfirmToggle(null)
+                if (pending && selectedFlag)
+                  void applyToggle(selectedFlag, pending.env, pending.enabled)
+              }}
+            >
+              {confirmToggle?.enabled ? 'Enable in production' : 'Disable in production'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </PaletteContext.Provider>
   )
 }

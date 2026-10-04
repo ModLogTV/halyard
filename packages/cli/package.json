@@ -4,8 +4,13 @@
   "description": "Command line interface for Halyard: generate TypeScript types from your flags, import and export projects.",
   "license": "MIT",
   "type": "module",
-  "bin": { "halyard": "./dist/cli.js" },
-  "files": ["dist", "README.md"],
+  "bin": {
+    "halyard": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",

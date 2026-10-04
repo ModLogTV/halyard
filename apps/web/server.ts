@@ -16,7 +16,9 @@ if (!existsSync(serverEntry)) {
   process.exit(1)
 }
 
-const app = (await import(serverEntry)) as { default: { fetch: (req: Request) => Promise<Response> | Response } }
+const app = (await import(serverEntry)) as {
+  default: { fetch: (req: Request) => Promise<Response> | Response }
+}
 
 // Warm up migrations and workers before accepting traffic.
 await app.default.fetch(new Request(`http://localhost:${port}/healthz`))
