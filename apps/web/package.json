@@ -21,6 +21,7 @@
     "@better-auth/api-key": "^1.7.7",
     "@fontsource-variable/inter": "^5.3.0",
     "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@modelcontextprotocol/server": "^2.3.0",
     "@modlogtv/halyard-engine": "workspace:*",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/react-query": "^5.104.1",
@@ -55,6 +56,7 @@
     "zod": "^4.1.0"
   },
   "devDependencies": {
+    "@modelcontextprotocol/client": "^2.3.0",
     "@openfeature/core": "^1.12.0",
     "@openfeature/ofrep-core": "^2.3.0",
     "@openfeature/ofrep-provider": "^0.2.5",

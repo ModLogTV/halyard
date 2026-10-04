@@ -22,6 +22,8 @@ so every OpenFeature SDK can talk to it without a vendor SDK.
 - **OFREP, local evaluation, CLI.** Single and bulk evaluation with ETags, a downloadable ruleset
   that the published `@modlogtv/halyard-engine` evaluates locally, and a CLI that generates TypeScript
   types from your flags and imports/exports projects (JSON and flagd).
+- **MCP server.** AI agents connect at `/mcp` with a management key and manage flags, segments,
+  experiments and scheduled changes, with every change in the audit log.
 
 ## Quick start
 
@@ -76,7 +78,7 @@ The repository is a Bun workspace orchestrated with [Turborepo](https://turborep
 | `packages/engine` | `@modlogtv/halyard-engine`: pure, dependency-free evaluation engine ([README](packages/engine/README.md)) |
 | `packages/cli` | `@modlogtv/halyard-cli`: type generation, import and export ([docs](docs/cli.md)) |
 | `deploy/helm/halyard` | Helm chart ([deployment guide](docs/deployment.md)) |
-| `docs` | Architecture, deployment, experiments, webhooks, scheduled changes, import/export, REST API |
+| `docs` | Architecture, deployment, experiments, webhooks, scheduled changes, import/export, REST API, MCP |
 
 ```sh
 bun run dev          # web app with hot reload
@@ -134,6 +136,7 @@ documented in [`.env.example`](.env.example) and [docs/deployment.md](docs/deplo
 - [Webhooks](docs/webhooks.md)
 - [Import, export and flagd](docs/import-export.md)
 - [REST API](docs/rest-api.md)
+- [MCP server for AI agents](docs/mcp.md)
 - [CLI](docs/cli.md)
 - [UI translations](apps/web/src/locales/README.md)
 - [Contributing](CONTRIBUTING.md)
