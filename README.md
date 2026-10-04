@@ -22,6 +22,8 @@ bun run dev          # http://localhost:3000
 
 ## Repository layout
 
+The repository is a Bun workspace orchestrated with [Turborepo](https://turborepo.com): `bun run build`, `bun run typecheck` and `bun run test` fan out to every package with caching, `bun run dev` starts the web app.
+
 | Path | Purpose |
 | --- | --- |
 | `apps/web` | TanStack Start application: UI, API, OFREP endpoints, background workers |
