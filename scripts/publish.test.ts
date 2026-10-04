@@ -3,6 +3,7 @@ import {
   preparePublishManifest,
   resolveWorkspaceRange,
   sortByDependencies,
+  tagEvent,
 } from './publish-manifest'
 
 const versions = { '@modlogtv/halyard-engine': '0.3.1' }
@@ -140,5 +141,17 @@ describe('sortByDependencies', () => {
     const a = { name: 'a', version: '1.0.0', dependencies: { b: 'workspace:*' } }
     const b = { name: 'b', version: '1.0.0', dependencies: { a: 'workspace:*' } }
     expect(() => sortByDependencies([a, b])).toThrow(/cycle/i)
+  })
+})
+
+describe('tagEvent', () => {
+  test('emits one git-tag event per line', () => {
+    const line = tagEvent('@modlogtv/halyard-cli', '0.1.0')
+    expect(line.endsWith('\n')).toBe(true)
+    expect(JSON.parse(line)).toEqual({
+      type: 'git-tag',
+      tag: '@modlogtv/halyard-cli@0.1.0',
+      packageName: '@modlogtv/halyard-cli',
+    })
   })
 })

@@ -4,14 +4,14 @@
   "description": "Pure, dependency-free feature flag evaluation engine used by Halyard. Evaluate a flag configuration against an evaluation context and get a value with a reason.",
   "license": "MIT",
   "author": "modlog",
-  "homepage": "https://github.com/RedEagle-dh/halyard/tree/main/packages/engine#readme",
+  "homepage": "https://github.com/ModLogTV/halyard/tree/main/packages/engine#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RedEagle-dh/halyard.git",
+    "url": "git+https://github.com/ModLogTV/halyard.git",
     "directory": "packages/engine"
   },
   "bugs": {
-    "url": "https://github.com/RedEagle-dh/halyard/issues"
+    "url": "https://github.com/ModLogTV/halyard/issues"
   },
   "type": "module",
   "main": "./src/index.ts",

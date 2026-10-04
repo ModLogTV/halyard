@@ -116,3 +116,11 @@ export function sortByDependencies<T extends Manifest>(manifests: T[]): T[] {
   for (const manifest of manifests) visit(manifest, [])
   return sorted
 }
+
+/**
+ * NDJSON line understood by changesets/action (via the CHANGESETS_OUTPUT file)
+ * to create the git tag and GitHub release for a published package.
+ */
+export function tagEvent(name: string, version: string): string {
+  return `${JSON.stringify({ type: 'git-tag', tag: `${name}@${version}`, packageName: name })}\n`
+}

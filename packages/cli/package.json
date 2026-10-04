@@ -4,14 +4,14 @@
   "description": "Command line interface for Halyard: generate TypeScript types from your flags, import and export projects.",
   "license": "MIT",
   "author": "modlog",
-  "homepage": "https://github.com/RedEagle-dh/halyard/tree/main/packages/cli#readme",
+  "homepage": "https://github.com/ModLogTV/halyard/tree/main/packages/cli#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RedEagle-dh/halyard.git",
+    "url": "git+https://github.com/ModLogTV/halyard.git",
     "directory": "packages/cli"
   },
   "bugs": {
-    "url": "https://github.com/RedEagle-dh/halyard/issues"
+    "url": "https://github.com/ModLogTV/halyard/issues"
   },
   "type": "module",
   "bin": {

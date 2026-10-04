@@ -45,5 +45,17 @@ ships as a container image and Helm chart (see `.github/workflows/release.yml`).
    releases.
 
 The publish step runs `scripts/publish.ts`, which resolves `workspace:` ranges, applies the
-`publishConfig` entry points and calls `npm publish --provenance`. Try it locally with
-`bun run release -- --dry-run` or `bun run scripts/publish.ts --dry-run`.
+`publishConfig` entry points and calls `npm publish` (with `--provenance` in CI). Try it locally with
+`bun run scripts/publish.ts --dry-run`.
+
+### npm authentication
+
+The workflow authenticates with [npm trusted publishing](https://docs.npmjs.com/trusted-publishers)
+(OIDC), so no npm token is stored in the repository. npm is phasing out 2FA-bypass tokens for
+publishing, which is why we do not rely on one. Setting up a **new** package:
+
+1. Publish it once from your machine, interactively with 2FA: `npm login`, then `bun run release`.
+2. On npmjs.com open the package settings and add a trusted publisher: GitHub Actions, repository
+   `ModLogTV/halyard`, workflow `publish.yml`.
+
+From then on the workflow publishes new versions on its own.

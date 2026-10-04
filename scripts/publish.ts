@@ -4,14 +4,20 @@
  * Usage:  bun run scripts/publish.ts [--dry-run]
  *
  * For each package the script writes a publish-ready package.json (see
- * publish-manifest.ts), runs `npm publish`, restores the original manifest
- * and creates a git tag `<name>@<version>`. It prints `New tag: <name>@<version>`
- * lines, which changesets/action turns into GitHub releases.
+ * publish-manifest.ts), runs `npm publish` and restores the original manifest.
+ * Published packages are reported to changesets/action through the
+ * CHANGESETS_OUTPUT file (the action then creates the git tag and the GitHub
+ * release); outside the action a local git tag `<name>@<version>` is created.
  */
-import { readFileSync, writeFileSync } from 'node:fs'
+import { appendFileSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { Glob } from 'bun'
-import { type Manifest, preparePublishManifest, sortByDependencies } from './publish-manifest'
+import {
+  type Manifest,
+  preparePublishManifest,
+  sortByDependencies,
+  tagEvent,
+} from './publish-manifest'
 
 const root = resolve(import.meta.dir, '..')
 const dryRun = process.argv.includes('--dry-run')
@@ -57,13 +63,9 @@ async function isPublished(name: string, version: string): Promise<boolean> {
 
 async function main() {
   const dirs = await workspaceDirs()
-  const manifests = dirs.map((dir) => ({ dir, manifest: readManifest(dir) }))
-  const versions = Object.fromEntries(
-    manifests.map(({ manifest }) => [manifest.name, manifest.version]),
-  )
-  const publishable = sortByDependencies(
-    manifests.map(({ dir, manifest }) => ({ ...manifest, dir })),
-  ).filter((manifest) => !manifest.private)
+  const manifests = dirs.map((dir) => ({ ...readManifest(dir), dir }))
+  const versions = Object.fromEntries(manifests.map((m) => [m.name, m.version]))
+  const publishable = sortByDependencies(manifests).filter((m) => !m.private)
 
   const published: string[] = []
   for (const { dir, ...manifest } of publishable) {
@@ -91,7 +93,11 @@ async function main() {
     }
 
     if (!dryRun) {
-      await run(['git', 'tag', tag, '-m', tag], root)
+      if (process.env.CHANGESETS_OUTPUT) {
+        appendFileSync(process.env.CHANGESETS_OUTPUT, tagEvent(manifest.name, manifest.version))
+      } else {
+        await run(['git', 'tag', tag, '-m', tag], root)
+      }
       console.log(`New tag: ${tag}`)
     }
     published.push(tag)
