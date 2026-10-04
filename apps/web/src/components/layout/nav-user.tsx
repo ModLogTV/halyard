@@ -7,7 +7,9 @@ import {
   ShieldIcon,
   SunIcon,
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { LocaleMenuItems } from '@/components/locale-switcher'
 import { useTheme } from '@/components/theme-provider'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
@@ -30,6 +32,7 @@ import {
 import { authClient } from '@/lib/auth-client'
 
 export function NavUser({ user }: { user: { name: string; email: string; isAdmin: boolean } }) {
+  const { t } = useTranslation(['layout', 'common'])
   const { isMobile } = useSidebar()
   const { theme, setTheme } = useTheme()
   const navigate = useNavigate()
@@ -48,7 +51,7 @@ export function NavUser({ user }: { user: { name: string; email: string; isAdmin
             <SidebarMenuButton
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-              aria-label="Account menu"
+              aria-label={t('userMenu.ariaLabel')}
             >
               <Avatar className="size-8 rounded-lg">
                 <AvatarFallback className="rounded-lg text-xs">{initials}</AvatarFallback>
@@ -78,25 +81,32 @@ export function NavUser({ user }: { user: { name: string; email: string; isAdmin
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-xs text-muted-foreground">Theme</DropdownMenuLabel>
+            <DropdownMenuLabel className="text-xs text-muted-foreground">
+              {t('userMenu.theme')}
+            </DropdownMenuLabel>
             <DropdownMenuRadioGroup value={theme ?? 'system'} onValueChange={setTheme}>
               <DropdownMenuRadioItem value="light">
-                <SunIcon /> Light
+                <SunIcon /> {t('common:theme.light')}
               </DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="dark">
-                <MoonIcon /> Dark
+                <MoonIcon /> {t('common:theme.dark')}
               </DropdownMenuRadioItem>
               <DropdownMenuRadioItem value="system">
-                <MonitorIcon /> System
+                <MonitorIcon /> {t('common:theme.system')}
               </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel className="text-xs text-muted-foreground">
+              {t('userMenu.language')}
+            </DropdownMenuLabel>
+            <LocaleMenuItems />
             {user.isAdmin ? (
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                   <DropdownMenuItem asChild>
                     <Link to="/app/admin">
-                      <ShieldIcon /> Instance admin
+                      <ShieldIcon /> {t('userMenu.instanceAdmin')}
                     </Link>
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
@@ -106,11 +116,11 @@ export function NavUser({ user }: { user: { name: string; email: string; isAdmin
             <DropdownMenuItem
               onClick={async () => {
                 await authClient.signOut()
-                toast.success('Signed out')
+                toast.success(t('userMenu.signedOut'))
                 await navigate({ to: '/login' })
               }}
             >
-              <LogOutIcon /> Sign out
+              <LogOutIcon /> {t('userMenu.signOut')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

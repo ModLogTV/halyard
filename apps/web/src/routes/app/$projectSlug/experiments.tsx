@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/app/$projectSlug/experiments')({
-  staticData: { crumb: 'Experiments' },
+  staticData: { crumbKey: 'experiments' },
   // Exposes the project id so child loaders do not reach past this layout.
   loader: async ({ parentMatchPromise }) => {
     const parent = await parentMatchPromise

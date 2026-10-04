@@ -91,7 +91,7 @@ function toQuery(
 }
 
 export const Route = createFileRoute('/app/$projectSlug/audit')({
-  staticData: { crumb: 'Audit log' },
+  staticData: { crumbKey: 'auditLog' },
   validateSearch: searchSchema,
   loaderDeps: ({ search }) => ({
     env: search.env,

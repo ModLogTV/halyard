@@ -40,7 +40,7 @@ const STATUS_LABELS: Record<StatusFilter, string> = {
 }
 
 export const Route = createFileRoute('/app/$projectSlug/schedules')({
-  staticData: { crumb: 'Scheduled changes' },
+  staticData: { crumbKey: 'schedules' },
   validateSearch: z.object({
     status: z.enum(STATUS_FILTERS).optional().catch(undefined),
     env: z.string().optional().catch(undefined),

@@ -11,7 +11,7 @@ import { PageHeader } from '@/components/layout/page-header'
 import { Button } from '@/components/ui/button'
 
 export const Route = createFileRoute('/app/$projectSlug/settings')({
-  staticData: { crumb: 'Settings' },
+  staticData: { crumbKey: 'settings' },
   loader: async ({ parentMatchPromise }) => {
     const parent = await parentMatchPromise
     return { projectId: parent.loaderData?.project.id ?? null }

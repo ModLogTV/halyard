@@ -1,0 +1,28 @@
+{
+  "userMenu": {
+    "ariaLabel": "Account menu",
+    "theme": "Theme",
+    "language": "Language",
+    "instanceAdmin": "Instance admin",
+    "signOut": "Sign out",
+    "signedOut": "Signed out"
+  },
+  "crumbs": {
+    "auditLog": "Audit log",
+    "schedules": "Scheduled changes",
+    "settings": "Settings",
+    "experiments": "Experiments",
+    "compare": "Compare",
+    "webhooks": "Webhooks",
+    "playground": "Playground",
+    "transfer": "Import & export",
+    "members": "Members",
+    "environments": "Environments",
+    "flags": "Flags",
+    "apiKeys": "API keys",
+    "newExperiment": "New experiment",
+    "newFlag": "New flag",
+    "newSegment": "New segment",
+    "segments": "Segments"
+  }
+}

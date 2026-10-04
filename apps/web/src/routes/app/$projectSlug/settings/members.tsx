@@ -45,7 +45,7 @@ import {
 import type { MemberItem, PendingInvitation } from '@/server/services/members'
 
 export const Route = createFileRoute('/app/$projectSlug/settings/members')({
-  staticData: { crumb: 'Members' },
+  staticData: { crumbKey: 'members' },
   loader: async ({ parentMatchPromise }) => {
     const parent = await parentMatchPromise
     const projectId = parent.loaderData?.projectId

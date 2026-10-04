@@ -20,7 +20,7 @@ export function roundedFromNow(offsetMs: number, now = Date.now()): Date {
 export function formatDelta(date: Date | string | number, now: Date = new Date()): string {
   const target = new Date(date)
   const seconds = Math.round((target.getTime() - now.getTime()) / 1000)
-  if (seconds <= 0) return formatRelativeTime(target, now)
+  if (seconds <= 0) return formatRelativeTime(target, { now })
   if (seconds < 45) return 'in a few seconds'
   const minutes = Math.round(seconds / 60)
   if (minutes < 60) return `in ${Math.max(1, minutes)} min`

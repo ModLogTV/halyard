@@ -8,6 +8,7 @@ import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/c
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { authClient } from '@/lib/auth-client'
+import { translate } from '@/lib/i18n'
 import { getSession } from '@/server/functions/session'
 
 /** Only same-origin relative paths are accepted as post-login destinations. */
@@ -25,7 +26,9 @@ export const Route = createFileRoute('/login')({
     const session = await getSession()
     if (session) throw redirect({ to: search.redirect ?? '/app' })
   },
-  head: () => ({ meta: [{ title: 'Sign in · Halyard' }] }),
+  head: ({ match }) => ({
+    meta: [{ title: translate(match.context.locale)('auth:signIn.pageTitle') }],
+  }),
   component: LoginPage,
 })
 

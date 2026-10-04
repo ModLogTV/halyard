@@ -35,7 +35,7 @@ import { listApiKeys, revokeApiKey } from '@/server/functions/api-keys'
 import type { ApiKeySummary } from '@/server/services/api-keys'
 
 export const Route = createFileRoute('/app/$projectSlug/settings/api-keys')({
-  staticData: { crumb: 'API keys' },
+  staticData: { crumbKey: 'apiKeys' },
   loader: async ({ parentMatchPromise }) => {
     const parent = await parentMatchPromise
     const projectId = parent.loaderData?.projectId

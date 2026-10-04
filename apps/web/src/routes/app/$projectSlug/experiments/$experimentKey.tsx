@@ -186,7 +186,7 @@ function ExperimentDetailPage() {
 
   const freshness =
     status === 'running'
-      ? `Updated ${formatRelativeTime(updatedAt, now)}`
+      ? `Updated ${formatRelativeTime(updatedAt, { now })}`
       : status === 'stopped' && experiment.stoppedAt
         ? `Frozen ${formatDateTime(experiment.stoppedAt)}`
         : null

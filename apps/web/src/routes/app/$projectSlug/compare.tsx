@@ -43,7 +43,7 @@ const searchSchema = z.object({
 })
 
 export const Route = createFileRoute('/app/$projectSlug/compare')({
-  staticData: { crumb: 'Compare' },
+  staticData: { crumbKey: 'compare' },
   validateSearch: searchSchema,
   loader: async ({ parentMatchPromise }) => {
     const parent = await parentMatchPromise

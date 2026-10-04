@@ -1,5 +1,6 @@
 import { Link, useMatches } from '@tanstack/react-router'
 import { Fragment } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -10,8 +11,9 @@ import {
 } from '@/components/ui/breadcrumb'
 
 /**
- * Builds breadcrumbs from route matches. Routes opt in by returning
- * `{ crumb: string }` from their loader data or static data.
+ * Builds breadcrumbs from route matches. Routes opt in with
+ * `staticData: { crumbKey }` (translated from the `layout` namespace) or by
+ * returning `{ crumb: string }` from their loader for dynamic names.
  */
 export function Breadcrumbs({
   projectName,
@@ -20,13 +22,16 @@ export function Breadcrumbs({
   projectName: string
   projectSlug: string
 }) {
+  const { t } = useTranslation('layout')
   const matches = useMatches()
   const crumbs = matches
     .filter((m) => m.pathname.startsWith(`/app/${projectSlug}/`))
     .map((m) => {
       const data = m.loaderData as { crumb?: string } | undefined
-      const stat = m.staticData as { crumb?: string } | undefined
-      const crumb = data?.crumb ?? stat?.crumb
+      const stat = m.staticData as { crumbKey?: string } | undefined
+      const crumb =
+        data?.crumb ??
+        (stat?.crumbKey ? t(`crumbs.${stat.crumbKey}`, { defaultValue: stat.crumbKey }) : undefined)
       return crumb ? { id: m.id, pathname: m.pathname, crumb } : null
     })
     .filter((c): c is { id: string; pathname: string; crumb: string } => c !== null)

@@ -13,7 +13,7 @@ import { createSegment } from '@/server/functions/segments'
 const projectRoute = getRouteApi('/app/$projectSlug')
 
 export const Route = createFileRoute('/app/$projectSlug/segments/new')({
-  staticData: { crumb: 'New segment' },
+  staticData: { crumbKey: 'newSegment' },
   head: () => ({ meta: [{ title: 'New segment · Halyard' }] }),
   component: NewSegmentPage,
 })

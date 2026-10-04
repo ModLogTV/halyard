@@ -20,7 +20,7 @@ import { listWebhookEventTypes, listWebhooks } from '@/server/functions/webhooks
 import type { Webhook } from '@/server/services/webhooks'
 
 export const Route = createFileRoute('/app/$projectSlug/settings/webhooks')({
-  staticData: { crumb: 'Webhooks' },
+  staticData: { crumbKey: 'webhooks' },
   loader: async ({ parentMatchPromise }) => {
     const parent = await parentMatchPromise
     const projectId = parent.loaderData?.projectId

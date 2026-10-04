@@ -78,5 +78,5 @@ keeps the last valid value in `value`; use `onValidityChange` (or `validateFlagD
 
 ## Formatting helpers (`@/lib/format`)
 
-`formatVariantValue(value, type, { maxLength? })`, `formatPercent(weight)`, `formatRelativeTime(date, now?)`,
+`formatVariantValue(value, type, { maxLength? })`, `formatPercent(weight)`, `formatRelativeTime(date, { now?, locale? })`,
 `formatDateTime(date)`, `pluralize(count, singular, plural?)` (the count is included: `pluralize(2, 'rule')` is `"2 rules"`).

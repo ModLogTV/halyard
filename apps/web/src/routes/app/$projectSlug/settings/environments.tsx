@@ -31,7 +31,7 @@ import { deleteEnvironment, reorderEnvironments } from '@/server/functions/envir
 import type { Environment } from '@/server/services/environments'
 
 export const Route = createFileRoute('/app/$projectSlug/settings/environments')({
-  staticData: { crumb: 'Environments' },
+  staticData: { crumbKey: 'environments' },
   head: () => ({ meta: [{ title: 'Environments · Halyard' }] }),
   component: EnvironmentsSettings,
 })

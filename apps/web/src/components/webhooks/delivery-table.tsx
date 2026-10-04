@@ -288,7 +288,7 @@ function DeliveryRows({
         </TableCell>
         <TableCell className="whitespace-nowrap text-sm">
           <time dateTime={created.toISOString()} title={formatDateTime(created)}>
-            {formatRelativeTime(created, now)}
+            {formatRelativeTime(created, { now })}
           </time>
         </TableCell>
         <TableCell className="font-mono text-xs">{delivery.eventType}</TableCell>

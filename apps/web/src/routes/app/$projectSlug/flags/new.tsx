@@ -28,7 +28,7 @@ import { createFlag } from '@/server/functions/flags'
 const projectRoute = getRouteApi('/app/$projectSlug')
 
 export const Route = createFileRoute('/app/$projectSlug/flags/new')({
-  staticData: { crumb: 'New flag' },
+  staticData: { crumbKey: 'newFlag' },
   component: NewFlagPage,
 })
 

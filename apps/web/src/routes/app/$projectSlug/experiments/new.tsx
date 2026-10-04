@@ -22,7 +22,7 @@ import { listFlags } from '@/server/functions/flags'
 const projectRoute = getRouteApi('/app/$projectSlug')
 
 export const Route = createFileRoute('/app/$projectSlug/experiments/new')({
-  staticData: { crumb: 'New experiment' },
+  staticData: { crumbKey: 'newExperiment' },
   validateSearch: z.object({
     flag: z.string().optional().catch(undefined),
     env: z.string().optional().catch(undefined),

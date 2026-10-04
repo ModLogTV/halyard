@@ -30,7 +30,7 @@ import { listSegments } from '@/server/functions/segments'
 const projectRoute = getRouteApi('/app/$projectSlug')
 
 export const Route = createFileRoute('/app/$projectSlug/segments/')({
-  staticData: { crumb: 'Segments' },
+  staticData: { crumbKey: 'segments' },
   loader: async ({ parentMatchPromise }) => {
     const parent = await parentMatchPromise
     const projectId = parent.loaderData?.project.id

@@ -4,7 +4,7 @@ import { ExportCard } from '@/components/transfer/export-card'
 import { ImportCard } from '@/components/transfer/import-card'
 
 export const Route = createFileRoute('/app/$projectSlug/settings/transfer')({
-  staticData: { crumb: 'Import & export' },
+  staticData: { crumbKey: 'transfer' },
   head: () => ({ meta: [{ title: 'Import & export · Halyard' }] }),
   component: TransferSettings,
 })

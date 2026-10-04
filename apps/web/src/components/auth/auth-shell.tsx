@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { HalyardMark } from '@/components/brand'
+import { LocaleSelect } from '@/components/locale-switcher'
 
 /** Two-column layout for sign in and sign up. The left panel is the product's one marketing moment. */
 export function AuthShell({ children }: { children: ReactNode }) {
@@ -31,6 +32,9 @@ export function AuthShell({ children }: { children: ReactNode }) {
             <span className="text-base font-semibold tracking-tight">Halyard</span>
           </div>
           {children}
+          <div className="mt-8 flex justify-end">
+            <LocaleSelect />
+          </div>
         </div>
       </main>
     </div>
